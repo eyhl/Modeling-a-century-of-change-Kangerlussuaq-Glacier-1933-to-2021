@@ -127,3 +127,33 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Mac General
+.DS_Store
+#/Data
+/Data
+/smb_video
+/Models
+/Results
+/Movies
+
+# etc
+/Functions/texturesynth-master/examples
+Movies/box_log_vel.avi
+Movies/log_vel_racmo_recon.avi
+Movies/log_vel_racmo.avi
+Movies/rf_field_final.avi
+Movies/smb_movie.avi
+Movies/smb.avi
+Movies/vel_baseline.avi
+
+# issm run specific
+.bin
+.errlog
+.outlog
+.queue
+.tar.gz
+.toolkits
+
+
+
