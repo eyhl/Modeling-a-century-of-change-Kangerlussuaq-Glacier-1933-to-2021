@@ -17,9 +17,6 @@ function [front_area_friction, front_area_pos] = extrapolate_friction_linear(md)
     % get corresponding coords
     x_q = md.mesh.x(front_area_pos);
     y_q = md.mesh.y(front_area_pos);
-
-    % get scatter coordinates
-    x = md.mesh.x;
     
     F = scatteredInterpolant(md.mesh.x, md.mesh.y, md.friction.coefficient, 'Method', 'linear', 'ExtrapolationMethod', 'linear');
 
