@@ -44,15 +44,18 @@ function [] = chooseDomain()
     % caxis([0 50])
     % colorbar()
     % plotmodel(md, 'data', md.geometry.surface, 'figure', 1, 'expdisp', '../Exp/ice_inside.exp')
-    plotmodel(md, 'data', 'driving_stress', 'caxis', [0, 200], 'expdisp', 'temp.exp', 'figure', 7)
+    % plotmodel(md, 'data', 'driving_stress', 'caxis', [0, 200], 'expdisp', 'temp.exp', 'figure', 7)
+    plotmodel(md, 'data', md.friction.coefficient, 'caxis', [0,500])
     % plotmodel(md, 'data', data); 
     %}}}
 
 
     % use exptool {{{
     % expName = CFcontour;
-    expName = 'Exp/Kangerlussuaq_new.exp';
+    % expName = 'Exp/Kangerlussuaq_new.exp';
+    % expName = 'Exp/friction_statistics.exp';
     % expName = '../Exp/1900_refine_area.exp';
+    expName = 'Exp/1900_extrapolation_area.exp';
     % expName = '../Exp/ice_inside.exp'
     % expName = '../Exp/first_front.exp';
     % expName = '../Exp/Kangerlussuaq_new.exp'

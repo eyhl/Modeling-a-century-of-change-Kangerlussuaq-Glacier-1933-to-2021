@@ -1,10 +1,9 @@
-function [md] = update_thickness(md, misfit, method)
+function [md] = update_thickness(md, misfit, method, step_size)
     if strcmp(method, "global")
         correction = zeros(size(md.geometry.thickness));
-        nodes_with_large_err = misfit >= 50;
+        nodes_with_large_err = misfit >= 10;
         correction(nodes_with_large_err) = misfit(nodes_with_large_err);
 
-        step_size = 2/3; 
         % avg_misfit_correction = mean(misfit, 'omitnan');
         % intended to leave out areas where I do not want to update the misfit anyways:
         % no_ice_areas = md.geometry.thickness(isnan(misfit));

@@ -29,9 +29,10 @@ function [md, dh, dv, misfit_thk, misfit_vel, mean_thicknesses] = modulate_intia
     dh(1) = rmse_thickness;
     dv(1) = rmse_velocity;
 
+    fid = fopen('status.txt','w');
     for i = 2:n
         [rmse_thickness, rmse_velocity, misfit_thickness, misfit_velocity] = validate_model(md);
-        md = update_thickness(md, misfit_thickness, 'global');
+        md = update_thickness(md, misfit_thickness, 'global', 0.8); % tried 1/2, 2/3, 1
         mean_thicknesses(i) = mean(md.geometry.thickness); % 1062.7 
         dh(i) = rmse_thickness;
         dv(i) = rmse_velocity;
@@ -41,13 +42,14 @@ function [md, dh, dv, misfit_thk, misfit_vel, mean_thicknesses] = modulate_intia
         disp('SOLVE')
         md = solve(md,'Transient','runtimename',false); %TODO: try to run this on its own, without updating thickness. Does the md.geom.thick change?
         disp('SAVE')
-        save("/data/eigil/work/lia_kq/Models/modulate_thickness1.mat" , 'md', '-v7.3');
-    
+        save("/data/eigil/work/lia_kq/Models/modulate_thickness.mat" , 'md', '-v7.3');
+        fprintf(fid, '%d    %f  %f\n', i, rmse_thickness, mean_thicknesses(i));
     end
+    fclose(fid);
 
     save("Results/misfit_thickness.mat", 'misfit_thk', '-v7.3');
-    save("/data/eigil/work/lia_kq/Models/mean_thicknesses.mat" , 'mean_thicknesses', '-v7.3');
-
+    save("/data/eigil/work/lia_kq/Results/mean_thicknesses.mat" , 'mean_thicknesses', '-v7.3');
+    save("/data/eigil/work/lia_kq/Results/dh.mat" , 'dh', '-v7.3');
 
 
     % % ITERATION 2

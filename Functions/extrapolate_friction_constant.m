@@ -11,14 +11,9 @@ function [front_area_friction, front_area_pos] = extrapolate_friction_const(md)
     front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
     friction_stat_area = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_statistics.exp', 2));
 
-    % TODO: change to md.results.Stressbalancesolution.friction -> remove averaging 
-    front_area_friction = md.friction.coefficient(front_area_pos); % average in time                                                                     
-
     % get corresponding coords
     x_q = md.mesh.x(front_area_pos);
     y_q = md.mesh.y(front_area_pos);
     
-    F = scatteredInterpolant(md.mesh.x, md.mesh.y, md.friction.coefficient, 'Method', 'linear', 'ExtrapolationMethod', 'linear');
-
-    front_area_friction = F(x_q, y_q);
+    front_area_friction =  quantile(md.friction.coefficient(friction_stat_area), [.25]);
 end

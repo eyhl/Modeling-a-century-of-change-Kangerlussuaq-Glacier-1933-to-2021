@@ -10,15 +10,33 @@ function [front_area_friction, front_area_pos] = extrapolate_friction_linear(md)
     %find glacier frony from earlier
     front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
     friction_stat_area = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_statistics.exp', 2));
-
-    % TODO: change to md.results.Stressbalancesolution.friction -> remove averaging 
-    front_area_friction = md.friction.coefficient(front_area_pos); % average in time                                                                     
-
-    % get corresponding coords
-    x_q = md.mesh.x(front_area_pos);
-    y_q = md.mesh.y(front_area_pos);
     
-    F = scatteredInterpolant(md.mesh.x, md.mesh.y, md.friction.coefficient, 'Method', 'linear', 'ExtrapolationMethod', 'linear');
+    % get corresponding coords
+    x = md.mesh.x;
+    y = md.mesh.y;
 
-    front_area_friction = F(x_q, y_q);
+    % define grid to interpolate onto
+    x_aoi = linspace(min(x), max(x), 512);
+    y_aoi = linspace(min(y), max(y), 512);
+
+    md.friction.coefficient(front_area_pos) = NaN;
+    
+    F = scatteredInterpolant(x, y, md.friction.coefficient, 'linear', 'none');
+    friction_grid = F(x_aoi, y_aoi);
+    pos = isnan(friction_grid);
+
+    J = inpaintCoherent(friction_grid, mask,'SmoothingFactor',0.5,'Radius',1);
+
+    x = md.mesh.x(friction_stat_area);
+    y = md.mesh.y(friction_stat_area);
+    val = md.friction.coefficient(friction_stat_area);
+
+    % x(front_area_pos) = [];
+    % y(front_area_pos) = [];
+    % val(front_area_pos) = [];
+
+    
+
+    front_area_friction = F(md.mesh.x, md.mesh.y);
+
 end
