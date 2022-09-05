@@ -10,8 +10,8 @@ function [md, dh, dv, misfit_thk, misfit_vel, mean_thicknesses] = modulate_intia
             config_name = "config-init.csv";
             md = run_model(config_name);
         end
-        sprintf("Loading model from %s", md)
-        md = loadmodel(fullfile(md, 'Model_kangerlussuaq_transient.mat'));
+        sprintf("Loading model from path: %s", md)
+        md = loadmodel(md);
     end    
     config_name = "config-modulation.csv";
 
@@ -31,14 +31,20 @@ function [md, dh, dv, misfit_thk, misfit_vel, mean_thicknesses] = modulate_intia
 
     fid = fopen('status.txt','w');
     for i = 2:n
+        %% 1) compute mae and misfit on coarser mesh
         [rmse_thickness, rmse_velocity, misfit_thickness, misfit_velocity] = validate_model(md);
+
+        %% 2) update on coarser mesh
         md = update_thickness(md, misfit_thickness, 'global', 0.8); % tried 1/2, 2/3, 1
+
+        %% save statistics and development
         mean_thicknesses(i) = mean(md.geometry.thickness); % 1062.7 
         dh(i) = rmse_thickness;
         dv(i) = rmse_velocity;
         misfit_thk(i, :) = misfit_thickness;
         misfit_vel(i, :) = misfit_velocity;
 
+        %% 3) interpolate onto fine mesh and solve
         disp('SOLVE')
         md = solve(md,'Transient','runtimename',false); %TODO: try to run this on its own, without updating thickness. Does the md.geom.thick change?
         disp('SAVE')
