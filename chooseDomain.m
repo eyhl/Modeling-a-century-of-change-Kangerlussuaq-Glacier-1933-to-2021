@@ -28,8 +28,8 @@ function [] = chooseDomain()
     % CFcontour = '../merged_fronts.shp';
     %dataLevelset = ExpToLevelSet(md.mesh.x, md.mesh.y, CFcontour);
 
-    % md = loadmodel('Models/Model_kangerlussuaq_friction.mat');
-    md = loadmodel('Models/Model_kangerlussuaq_transient.mat');
+    md = loadmodel('Models/Model_kangerlussuaq_friction.mat');
+    % md = loadmodel('Models/Model_kangerlussuaq_transient.mat');
     % data = double(md.geometry.thickness==10) + double(md.mask.ice_levelset==1);
     % vel = md.results.StressbalanceSolution.Vel;
     % ind = md.geometry.thickness<10;
@@ -45,17 +45,17 @@ function [] = chooseDomain()
     % colorbar()
     % plotmodel(md, 'data', md.geometry.surface, 'figure', 1, 'expdisp', '../Exp/ice_inside.exp')
     % plotmodel(md, 'data', 'driving_stress', 'caxis', [0, 200], 'expdisp', 'temp.exp', 'figure', 7)
-    plotmodel(md, 'data', md.friction.coefficient, 'caxis', [0,500])
+    plotmodel(md, 'data', md.geometry.surface)
     % plotmodel(md, 'data', data); 
     %}}}
 
 
     % use exptool {{{
     % expName = CFcontour;
-    % expName = 'Exp/Kangerlussuaq_new.exp';
+    expName = 'Exp/Kangerlussuaq_new.exp';
     % expName = 'Exp/friction_statistics.exp';
     % expName = '../Exp/1900_refine_area.exp';
-    expName = 'Exp/1900_extrapolation_area.exp';
+    % expName = 'Exp/1900_extrapolation_area.exp';
     % expName = '../Exp/ice_inside.exp'
     % expName = '../Exp/first_front.exp';
     % expName = '../Exp/Kangerlussuaq_new.exp'

@@ -1,7 +1,7 @@
-function [surface_interpolated] = interp2021Surface(md)
+function [surface_interpolated] = interp2021Surface(mesh)
 %  TODO: need to deliniate cliffs and nunataks and set nodes to surface 2007
-    mesh_x = md.mesh.x;
-    mesh_y = md.mesh.y;
+    mesh_x = mesh(:, 1); % md.mesh.x;
+    mesh_y = mesh(:, 2); % md.mesh.y;
 
     data = load('Data/surfaces/Elevation_KG_2021.txt');
     x = data(:, 1);
