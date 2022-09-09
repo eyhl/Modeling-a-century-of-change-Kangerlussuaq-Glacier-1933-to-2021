@@ -76,7 +76,7 @@ function [md, dh, misfit_thk, mean_thicknesses, step_size_history] = modulate_in
         fprintf(fid, '%d    %f  %f  %f\n', i-1, mae_thickness, mean_thicknesses(i-1), step_size);
 
         if mae_thickness < dh(i-1) % decreasing
-            step_size = min(2 * step_size, 1); % ensure maximum 1
+            step_size = min(1.25 * step_size, 1); % ensure maximum 1
         elseif mae_thickness >= dh(i-1) % increasing
             step_size = 1/2 * step_size;
         end
