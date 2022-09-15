@@ -1,9 +1,9 @@
-function [surface_interpolated] = interp2021Surface(mesh)
+function [surface_interpolated] = interp2021Surface(md, mesh)
 %  TODO: need to deliniate cliffs and nunataks and set nodes to surface 2007
     mesh_x = mesh(:, 1); % md.mesh.x;
     mesh_y = mesh(:, 2); % md.mesh.y;
 
-    data = load('Data/surfaces/Elevation_KG_2021.txt');
+    data = load('/data/eigil/work/lia_kq/Data/surfaces/Elevation_KG_2021.txt');
     x = data(:, 1);
     y = data(:, 2);
     topo = data(:, 3);
@@ -13,13 +13,15 @@ function [surface_interpolated] = interp2021Surface(mesh)
 
     x_lin = linspace(min(x), max(x), 1000);  % I think i chose 600 is arbitrarily, but sufficient
     y_lin = linspace(min(y), max(y), 1000);
-    % [x_grid, y_grid] = meshgrid(x_lin, y_lin);
-    F = scatteredInterpolant(x, y, topo, 'linear', 'none');
-    % topo_grid = griddata(x, y, topo, x_grid, y_grid);
+
+    % extrapolation is necessary in some of the boundary areas very close to the edges. jj
+    F = scatteredInterpolant(x, y, topo, 'linear', 'linear');
+
     surface_interpolated = F(mesh_x, mesh_y);
     % figure(2);
     % imagesc(x_lin, y_lin, flipud(surface_interpolated)); colorbar()
 
-    % plotmodel(md, 'data', surface_interpolated, 'figure', 3); %exportgraphics(gcf, 'thick1.png')
+    plotmodel(md, 'data', surface_interpolated, 'figure', 3); %exportgraphics(gcf, 'thick1.png')
+    % plotmodel(md, 'data', isnan(surface_interpolated), 'figure', 4); %exportgraphics(gcf, 'thick1.png')
 
 end
