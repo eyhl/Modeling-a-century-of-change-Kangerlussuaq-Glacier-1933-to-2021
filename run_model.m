@@ -53,7 +53,7 @@ function [md] = run_model(config_name)
     data_vx = 'Data/measure_multi_year_v1/greenland_vel_mosaic250_vx_v1.tif';
     data_vy = 'Data/measure_multi_year_v1/greenland_vel_mosaic250_vy_v1.tif';
 
-    if sum(steps == 5) == 1
+    if sum(steps == 6) == 1
         run_lia_parameterisation = 1;
         disp(run_lia_parameterisation)
     else
@@ -68,7 +68,7 @@ function [md] = run_model(config_name)
 
     clear steps;
 
-    cluster=generic('name', oshostname(), 'np', 30);
+    cluster=generic('name', oshostname(), 'np', 39);
     waitonlock = Inf;
 
     %% 1 Mesh: setup and refine
@@ -120,15 +120,23 @@ function [md] = run_model(config_name)
     end
 
     %% 4 Friction law setup: Budd
-    if perform(org, 'friction')
+    if perform(org, 'budd')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
         md = solve_stressbalance(md, cf_weights, cs_min, cs_max);
         savemodel(org, md);
     end
 
-    %% 5 Redefine levelset and thickness
+    %% 5 Friction law setup: Schoof
+    if perform(org, 'schoof')
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        % md = solve_stressbalance(md, cf_weights, cs_min, cs_max);
+        [md] = budd2schoof(md);
+        savemodel(org, md);
+    end
+
+    %% 6 Redefine levelset and thickness
     if perform(org, 'lia_param')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_friction.mat');
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
 
         % synthesize friction coefficient in under past ice
@@ -146,11 +154,11 @@ function [md] = run_model(config_name)
             warning("Invalid extrapolation method from config file. Choose random_field, linear or constant")
         end
         
-        md.friction.coefficient(front_area_pos) = front_area_fric;
+        md.friction.C(front_area_pos) = front_area_fric;
         savemodel(org, md);
     end
 
-    %% 6 Initialise: Setup and load calving fronts
+    %% 7 Initialise: Setup and load calving fronts
     if perform(org, 'fronts')
         if run_lia_parameterisation == 1
             disp("Using LIA initial conditoins")
@@ -165,7 +173,7 @@ function [md] = run_model(config_name)
         savemodel(org, md);
     end
 
-    %% 7 Transient: setup & run
+    %% 8 Transient: setup & run
     if perform(org, 'transient')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_fronts.mat');
 

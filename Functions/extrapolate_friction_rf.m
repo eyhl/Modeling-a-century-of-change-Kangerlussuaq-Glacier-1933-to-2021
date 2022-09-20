@@ -5,6 +5,9 @@ function [front_area_friction, front_area_pos] = extrapolate_friction_rf(md)
     % Returns area with new values in 0 areas, and the positions of the front area, 
     % and replaced value positions
     %--
+    % friction_field = friction_field; % budd
+    friction_field = md.friction.C; % schoof
+
     rng('default')
     addpath(genpath('Functions/SeReM/'))
 
@@ -13,7 +16,7 @@ function [front_area_friction, front_area_pos] = extrapolate_friction_rf(md)
     friction_stat_area = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_statistics.exp', 2));
 
     % TODO: change to md.results.Stressbalancesolution.friction -> remove averaging 
-    front_area_friction = md.friction.coefficient(front_area_pos); % average in time                                                                     
+    % front_area_friction = friction_field(front_area_pos); % budd, average in time                                                                     
 
     % get corresponding coords
     x = md.mesh.x(front_area_pos);
@@ -44,8 +47,8 @@ function [front_area_friction, front_area_pos] = extrapolate_friction_rf(md)
     est_corr_dist_x = est_corr_dist_x - 0.5 * est_corr_dist_x;
 
     % extract mean and std from friction coefficient field, in area under the ice. 
-    tmp_mean = nanmean(md.friction.coefficient(friction_stat_area));
-    tmp_std = nanstd(md.friction.coefficient(friction_stat_area));
+    tmp_mean = nanmean(friction_field(friction_stat_area));
+    tmp_std = nanstd(friction_field(friction_stat_area));
 
     % create corr struct for randomfield()
     corr_struct.name = 'exp';

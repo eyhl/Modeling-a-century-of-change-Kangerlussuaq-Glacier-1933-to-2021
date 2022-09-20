@@ -3,7 +3,7 @@ function [config_file_name] = create_config()
     model_name = "kq";
 
     % Set parameters
-    steps = [1:7];
+    steps = [1:8];
     start_time = 1900;
     final_time = 2022;
     ice_temp = -8;

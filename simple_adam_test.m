@@ -36,7 +36,7 @@ plot(solutions(2, :), solutions(1, :), 'w', 'LineWidth', 3)
 
 %% Optimization 
 function [x, score, solutions] = adam(bounds, alpha, beta_1, beta_2)
-    n_iter = 100;
+    n_iter = 1;
 
     eps = 1e-8;
     % generate intiatial point
@@ -63,9 +63,9 @@ function [x, score, solutions] = adam(bounds, alpha, beta_1, beta_2)
 
             % vhat(t) = v(t) / (1 - beta2(t))
             vhat = v(i) ./ (1.0 - beta_2 .^ (t + 1));
-
             % x(t) = x(t-1) - alpha * mhat(t) / (sqrt(vhat(t)) + eps)
             x(i) = x(i) - alpha .* mhat ./ (sqrt(vhat) + eps);
+
         end
         score = objective(x(1), x(2));
         fprintf("%d f(%.2f, %.2f) = %.5f\n", t, x(1), x(2), score);

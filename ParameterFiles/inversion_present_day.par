@@ -77,7 +77,7 @@ sslope   = averaging(md, s, 1); % average the slope once on the vertices, becaus
 disp('   -- Set the lower bound of velocity, pressure and friction coefficient');
 min_velocity = 0;
 min_pressure = 0;
-min_friction_coef = 0.00;
+min_friction_coef = 0.01;
 
 disp('   -- Process surface velocity data');
 vel      = md.inversion.vel_obs;

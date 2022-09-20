@@ -21,7 +21,7 @@ function [surface_interpolated] = interp2021Surface(md, mesh)
     % figure(2);
     % imagesc(x_lin, y_lin, flipud(surface_interpolated)); colorbar()
 
-    plotmodel(md, 'data', surface_interpolated, 'figure', 3); %exportgraphics(gcf, 'thick1.png')
+    % plotmodel(md, 'data', surface_interpolated, 'figure', 3); %exportgraphics(gcf, 'thick1.png')
     % plotmodel(md, 'data', isnan(surface_interpolated), 'figure', 4); %exportgraphics(gcf, 'thick1.png')
 
 end
