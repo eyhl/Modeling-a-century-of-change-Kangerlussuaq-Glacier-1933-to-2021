@@ -1,14 +1,18 @@
-function [md, dh, misfit_thk, mean_thicknesses, adam_steps] = modulate_intial_thickness2(md, step_size, n, spatial_smooth, smoothing_factor)
-    save_path = "/data/eigil/work/lia_kq/Results";
-
-    if nargin < 3
-        spatial_smooth = true;
-
-    end
-    if nargin < 4
-        spatial_smooth = true;
+function [md, mae_list, misfit_thk, mean_thicknesses, adam_steps] = modulate_initial_thickness3(md, step_size, n, smoothing_factor)
+    %% First try with backpropagated errors. Nothing else has changed in this v3.
+    
+    % if nargin < 3
+    %     spatial_smooth = true;
+    %     stop_adam_updates = Inf;
+    % end
+    % if nargin < 4
+    %     spatial_smooth = true;
+    %     smoothing_factor = 1;
+    %     stop_adam_updates = Inf;
+    % end
+    if nargin < 5
         smoothing_factor = 1;
-
+        stop_adam_updates = Inf;
     end
 
     if ~exist('md','var')
@@ -38,11 +42,12 @@ function [md, dh, misfit_thk, mean_thicknesses, adam_steps] = modulate_intial_th
     % factor for average squared gradient
     beta_2 = 0.999;
 
-    dh = zeros(n+1, 1);
+    mae_list = zeros(n+1, 1);
     adam_steps = zeros(n+1, 1);
     mean_thicknesses = zeros(n, 1);
 
-    dh(1) = inf; adam_steps(1) = NaN;
+    % set intial mae misfit and adam step
+    mae_list(1) = inf; adam_steps(1) = NaN;
 
     m = zeros(length(md.geometry.surface), n+1);
     v = zeros(length(md.geometry.surface), n+1);
@@ -78,15 +83,6 @@ function [md, dh, misfit_thk, mean_thicknesses, adam_steps] = modulate_intial_th
         times = [md.results.TransientSolution.time];
         index_2021 = find(times > 2020 & times < 2022);
 
-        % if spatial_smooth
-        %     % extract predicted thickness
-        %     pred_thickness = mean([md.results.TransientSolution(index_2021).Thickness], 2, 'omitnan');
-
-        %     % interpolate onto coarse mesh
-        %     pred_thickness = averaging(md, pred_thickness, smooth);
-        % else
-        %     pred_thickness = mean([md.results.TransientSolution(index_2021).Thickness], 2, 'omitnan');
-        % end
         pred_thickness = mean([md.results.TransientSolution(index_2021).Thickness], 2, 'omitnan');
 
         % compute misfit and MAE
@@ -95,15 +91,12 @@ function [md, dh, misfit_thk, mean_thicknesses, adam_steps] = modulate_intial_th
         % base mae computation on relevant areas
         misfit_thickness(misfit_thickness<-200) = -200;
         misfit_thickness(misfit_thickness>=200) = 200;
-
-        % average nodes
-        % misfit_thickness = averaging(md, misfit_thickness, smooth);
         
-        %find glacier frony from earlier
+        % ocean + some spots on the cliffs which are not a part of the glacier
         front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here.exp', 2));
 
-        % misfit_thickness(final_levelset > 0) = NaN; % ocean
-        misfit_thickness(front_area_pos) = NaN; % ocean / irrelavant front area, cannot be updated
+        misfit_thickness(final_levelset > 0) = NaN; % ocean
+        % misfit_thickness(front_area_pos) = NaN; % ocean / irrelavant front area, cannot be updated
         % misfit_thickness(mask == 1) = NaN; % non-ice areas
 
         % compute mean abs error
@@ -111,73 +104,63 @@ function [md, dh, misfit_thk, mean_thicknesses, adam_steps] = modulate_intial_th
 
         % remove NaNs, insert 0 misfit
         misfit_thickness(isnan(misfit_thickness)) = 0;
-        % plotmodel(md, 'data', misfit_thickness, 'figure', 1, 'caxis', [-300, 300])
     
         % save for statistics and monitoring
-        dh(i) = mae_thickness;
+        mae_list(i) = mae_thickness;
         misfit_thk(:, i-1) = misfit_thickness;
         mean_thicknesses(i-1) = mean(pred_thickness, 1);
 
         % update initial guess
-        correction = zeros(size(pred_thickness));
+        dH = zeros(size(pred_thickness));
         nodes_with_large_err = abs(misfit_thickness) >= 10;
-        correction(nodes_with_large_err) = misfit_thickness(nodes_with_large_err);
+        dH(nodes_with_large_err) = misfit_thickness(nodes_with_large_err);
+        plotmodel(md, 'data', dH, 'figure', 48, 'title', 'misfit', 'caxis', [-300, 300]); exportgraphics(gcf, sprintf("misfit%d.png", i-1));
 
-        if i > 0
-            disp("Gradient step")
-            % update only the following
-            % area_of_interest = ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/update_thickness_in_area.exp', 2);
-            % correction(~area_of_interest) = 0;
-            step_size = step_size * 0.8;
+        if stop_adam_updates >= i
+            disp("Adam step")
+            [dH, mean_step, m, v] = adam_step(dH, m, v, i, beta_1, beta_2);
 
-            % descent updates
-            g = correction;
-
+            % save status
+            adam_steps(i) = mean_step;
+            fprintf(fid, '%d    %f  %f  %f  %f  %s\n', i-1, mae_thickness, mean_thicknesses(i-1), step_size, mean_step, datetime);
+        else
+            % gradient stepping, update status with mean delta H instead
             regular_step = mean(g, 1); 
 
             % save status
             fprintf(fid, '%d    %f  %f  %f  %f  %s\n', i-1, mae_thickness, mean_thicknesses(i-1), step_size, regular_step, datetime);
-
-            % update thickness
-            H_update = step_size .* g;
-            
-        else
-            disp("Adam step")
-
-            % adam updates
-            g = correction;
-            m(:, i) = beta_1 .* m(:, i-1) + (1 - beta_1) .* g;
-            v(:, i) = beta_2 .* v(:, i-1) + (1 - beta_2) .* g.^2;
-            mhat = m(:, i) ./ (1.0 - beta_1 .^ (i-1));
-            vhat = v(:, i) ./ (1.0 - beta_2 .^ (i-1));
-
-            % save status
-            adam_step = mean(mhat, 1)/(mean(sqrt(vhat), 1) + eps);
-            adam_steps(i) = adam_step;
-            fprintf(fid, '%d    %f  %f  %f  %f  %s\n', i-1, mae_thickness, mean_thicknesses(i-1), step_size, adam_step, datetime);
-
-            % update thickness
-            H_update = step_size .* averaging(md, mhat ./ (sqrt(vhat) + eps) .* abs(g), smooth);
-
-            plotmodel(md, 'data', averaging(md, mhat ./ (sqrt(vhat) + eps), smooth), 'figure', 49, 'title', 'mhat/sqrt(vhat)'); exportgraphics(gcf, sprintf("mhat_vhat%d.png", i-1));
-
         end
 
-        
-        updated_thickness(:, i) = updated_thickness(:, i-1) - H_update;
+        % propagate positions back in time 
+        [x_back, y_back] = flowline_traceback(md, false);
+
+
+        % interpolate to relevant 1900 points
+        F = scatteredInterpolant(x_back(:, end), y_back(:, end), dH, 'nearest', 'nearest');
+        dH = F(md.mesh.x, md.mesh.y);
+
+        % smooth update
+        dH = averaging(md, dH, smooth);
+
+        % remove corrections in areas that end up in ocean anyways.
+        dH(front_area_pos) = 0;
+
+        updated_thickness(:, i) = updated_thickness(:, i-1) - step_size .* dH;
+
         % status plotting
-        plotmodel(md, 'data', correction, 'figure', 48, 'title', 'misfit', 'caxis', [-300, 300]); exportgraphics(gcf, sprintf("misfit%d.png", i-1));
-        plotmodel(md, 'data', H_update, 'figure', 50, 'title', 'update', 'caxis', [-300, 300]); exportgraphics(gcf, sprintf("update%d.png", i-1));
+        plotmodel(md, 'data', dH, 'figure', 50, 'title', 'update', 'caxis', [-300, 300]); exportgraphics(gcf, sprintf("update%d.png", i-1));
         plotmodel(md, 'data', updated_thickness(:, i) - updated_thickness(:, i-1), 'figure', 51, 'title', 'difference between thickness i and i-1'); exportgraphics(gcf, sprintf("difference%d.png", i-1));
         plotmodel(md, 'data', updated_thickness(:, i), 'figure', 52, 'title', 'current thickness', 'caxis', [0, 2500]); exportgraphics(gcf, sprintf("currentH%d.png", i-1));
 
-        md.geometry.thickness = updated_thickness(:, i); %initial_thickness - step_size * correction;
+        % update initial thickness
+        md.geometry.thickness = updated_thickness(:, i); %initial_thickness - step_size * dH;
+
+        % ensure minimum thickness
         pos = find(md.geometry.thickness <= 10);
         md.geometry.thickness(pos) = 10;
         md.geometry.surface = md.geometry.thickness + md.geometry.base;
         plotmodel(md, 'data', md.geometry.surface, 'figure', 53, 'title', 'current surface'); exportgraphics(gcf, sprintf("currentSurf%d.png", i-1));
 
-        % ensure minimum thickness
         pos = find(md.geometry.thickness <= 10);
         md.geometry.surface(pos) = md.geometry.base(pos) + 10; %Minimum thickness
         md.geometry.thickness = md.geometry.surface - md.geometry.base; % thickness=surface-base
@@ -186,10 +169,11 @@ function [md, dh, misfit_thk, mean_thicknesses, adam_steps] = modulate_intial_th
         pos = find(md.mesh.vertexonboundary);
         md.masstransport.spcthickness(pos, 1) = md.geometry.thickness(pos);
 
+        % for saving the variables
         thickness = md.geometry.thickness;
         surface = md.geometry.surface;
         save(sprintf("/data/eigil/work/lia_kq/misfit_thickness%d.mat", i-1) , 'misfit_thickness', '-v7.3');
-        save(sprintf("/data/eigil/work/lia_kq/H_update%d.mat", i-1) , 'H_update', '-v7.3');
+        save(sprintf("/data/eigil/work/lia_kq/dH%d.mat", i-1) , 'dH', '-v7.3');
         save(sprintf("/data/eigil/work/lia_kq/md.geometry.thickness%d.mat", i-1) , 'thickness', '-v7.3');
         save(sprintf("/data/eigil/work/lia_kq/md.geometry.surface%d.mat", i-1) , 'surface', '-v7.3');
     end

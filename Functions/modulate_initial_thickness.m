@@ -1,4 +1,4 @@
-function [md, dh, misfit_thk, mean_thicknesses, step_size_history] = modulate_intial_thickness(md, step_size, n, spatial_smooth, smoothing_factor)
+function [md, dh, misfit_thk, mean_thicknesses, step_size_history] = modulate_initial_thickness(md, step_size, n, spatial_smooth, smoothing_factor)
     save_path = "/data/eigil/work/lia_kq/Results";
 
     if nargin < 3
