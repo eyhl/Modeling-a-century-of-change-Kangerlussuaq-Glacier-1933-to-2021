@@ -128,9 +128,11 @@ function [md] = run_model(config_name)
 
     %% 5 Friction law setup: Schoof
     if perform(org, 'schoof')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        md = loadmodel('/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat');
         % md = solve_stressbalance(md, cf_weights, cs_min, cs_max);
-        [md] = budd2schoof(md);
+        coefs = [4000, 2.2, 2.51e-9, 0.667];
+        [md] = budd2schoof(md, coefs);
         savemodel(org, md);
     end
 
@@ -143,7 +145,7 @@ function [md] = run_model(config_name)
         % md = fill_in_texture(md, friction_simulation_file);  
         if strcmp(config.friction_extrapolation, "random_field")
             disp("Extrapolating friction coefficient using Random field method")
-            [front_area_fric, front_area_pos] = extrapolate_friction_rf(md); 
+            [front_area_fric, front_area_pos] = extrapolate_friction_rf(md, cs_min); 
         elseif strcmp(config.friction_extrapolation, "linear")
             disp("Extrapolating friction coefficient linearly")
             [front_area_fric, front_area_pos] = extrapolate_friction_linear(md); 

@@ -36,6 +36,7 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
     % initialise arrays for saving iteration history
     mae_list = zeros(n+1, 1);
     mean_thickness_list = zeros(n, 1);
+    step_size_history = zeros(n, 1);
     misfit_thickness_list = zeros(length(md.geometry.surface), n+1);
     updated_thickness = zeros(length(md.geometry.surface), n+1);
 
@@ -114,7 +115,13 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
         % % smooth update
         % dH = averaging(md, dH, smooth);
 
-        updated_thickness(:, i) = updated_thickness(:, i-1) - step_size(i-1) .* dH;
+        % decrease the step size if you overshoot
+        if mae_thickness >= mae_list(i-1) % increasing
+            step_size = 0.9 * step_size;
+        end
+        step_size_history(i) = step_size;
+
+        updated_thickness(:, i) = updated_thickness(:, i-1) - step_size .* dH;
 
         % update initial thickness
         md.geometry.thickness = updated_thickness(:, i);
@@ -138,7 +145,7 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
         plotmodel(md, 'data', dH, 'figure', 50, 'title', 'update', 'caxis', [-300, 300]); exportgraphics(gcf, sprintf("update%d.png", i-1));
         plotmodel(md, 'data', updated_thickness(:, i) - updated_thickness(:, i-1), 'figure', 51, 'title', 'difference between thickness i and i-1'); exportgraphics(gcf, sprintf("difference%d.png", i-1));
         plotmodel(md, 'data', updated_thickness(:, i), 'figure', 52, 'title', 'current thickness', 'caxis', [0, 2500]); exportgraphics(gcf, sprintf("currentH%d.png", i-1));
-        fprintf(fid, '%d  %f  %f  %f  %s\n', i-1, mae_thickness, mean_thickness_list(i-1), step_size(i-1), datetime);
+        fprintf(fid, '%d  %f  %f  %f  %s\n', i-1, mae_thickness, mean_thickness_list(i-1), step_size, datetime);
 
         % for saving the variables
         thickness = md.geometry.thickness;

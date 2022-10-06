@@ -1,4 +1,4 @@
-function [front_area_friction, front_area_pos] = extrapolate_friction_rf(md)
+function [front_area_friction, front_area_pos] = extrapolate_friction_rf(md, cs_min)
     %--
     % Extrapolates smb data based on a gaussian random field. It computes the std and
     % mean from the data, but correlation length is hard-coded (determined from plot)
@@ -99,5 +99,7 @@ function [front_area_friction, front_area_pos] = extrapolate_friction_rf(md)
     index = 10; % i think i chose this from experimenting - I should probably choose based on misfit.
 
     G = griddedInterpolant(Xq, Yq, reshape(RF(:, index), rf_field_size, rf_field_size));
-    front_area_friction = abs(G(x, y)) .* bed_norm(front_area_pos);
+    % front_area_friction = abs(G(x, y)) .* bed_norm(front_area_pos);
+    front_area_friction = G(x, y);
+    front_area_friction(front_area_friction<=cs_min) = cs_min;
 end
