@@ -9,14 +9,14 @@ function [config_file_name] = create_config()
     ice_temp = -8;
 
     % Inversion parameters
-    cf_weights = [3000, 1.5, 5e-8];
+    cf_weights = [3000, 1.5, 5e-8]; % budd
     cs_min = 0.01;
     cs_max = 1e5;
 
     % Relevant data paths
     smb_name = "racmo";
-    friction_extrapolation = "random_field"; % or semi-variogram
-    friction_law = "budd";
+    friction_extrapolation = "bed_correlation"; % or semi-variogram
+    friction_law = "schoof";
     ran_steps = strjoin(string(steps));
 
     todays_date = datetime('now');

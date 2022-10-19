@@ -14,13 +14,20 @@ function [surface_interpolated] = interpLiaSurface(mesh_x, mesh_y)
     % imagesc(x_grid, y_grid, topo_grid); exportgraphics(gcf, 'test.png');
 
     surface_interpolated = InterpFromGridToMesh(x_lin', y_lin', topo_grid, mesh_x, mesh_y, 0);
-    % plotmodel(md, 'data', surface_interpolated, 'figure', 1); %exportgraphics(gcf, 'thick1.png')
+    % plotmodel(md, 'data', surface_interpolated, 'figure', 111); %exportgraphics(gcf, 'thick1.png')
 
-    % surface_bedm = interpBedmachineGreenland(mesh_x, mesh_y, 'surface');
+    not_front_area = ~ContourToNodes(mesh_x, mesh_y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_large.exp', 2);
 
-    % pos = find(surface_interpolated == 0);
+    % fix edges
+    missing_surface = surface_interpolated > 10;
+    pos1 = find(missing_surface & not_front_area);
+    missing_surface = surface_interpolated < 10;
+    pos2 = find(missing_surface & not_front_area);
 
-    % surface_interpolated(pos) = surface_bedm(pos);
+    interpolator_data = surface_interpolated(pos1);
+    F = scatteredInterpolant(mesh_x(pos1), mesh_y(pos1), interpolator_data, 'natural', 'nearest');
+    val = F(mesh_x(pos2), mesh_y(pos2));
+    surface_interpolated(pos2) = val;
 
     % plotmodel(md, 'data', surface_interpolated, 'figure', 2); %exportgraphics(gcf, 'thick1.png')
     % plotmodel(md, 'data', md.geometry.surface, 'figure', 3); %exportgraphics(gcf, 'thick2.png')

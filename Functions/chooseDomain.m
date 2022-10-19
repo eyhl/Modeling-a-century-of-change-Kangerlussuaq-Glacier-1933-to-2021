@@ -1,6 +1,8 @@
 function [] = chooseDomain()
     clear
     close all
+    addpath('./..');
+
     %% Load velocity data {{{
     % vThreashold = 50;
     % filename = '/totten_1/ModelData/Greenland/VelJoughin/IanGreenVel.mat';
@@ -28,7 +30,7 @@ function [] = chooseDomain()
     % CFcontour = '../merged_fronts.shp';
     %dataLevelset = ExpToLevelSet(md.mesh.x, md.mesh.y, CFcontour);
 
-    md = loadmodel('Models/Model_kangerlussuaq_friction.mat');
+    md = loadmodel('Models/Model_kangerlussuaq_transient.mat');
     % md = loadmodel('Models/Model_kangerlussuaq_transient.mat');
     % data = double(md.geometry.thickness==10) + double(md.mask.ice_levelset==1);
     % vel = md.results.StressbalanceSolution.Vel;
@@ -45,15 +47,19 @@ function [] = chooseDomain()
     % colorbar()
     % plotmodel(md, 'data', md.geometry.surface, 'figure', 1, 'expdisp', '../Exp/ice_inside.exp')
     % plotmodel(md, 'data', 'driving_stress', 'caxis', [0, 200], 'expdisp', 'temp.exp', 'figure', 7)
-    plotmodel(md, 'data', md.geometry.surface)
+    % plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'figure', 4, 'title', 'Velocity', 'log', 10, 'caxis', [1 1.2e4]);
+    plotmodel(md, 'data', md.results.TransientSolution(5).Vel, 'figure', 4, 'title', 'Velocity', 'log', 10, 'caxis', [1 1.2e4]);
+
+    % plotmodel(md, 'data', md.friction.C)
     % plotmodel(md, 'data', data); 
     %}}}
 
 
     % use exptool {{{
     % expName = CFcontour;
-    expName = 'Exp/Kangerlussuaq_new.exp';
-    % expName = 'Exp/friction_statistics.exp';
+    expName = 'Exp/Kangerlussuaq_full_basin.exp';
+    % expName = 'Exp/thickness_misfit_aoi.exp';
+    % expName = 'Exp/friction_validation.exp';
     % expName = '../Exp/1900_refine_area.exp';
     % expName = 'Exp/1900_extrapolation_area.exp';
     % expName = '../Exp/ice_inside.exp'

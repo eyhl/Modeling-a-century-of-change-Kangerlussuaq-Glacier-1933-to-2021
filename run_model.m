@@ -1,10 +1,13 @@
 % Main script for running Kangerlussuaq glacier model for period 1900-2020
-function [md] = run_model(config_name)
+function [md] = run_model(config_name, plotting_flag)
     % if ~exist('md','var')
     %     % third parameter does not exist, so default it to something
     %      md = md;
     % end
-
+    if nargin < 2
+        plotting_flag = false;
+    end
+    
     % read config file
     config_path_name = append('Configs/', config_name);
     config = readtable(config_path_name, "TextType", "string");
@@ -68,18 +71,22 @@ function [md] = run_model(config_name)
 
     clear steps;
 
-    cluster=generic('name', oshostname(), 'np', 39);
+    cluster=generic('name', oshostname(), 'np', 66);
     waitonlock = Inf;
 
     %% 1 Mesh: setup and refine
     if perform(org, 'mesh')
         % domain of interest
-        domain = ['Exp/' 'Kangerlussuaq_new' '.exp'];
+        % domain = ['Exp/' 'Kangerlussuaq_new' '.exp'];
+        domain = ['Exp/' 'Kangerlussuaq_full_basin' '.exp'];
 
         % Creates, refines and saves mesh in md
         check_mesh = false;
         md = meshing(domain, data_vx, data_vy, check_mesh);
         savemodel(org, md);
+        if plotting_flag
+            plotmodel(md, 'data', 'mesh'); exportgraphics(gcf, "mesh.png")
+        end
     end
 
     %% 2 Forcings: Interpolate SMB
@@ -121,42 +128,130 @@ function [md] = run_model(config_name)
 
     %% 4 Friction law setup: Budd
     if perform(org, 'budd')
+
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
         md = solve_stressbalance(md, cf_weights, cs_min, cs_max);
         savemodel(org, md);
+
+        if plotting_flag
+            figure(1);
+            plotmodel(md, 'data', md.friction.coefficient, 'title', 'Budd Friction Law, Coefficient', ...
+            'colorbar', 'off', 'xtick', [], 'ytick', []); 
+            set(gca,'fontsize',12);
+            set(colorbar,'visible','off')
+            h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+            colormap('turbo'); 
+            exportgraphics(gcf, "budd_friction.png")
+
+            figure(2);
+            plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'title', 'Budd Friction Law, Velocity', ...
+            'colorbar', 'off', 'xtick', [], 'ytick', []); 
+            set(gca,'fontsize',12);
+            set(colorbar,'visible','off')
+            h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+            colormap('turbo'); 
+            exportgraphics(gcf, "budd_sb_vel.png")
+        end
+        
     end
 
     %% 5 Friction law setup: Schoof
     if perform(org, 'schoof')
-        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
-        md = loadmodel('/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat');
-        % md = solve_stressbalance(md, cf_weights, cs_min, cs_max);
-        coefs = [4000, 2.2, 2.51e-9, 0.667];
+        friction_law = 'schoof';
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        % md = loadmodel('/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat');
+        coefs = [4000, 2.2, 2.51e-9, 0.667]; % found through grid search %TODO: L-curve
         [md] = budd2schoof(md, coefs);
         savemodel(org, md);
+        if plotting_flag
+            figure(3);
+            plotmodel(md, 'data', md.friction.C, 'title', 'Schoof Friction Law, Coefficient', ...
+            'colorbar', 'off', 'xtick', [], 'ytick', []); 
+            set(gca,'fontsize',12);
+            set(colorbar,'visible','off')
+            h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+            colormap('turbo'); 
+            exportgraphics(gcf, "schoof_friction.png")
+
+            figure(4);
+            plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'title', 'Schoof Friction Law, Velocity', ...
+            'colorbar', 'off', 'xtick', [], 'ytick', []); 
+            set(gca,'fontsize',12);
+            set(colorbar,'visible','off')
+            h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+            colormap('turbo'); 
+            exportgraphics(gcf, "schoof_sb_vel.png")
+        end
     end
 
-    %% 6 Redefine levelset and thickness
+    %% 6 Parameterize LIA, extrapolate friction coefficient to LIA front
     if perform(org, 'lia_param')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
+        if strcmp(config.friction_law, 'schoof')
+            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
+        elseif strcmp(config.friction_law, 'budd')
+            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        else
+            warning("Friction law not implemented")
+        end
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
+        validate_flag = false;
 
         % synthesize friction coefficient in under past ice
         % md = fill_in_texture(md, friction_simulation_file);  
         if strcmp(config.friction_extrapolation, "random_field")
             disp("Extrapolating friction coefficient using Random field method")
-            [front_area_fric, front_area_pos] = extrapolate_friction_rf(md, cs_min); 
-        elseif strcmp(config.friction_extrapolation, "linear")
-            disp("Extrapolating friction coefficient linearly")
-            [front_area_fric, front_area_pos] = extrapolate_friction_linear(md); 
+            [extrapolated_friction, extrapolated_pos, mae_rf] = friction_random_field_model(md, cs_min, config.friction_law, validate_flag); 
+        elseif strcmp(config.friction_extrapolation, "bed_correlation")
+            M = 1; % polynomial order
+
+            disp("Extrapolating friction coefficient correlated linearly with bed topography")
+            [extrapolated_friction, extrapolated_pos, mae_poly] = friction_polynomial_model(md, cs_min, M, config.friction_law, validate_flag); 
+ 
         elseif strcmp(config.friction_extrapolation, "constant")
             disp("Extrapolating friction coefficient using constant value")
-            [front_area_fric, front_area_pos] = extrapolate_friction_constant(md); 
+            [extrapolated_friction, extrapolated_pos, mae_const] = friction_constant_model(md, cs_min, config.friction_law, validate_flag);
         else
             warning("Invalid extrapolation method from config file. Choose random_field, linear or constant")
         end
         
-        md.friction.C(front_area_pos) = front_area_fric;
+        if strcmp(config.friction_law, 'schoof')
+            md.friction.C(extrapolated_pos) = extrapolated_friction;
+            if plotting_flag
+                figure(5);
+                plotmodel(md, 'data', md.friction.C, 'title', 'Budd Friction Law', ...
+                'colorbar', 'off', 'xtick', [], 'ytick', []); 
+                set(gca,'fontsize',12);
+                set(colorbar,'visible','off')
+                h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+                colormap('turbo'); 
+                exportgraphics(gcf, "budd_friction_extrapolated.png")
+            end
+            
+        elseif strcmp(config.friction_law, 'budd')
+            md.friction.coefficient(extrapolated_pos) = extrapolated_friction;
+            if plotting_flag
+                figure(6);
+                plotmodel(md, 'data', md.friction.coefficient, 'title', 'Budd Friction Law', ...
+                'colorbar', 'off', 'xtick', [], 'ytick', []); 
+                set(gca,'fontsize',12);
+                set(colorbar,'visible','off')
+                h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+                colormap('turbo'); 
+                exportgraphics(gcf, "budd_friction_extrapolated.png")
+            end
+        else
+            warning('Friction law not recignised, choose schoof or budd')
+        end
+
+        figure(7);
+        plotmodel(md, 'data', md.geometry.thickness, 'title', 'LIA thickness', ...
+        'colorbar', 'off', 'xtick', [], 'ytick', []); 
+        set(gca,'fontsize',12);
+        set(colorbar,'visible','off')
+        h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+        colormap('turbo'); 
+        exportgraphics(gcf, "lia_thickness.png")
+
         savemodel(org, md);
     end
 

@@ -4,6 +4,15 @@ function [front_area_smb, front_area_pos] = extrapolate_smb(md)
     % mean from the data, but correlation length is hard-coded (determined from plot)
     % Returns area with new values in 0 areas, and the positions of the front area, 
     % and replaced value positions
+    %% UPDATE OCTOBER 2022: This approach should be updated and quantitatively compared to 
+    %% another method. One idea I have is the anomaly based approach using box as well. If
+    %% I remember correcly the Box SMB had data everywhere, so I should be able to 
+    %% extrapolate with similar apporach as I have done in time, but here do it in space 
+    %% instead, adding the seasonal variability from RACMO to each Box mean time step. 
+    %% Thinking about this it won't work as the RACMO anomaly does not cover the area of interest
+    %% Maybe I could try some correlation based approach like with friction that correlates
+    %% RACMO variability and Box mean value. Then use this correlation formula to transform
+    %% the Box mean values and insert in extrapolation area. 
     %--
     rng('default')
     addpath(genpath('Functions/SeReM/'))

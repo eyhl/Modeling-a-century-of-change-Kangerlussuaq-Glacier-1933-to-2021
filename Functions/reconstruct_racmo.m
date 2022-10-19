@@ -10,8 +10,8 @@ function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, re
     time_vector = md_racmo.smb.mass_balance(end, :) - ref_start_time;
     smb_racmo_data = md_racmo.smb.mass_balance(1:end - 1, :);
     ref_smb_racmo = trapz(time_vector, smb_racmo_data, 2) / ref_time_length;
-
-    % % fix zeros in ocean in racmo data:
+    
+    % % % fix zeros in ocean in racmo data:
     [front_area_smb, front_area_pos] = extrapolate_smb(md_racmo);
     ref_smb_racmo(front_area_pos) = front_area_smb;
 
@@ -34,7 +34,7 @@ function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, re
     smb_racmo_reconstructed = ref_smb_racmo - smb_box_anomaly;
     smb_racmo_times = md_lia.smb.mass_balance(end, :);
 
-    % save diagnostic fields:
+    % % save diagnostic fields:
     md.miscellaneous.dummy.smb_anomaly = smb_box_anomaly;
     md.miscellaneous.dummy.ref_smb_racmo = ref_smb_racmo;
     md.miscellaneous.dummy.ref_smb_box = ref_smb_box;

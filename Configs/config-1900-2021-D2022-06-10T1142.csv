@@ -1,2 +1,0 @@
-todays_date,ran_steps,start_time,final_time,ice_temp,cf_weights_1,cf_weights_2,cf_weights_3,cs_min,cs_max,smb_name,friction_extrapolation,friction_law,model_name
-"2022-06-10T1142","1 2 3 4 5 6 7",1900,2021,-8,3000,1.5,5e-08,0.01,100000,"racmo","texture_synth","budd","kq"

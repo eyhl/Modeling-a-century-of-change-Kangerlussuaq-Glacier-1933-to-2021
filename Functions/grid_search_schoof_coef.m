@@ -1,11 +1,11 @@
 function [mae_list] = grid_search_schoof_coef()
     coefficient_1 = [4000];
-    coefficient_2 = linspace(1, 7, 6);
-    coefficient_3 = logspace(-9, -7, 6);
+    coefficient_2 = [2.2, 5.8]; % linspace(1, 7, 6);
+    coefficient_3 = logspace(-9, -3, 10);
     c_max_list = linspace(0.5, 1, 4);
-    divisor = coefficient_1(1) / 400; % make ratio base 10.
+    % divisor = coefficient_1(1) / 400; % make ratio base 10.
 
-    md = loadmodel('/data/eigil/work/lia_kq/Models/baseline_rf_friction_extrapolation/Model_kangerlussuaq_friction.mat');
+    md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
 
     mae_list = zeros(12, 1);
     coef_setting = zeros(12, 4);
@@ -14,8 +14,7 @@ function [mae_list] = grid_search_schoof_coef()
 
     for i=1:length(coefficient_2)
         for j=1:length(coefficient_3)
-            for k=1:length(c_max_list) 
-                coefs = [coefficient_1(1), coefficient_2(i), coefficient_3(j), c_max_list(k)];
+                coefs = [coefficient_1(1), coefficient_2(i), coefficient_3(j), c_max_list(2)];
                 fprintf("Current coefficient setting: %s\n", num2str(coefs))
 
                 [md_tmp] = budd2schoof(md, coefs);
@@ -30,12 +29,11 @@ function [mae_list] = grid_search_schoof_coef()
 
                 plotmodel(md_tmp, 'data', md_tmp.results.StressbalanceSolution.Vel, 'figure', 43, 'title', 'Vel'); exportgraphics(gcf, sprintf("vel_%d%d%d.png", i, j, k))
                 plotmodel(md_tmp, 'data', md_tmp.results.StressbalanceSolution.FrictionC, 'figure', 44, 'title', 'fc'); exportgraphics(gcf, sprintf("fc_%d%d%d.png", i, j, k))
-                ratio = sprintf('%.1f:%.1f:%.1f', round(term_1/divisor, 1), round(term_2/divisor, 1), round(term_3/divisor, 1));
-                fprintf(fid, '%s %d %d %d %s %s\n', datetime, i, j, k, ratio, num2str(md_tmp.results.StressbalanceSolution.J(end, :)));
+                % ratio = sprintf('%.1f:%.1f:%.1f', round(term_1/divisor, 1), round(term_2/divisor, 1), round(term_3/divisor, 1));
+                fprintf(fid, '%s %d %d %d %s\n', datetime, i, j, 2, num2str(md_tmp.results.StressbalanceSolution.J(end, :)));
 
                 coef_setting(m, :) = coefs;
                 m = m + 1;
-            end
         end
     end
 end
