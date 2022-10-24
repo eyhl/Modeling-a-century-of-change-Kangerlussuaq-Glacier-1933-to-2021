@@ -1,4 +1,4 @@
-function [md] = temperature_polynomial_model(md, M, validate_flag)
+function [md] = temperature_correlation_model(md, M, validate_flag)
     
     if nargin < 3
         validate_flag = false;

@@ -1,4 +1,4 @@
-function [extrapolated_friction, extrapolated_pos, mae] = friction_polynomial_model(md, cs_min, M, friction_law, validate_flag)
+function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_model(md, cs_min, M, friction_law, validate_flag)
 
     if nargin < 3
         validate_flag = false;

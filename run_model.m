@@ -208,7 +208,7 @@ function [md] = run_model(config_name, plotting_flag)
             M = 1; % polynomial order
 
             disp("Extrapolating friction coefficient correlated linearly with bed topography")
-            [extrapolated_friction, extrapolated_pos, mae_poly] = friction_polynomial_model(md, cs_min, M, config.friction_law, validate_flag); 
+            [extrapolated_friction, extrapolated_pos, mae_poly] = friction_correlation_model(md, cs_min, M, config.friction_law, validate_flag); 
  
         elseif strcmp(config.friction_extrapolation, "constant")
             disp("Extrapolating friction coefficient using constant value")
