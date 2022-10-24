@@ -1,5 +1,4 @@
-function [] = chooseDomain()
-    clear
+function [] = chooseDomain(md)
     close all
     addpath('./..');
 
@@ -29,8 +28,9 @@ function [] = chooseDomain()
     %% plot friction {{{
     % CFcontour = '../merged_fronts.shp';
     %dataLevelset = ExpToLevelSet(md.mesh.x, md.mesh.y, CFcontour);
-
-    md = loadmodel('Models/Model_kangerlussuaq_transient.mat');
+    if nargin < 1
+        md = loadmodel('Models/Model_kangerlussuaq_transient.mat');
+    end
     % md = loadmodel('Models/Model_kangerlussuaq_transient.mat');
     % data = double(md.geometry.thickness==10) + double(md.mask.ice_levelset==1);
     % vel = md.results.StressbalanceSolution.Vel;
@@ -48,16 +48,24 @@ function [] = chooseDomain()
     % plotmodel(md, 'data', md.geometry.surface, 'figure', 1, 'expdisp', '../Exp/ice_inside.exp')
     % plotmodel(md, 'data', 'driving_stress', 'caxis', [0, 200], 'expdisp', 'temp.exp', 'figure', 7)
     % plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'figure', 4, 'title', 'Velocity', 'log', 10, 'caxis', [1 1.2e4]);
-    plotmodel(md, 'data', md.results.TransientSolution(5).Vel, 'figure', 4, 'title', 'Velocity', 'log', 10, 'caxis', [1 1.2e4]);
+    % plotmodel(md, 'data', md.results.TransientSolution(5).Vel, 'figure', 4, 'title', 'Velocity', 'log', 10, 'caxis', [1 1.2e4]);
 
     % plotmodel(md, 'data', md.friction.C)
     % plotmodel(md, 'data', data); 
     %}}}
+    plotmodel(md, 'data', md.miscellaneous.dummy.temperature_field, 'figure', 333, 'title', 'Temperature', ...
+                'colorbar', 'off', 'xtick', [], 'ytick', []); 
+                set(gca,'fontsize',12);
+                set(colorbar,'visible','off')
+                h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+                title(h, "Temperature field")
+                colormap('turbo')
 
 
     % use exptool {{{
     % expName = CFcontour;
-    expName = 'Exp/Kangerlussuaq_full_basin.exp';
+    expdisp('Exp/temperature_data.exp');
+    expName = 'Exp/temperature_validation.exp';
     % expName = 'Exp/thickness_misfit_aoi.exp';
     % expName = 'Exp/friction_validation.exp';
     % expName = '../Exp/1900_refine_area.exp';

@@ -122,7 +122,8 @@ md.friction.coefficient(Neff <= 0)  = min_friction_coef;
 disp('   Creating flow law parameters (assume ice is at -8°C for now)');
 md.materials.rheology_n = 3 * ones(md.mesh.numberofelements, 1);
 % md.materials.rheology_B = cuffey(273.15 + ice_temp) * ones(md.mesh.numberofvertices, 1);
-[temperature_field] = interpTemperature(md);
+md = interpTemperature(md);
+temperature_field = md.miscellaneous.dummy.temperature_field;
 md.materials.rheology_B = cuffey(temperature_field) * ones(md.mesh.numberofvertices, 1);  % temperature field is already in Kelvin
 
 %%
