@@ -186,6 +186,9 @@ function [md] = run_model(config_name, plotting_flag)
 
     %% 6 Parameterize LIA, extrapolate friction coefficient to LIA front
     if perform(org, 'lia_param')
+        warning('!!!!You need to implement temperature extrapolation as well!!!!!')
+
+        
         if strcmp(config.friction_law, 'schoof')
             md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
         elseif strcmp(config.friction_law, 'budd')
