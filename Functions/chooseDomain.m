@@ -37,7 +37,7 @@ function [] = chooseDomain(md)
     % ind = md.geometry.thickness<10;
     % scatter(md.mesh.x, md.mesh.y, 20, vel, 'filled'); hold on; scatter(md.mesh.x(ind), md.mesh.y(ind), 20, vel(ind), 'r')
     % plotmodel(md, 'data', 'mesh')
-    % plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'gridded', 1, 'levelset', md.mask.ice_levelset, 'figure', 1)
+    plotmodel(md, 'data', md.results.TransientSolution(1).Vel, 'gridded', 1, 'levelset', md.mask.ice_levelset, 'figure', 1)
     % data = load('../Data/kauq/KG_surface_1900b.txt');
     % x = data(:, 1);
     % y = data(:, 2);
@@ -54,7 +54,8 @@ function [] = chooseDomain(md)
     % plotmodel(md, 'data', data); 
     %}}}
     plotmodel(md, 'data', md.miscellaneous.dummy.temperature_field, 'figure', 333, 'title', 'Temperature', ...
-                'colorbar', 'off', 'xtick', [], 'ytick', []); 
+                'colorbar', 'off', 'xtick', [], 'ytick', [], ...
+                'gridded', 1, 'levelset', md.mask.ice_levelset); 
                 set(gca,'fontsize',12);
                 set(colorbar,'visible','off')
                 h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
@@ -64,8 +65,8 @@ function [] = chooseDomain(md)
 
     % use exptool {{{
     % expName = CFcontour;
-    expdisp('Exp/temperature_data.exp');
-    expName = 'Exp/temperature_validation.exp';
+    % expName = 'Exp/temperature_validation.exp';
+    expName = 'Exp/1900_extrapolation_area_temp.exp';
     % expName = 'Exp/thickness_misfit_aoi.exp';
     % expName = 'Exp/friction_validation.exp';
     % expName = '../Exp/1900_refine_area.exp';
