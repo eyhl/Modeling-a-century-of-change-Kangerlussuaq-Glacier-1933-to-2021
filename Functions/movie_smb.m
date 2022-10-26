@@ -3,7 +3,7 @@ function [] = movie_smb(md, movieName)
     set(0,'defaultfigurecolor',[1, 1, 1])
     % n_times = size(md.results.TransientSolution(:).Vel, 2)
     % time = [md.results.TransientSolution.time];
-    years_of_simulation = 1900:2020;
+    years_of_simulation = 1900:2021;
     time = [years_of_simulation(1):1/12:years_of_simulation(end)+11/12];
     output_freq = md.settings.output_frequency;
     % time = time(1:output_freq:end);
@@ -14,8 +14,8 @@ function [] = movie_smb(md, movieName)
     nframes = length(1:12:(Nt-12));
     disp(nframes)
 
-    xl = [4.578, 5.152]*1e5;
-    yl = [-2.3039, -2.2563]*1e6;
+    xl = [4.078, 5.152]*1e5;
+    yl = [-2.3239, -2.2063]*1e6;
  
     clear mov;
     close all;
@@ -29,6 +29,7 @@ function [] = movie_smb(md, movieName)
         plotmodel(md,'data', data,...
             'gridded', 1,...
             'caxis', [-5, 5], 'colorbar', 'off',...
+            'ylim', yl, 'xlim', xl,...
             'xtick', [], 'ytick', []);%, ...
             % 'tightsubplot#all', 1,...
             % 'hmargin#all', [0.01,0.0], 'vmargin#all',[0,0.06], 'gap#all',[.0 .0]); %,...
@@ -36,7 +37,7 @@ function [] = movie_smb(md, movieName)
         title('SMB, yearly average', 'interpreter','latex')
         set(gca,'fontsize',12);
         set(colorbar,'visible','off')
-        h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+        h = colorbar('Position', [0.1  0.05  0.75  0.01], 'Location', 'southoutside');
         title(h, sprintf('%d', year));
         colormap('turbo')
         img = getframe(1);

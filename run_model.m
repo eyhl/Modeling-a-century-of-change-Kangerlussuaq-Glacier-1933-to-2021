@@ -92,31 +92,9 @@ function [md] = run_model(config_name, plotting_flag)
         end
     end
 
-    %% 2 Forcings: Interpolate SMB
-    if perform(org, 'smb')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_mesh.mat');
-        if strcmp(config.smb_name, "box")
-            md = interpolate_box_smb(md, start_time, final_time, smb_file);
-        else
-            the_files = dir(fullfile(smb_file, '*.nc'));
-            %TODO: CANNOT HANDLE ONLY PRE 1958 SELECTION (cat() reconstruct_racmo should be tested for this)
-            % reconstruct racmo if year<1958
-            if start_time < 1958 || final_time < 1958
-                disp("post 1958 - interpolating racmo")
-                md = interpolate_racmo_smb(md, 1958, final_time-1, the_files); % -1 to run to end 2021
-                disp("pre 1958 - reconstructing racmo")
-                md = reconstruct_racmo(md, start_time, final_time-1, ref_smb_start_time, ref_smb_final_time);
-            else
-                disp("post 1958 - interpolating racmo")
-                md = interpolate_racmo_smb(md, start_time, final_time-1, the_files);
-            end
-        end 
-        savemodel(org, md);
-    end
-
-    %% 3 Parameterisation: Default setup with .par file
+    %% 2 Parameterisation: Default setup with .par file
     if perform(org, 'param')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_mesh.mat');
 
         md = setflowequation(md,'SSA','all');
         md = setmask(md,'','');
@@ -129,7 +107,7 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 4 Friction law setup: Budd
+    %% 3 Friction law setup: Budd
     if perform(org, 'budd')
 
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
@@ -158,7 +136,7 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 5 Friction law setup: Schoof
+    %% 4 Friction law setup: Schoof
     if perform(org, 'schoof')
         friction_law = 'schoof';
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
@@ -187,8 +165,8 @@ function [md] = run_model(config_name, plotting_flag)
         end
     end
 
-    %% 6 Parameterize LIA, extrapolate friction coefficient to LIA front
-    if perform(org, 'lia_param')
+    %% 5 Forcings: Interpolate SMB
+    if perform(org, 'smb')
         if strcmp(config.friction_law, 'schoof')
             md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
         elseif strcmp(config.friction_law, 'budd')
@@ -196,12 +174,35 @@ function [md] = run_model(config_name, plotting_flag)
         else
             warning("Friction law not implemented")
         end
+        if strcmp(config.smb_name, "box")
+            md = interpolate_box_smb(md, start_time, final_time, smb_file);
+        else
+            the_files = dir(fullfile(smb_file, '*.nc'));
+            %TODO: CANNOT HANDLE ONLY PRE 1958 SELECTION (cat() reconstruct_racmo should be tested for this)
+            % reconstruct racmo if year<1958
+            if start_time < 1958 || final_time < 1958
+                disp("post 1958 - interpolating racmo")
+                md = interpolate_racmo_smb(md, 1958, final_time, the_files); % -1 to run to end 2021
+                disp("pre 1958 - reconstructing racmo")
+                md = reconstruct_racmo(md, start_time, final_time, ref_smb_start_time, ref_smb_final_time);
+            else
+                disp("post 1958 - interpolating racmo")
+                md = interpolate_racmo_smb(md, start_time, final_time, the_files);
+            end
+        end 
+        savemodel(org, md);
+    end
+
+    %% 6 Parameterize LIA, extrapolate friction coefficient to LIA front
+    if perform(org, 'lia_param')
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
+        
         disp("Parameterizing to LIA initial state")
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
         validate_flag = false;
 
        
-        disp("Extrapolating friction coefficient...\n")
+        disp("Extrapolating friction coefficient...")
         if strcmp(config.friction_extrapolation, "random_field")
             disp("Extrapolating friction coefficient using Random field method")
             [extrapolated_friction, extrapolated_pos, mae_rf] = friction_random_field_model(md, cs_min, config.friction_law, validate_flag); 
@@ -293,4 +294,5 @@ function [md] = run_model(config_name, plotting_flag)
         disp('SAVE')
         savemodel(org, md);
     end
+    %% end of script
 end

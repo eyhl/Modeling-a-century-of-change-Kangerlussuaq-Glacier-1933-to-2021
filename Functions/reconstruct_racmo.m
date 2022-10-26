@@ -1,4 +1,4 @@
-function [smb_racmo_reconstructed, smb_total, smb_times] = reconstruct_racmo(md, start_time, final_time, ref_start_time, ref_end_time)
+function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, ref_end_time)
     ref_time_length = ref_end_time - ref_start_time;
     smb_total = md.smb.mass_balance(1:end - 1, :);
 
@@ -57,7 +57,7 @@ function [smb_racmo_reconstructed, smb_total, smb_times] = reconstruct_racmo(md,
 
     % set transient forcings
     % fprintf("data dimension = %d, time dimension = %d\n", size(smb_total, 2), size(smb_times, 2));
-    
-    % md.smb.mass_balance = [smb_total; ...
-    %                        smb_times];
+
+    md.smb.mass_balance = [smb_total; ...
+                           smb_times];
 end
