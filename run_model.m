@@ -31,6 +31,9 @@ function [md] = run_model(config_name, plotting_flag)
     ref_smb_start_time = 1972; % don't change
     ref_smb_final_time = 1989; % don't change
 
+    % temperature field extrapolation offset, qualitative
+    add_constant = 2.5;
+
     % Shape file and model name
     glacier = 'kangerlussuaq';
     md.miscellaneous.name = config.model_name;
@@ -186,9 +189,6 @@ function [md] = run_model(config_name, plotting_flag)
 
     %% 6 Parameterize LIA, extrapolate friction coefficient to LIA front
     if perform(org, 'lia_param')
-        warning('!!!!You need to implement temperature extrapolation as well!!!!!')
-
-        
         if strcmp(config.friction_law, 'schoof')
             md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
         elseif strcmp(config.friction_law, 'budd')
@@ -196,11 +196,12 @@ function [md] = run_model(config_name, plotting_flag)
         else
             warning("Friction law not implemented")
         end
+        disp("Parameterizing to LIA initial state")
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
         validate_flag = false;
 
-        % synthesize friction coefficient in under past ice
-        % md = fill_in_texture(md, friction_simulation_file);  
+       
+        disp("Extrapolating friction coefficient...\n")
         if strcmp(config.friction_extrapolation, "random_field")
             disp("Extrapolating friction coefficient using Random field method")
             [extrapolated_friction, extrapolated_pos, mae_rf] = friction_random_field_model(md, cs_min, config.friction_law, validate_flag); 
@@ -246,14 +247,9 @@ function [md] = run_model(config_name, plotting_flag)
             warning('Friction law not recignised, choose schoof or budd')
         end
 
-        figure(7);
-        plotmodel(md, 'data', md.geometry.thickness, 'title', 'LIA thickness', ...
-        'colorbar', 'off', 'xtick', [], 'ytick', []); 
-        set(gca,'fontsize',12);
-        set(colorbar,'visible','off')
-        h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
-        colormap('turbo'); 
-        exportgraphics(gcf, "lia_thickness.png")
+        disp("Extrapolating temperature field...\n")
+        M = 1; % polynomial order
+        % md = temperature_correlation_model(md, M, add_constant, validate_flag);
 
         savemodel(org, md);
     end
@@ -296,7 +292,5 @@ function [md] = run_model(config_name, plotting_flag)
         md=solve(md,'Transient','runtimename',false);
         disp('SAVE')
         savemodel(org, md);
-
-        %TODO: RUN DIAGNOSTICS AND SAVE IN RESULTS/DATE FOLDER!!!!!
     end
 end

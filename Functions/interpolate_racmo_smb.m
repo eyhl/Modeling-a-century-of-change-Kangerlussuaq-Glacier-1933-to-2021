@@ -28,7 +28,6 @@ function [md] = interpolate_racmo_smb(md, start_time, final_time, the_files)
     file_names = file_names(start_index:final_index);
     file_folders = file_folders(start_index:final_index); 
 
-
     for year = 1 : length(years_of_simulation)
         % the variable names changes at year 1990 for some reason.
         current_year = start_time + year;
@@ -42,7 +41,7 @@ function [md] = interpolate_racmo_smb(md, start_time, final_time, the_files)
             smb_var_name = 'SMB_rec';
         end
 
-        if rem(year - 1, 10) == 0
+        if rem((year - 1) + start_time, 10) == 0
             fprintf('interpolating smb in the %ds\n', (year - 1) + start_time)
         end 
         
@@ -54,17 +53,6 @@ function [md] = interpolate_racmo_smb(md, start_time, final_time, the_files)
         lat  = ncread(full_file_name, lat_var_name);
         lon  = ncread(full_file_name, lon_var_name);
         smb = ncread(full_file_name, smb_var_name);
-
-        if current_year >= 1989
-            x_smb = double(lon) * 1e3; % convert to meters
-            y_smb = double(lat) * 1e3; % convert to meters
-            smb = double(smb);
-        else
-            % [x_smb, y_smb] = meshgrid(lon, lat);
-            x_smb = double(lon) * 1e3; % convert to meters
-            y_smb = double(lat) * 1e3; % convert to meters
-            smb = double(smb);
-        end
 
         [X, Y] = ndgrid(lon, lat);
 

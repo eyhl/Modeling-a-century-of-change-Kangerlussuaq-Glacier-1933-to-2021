@@ -1,7 +1,23 @@
-function [md] = temperature_correlation_model(md, M, validate_flag)
+function [md] = temperature_correlation_model(md, M, add_constant, validate_flag)
+    %{ 
+    This function extrapolates temperature field using a M'th order polynomial fit to the 
+    correlation between temperature field and bedrock topography.
+    Args:
+    md (struct): model object from ISSM with md.miscellaneous.dummy.temperature_field defined
+    M (integer): M'th order polynomial
+    add_constant (float): a constant degree offset to correct the extrapolation slightly. I found that adding 2.5 K
+                          makes the result more visually appealing.
+    validate_flag (bool): if true the function returns some diagnostics. 
+    NOTE: I also tried linear extrapolation / NN and such, this defintely looks better. 
+    %}
     
+    if nargin < 4
+        validate_flag = false;
+    end
+
     if nargin < 3
         validate_flag = false;
+        add_constant = 0;
     end
 
     %% LOAD DATA AND CREATE RELEVANT VARIABLES
@@ -68,7 +84,7 @@ function [md] = temperature_correlation_model(md, M, validate_flag)
         G_front = [G_front, bed_extrapolate.^n];
     end
     extrapolated_temperature = G_front * m;
-    extrapolated_temperature = extrapolated_temperature * temperature_data_std + temperature_data_mean;
+    extrapolated_temperature = extrapolated_temperature * temperature_data_std + temperature_data_mean + add_constant;
 
     if validate_flag
         temperature_field(extrapolated_pos) = extrapolated_temperature;    

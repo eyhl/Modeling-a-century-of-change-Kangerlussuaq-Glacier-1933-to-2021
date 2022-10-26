@@ -1,4 +1,4 @@
-function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, ref_end_time)
+function [smb_racmo_reconstructed, smb_total, smb_times] = reconstruct_racmo(md, start_time, final_time, ref_start_time, ref_end_time)
     ref_time_length = ref_end_time - ref_start_time;
     smb_total = md.smb.mass_balance(1:end - 1, :);
 
@@ -12,8 +12,8 @@ function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, re
     ref_smb_racmo = trapz(time_vector, smb_racmo_data, 2) / ref_time_length;
     
     % % % fix zeros in ocean in racmo data:
-    [front_area_smb, front_area_pos] = extrapolate_smb(md_racmo);
-    ref_smb_racmo(front_area_pos) = front_area_smb;
+    % [front_area_smb, front_area_pos] = extrapolate_smb(md_racmo);
+    % ref_smb_racmo(front_area_pos) = front_area_smb;                                                            
 
     % reference box smb
     md_box = md;
@@ -39,6 +39,13 @@ function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, re
     md.miscellaneous.dummy.ref_smb_racmo = ref_smb_racmo;
     md.miscellaneous.dummy.ref_smb_box = ref_smb_box;
 
+    % Extrapolate into fjord using avg racmo ref at front and anomaly
+    pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/ref_racmo_front.exp', 2));             
+    avg_smb_at_front = mean(ref_smb_racmo(pos)); % average in front area of ref racmo                                                                   
+    pos2 = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area_smb.exp', 2));
+    extrapolated_smb = avg_smb_at_front - smb_box_anomaly(pos2, :);                                                     
+    smb_racmo_reconstructed(pos2, :) = extrapolated_smb; 
+
     smb_total = cat(2, smb_racmo_reconstructed, smb_total);
     smb_times = [start_time + 1/24 : 1/12 : final_time + 1];
 
@@ -50,6 +57,7 @@ function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, re
 
     % set transient forcings
     % fprintf("data dimension = %d, time dimension = %d\n", size(smb_total, 2), size(smb_times, 2));
-    md.smb.mass_balance = [smb_total; ...
-                           smb_times];
+    
+    % md.smb.mass_balance = [smb_total; ...
+    %                        smb_times];
 end
