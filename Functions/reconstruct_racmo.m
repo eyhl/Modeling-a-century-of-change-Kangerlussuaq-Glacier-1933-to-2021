@@ -41,22 +41,15 @@ function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, re
 
     % Extrapolate into fjord using avg racmo ref at front and anomaly
     pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/ref_racmo_front.exp', 2));             
-    avg_smb_at_front = mean(ref_smb_racmo(pos)); % average in front area of ref racmo                                                                   
+    avg_smb_at_front = mean(ref_smb_racmo(pos)); % average in front area of ref racmo               
+    
+    % combine avg in front area with anomaly to get estimate for smb in retreated area
     pos2 = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area_smb.exp', 2));
     extrapolated_smb = avg_smb_at_front - smb_box_anomaly(pos2, :);                                                     
     smb_racmo_reconstructed(pos2, :) = extrapolated_smb; 
 
     smb_total = cat(2, smb_racmo_reconstructed, smb_total);
-    smb_times = [start_time + 1/24 : 1/12 : final_time + 1];
-
-    % tmp1 = ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area.exp', 2);
-    % tmp2 = smb_total == 0;
-    % for i=1:size(smb_total, 2)
-    %     pos = find(logical(tmp1) .* tmp2(:, i));
-    %     smb_total(pos) = 
-
-    % set transient forcings
-    % fprintf("data dimension = %d, time dimension = %d\n", size(smb_total, 2), size(smb_times, 2));
+    smb_times = [start_time + 1/24 : 1/12 : final_time + 1]; % +1 makes the final time be 2022.0
 
     md.smb.mass_balance = [smb_total; ...
                            smb_times];

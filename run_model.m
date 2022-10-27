@@ -101,8 +101,10 @@ function [md] = run_model(config_name, plotting_flag)
 
         md = parameterize(md, 'ParameterFiles/inversion_present_day.par');
 
-        % Outside to avoid having to write custom parametrize function. For now grid search over temp is also fine to start with.
-        md.materials.rheology_B = cuffey(273.15 + ice_temp) * ones(md.mesh.numberofvertices, 1);
+        % Set temperature field
+        md = interpTemperature(md);
+        temperature_field = md.miscellaneous.dummy.temperature_field;
+        md.materials.rheology_B = cuffey(temperature_field) .* ones(md.mesh.numberofvertices, 1);  % temperature field is already in Kelvin
 
         savemodel(org, md);
     end
@@ -141,7 +143,7 @@ function [md] = run_model(config_name, plotting_flag)
         friction_law = 'schoof';
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
         % md = loadmodel('/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat');
-        coefs = [4000, 2.2, 2.51e-9, 0.667]; % found through grid search %TODO: L-curve
+        coefs = [4000, 2.2, 2.51e-9, 0.667]; % TODO: MOVE TO CONFIG INPUT
         [md] = budd2schoof(md, coefs);
         savemodel(org, md);
         if plotting_flag
@@ -200,7 +202,6 @@ function [md] = run_model(config_name, plotting_flag)
         disp("Parameterizing to LIA initial state")
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
         validate_flag = false;
-
        
         disp("Extrapolating friction coefficient...")
         if strcmp(config.friction_extrapolation, "random_field")
@@ -227,7 +228,7 @@ function [md] = run_model(config_name, plotting_flag)
                 'colorbar', 'off', 'xtick', [], 'ytick', []); 
                 set(gca,'fontsize',12);
                 set(colorbar,'visible','off')
-                h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+                h = colorbar('Position', [0.1  0.5  0.75  0.01], 'Location', 'southoutside');
                 colormap('turbo'); 
                 exportgraphics(gcf, "budd_friction_extrapolated.png")
             end
