@@ -1,4 +1,4 @@
-function [md] = budd2schoof(md, coefs)
+function [md] = budd2schoof(md, coefs, cs_min, cs_max)
     % md = loadmodel("/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat");
 
     % Budd's Friction coefficient from inversion
@@ -9,8 +9,8 @@ function [md] = budd2schoof(md, coefs)
     % exponents in Budd's law
     r = 1;
     s = 1;
-    CS_min = 0.01;
-    CS_max = 1e4;
+    CS_min = cs_min;
+    CS_max = cs_max;
 
     % To compute the effective pressure
     p_ice   = md.constants.g*md.materials.rho_ice*md.geometry.thickness;
@@ -70,8 +70,13 @@ function [md] = budd2schoof(md, coefs)
     md.inversion.cost_functions_coefficients(:,1) = coefs(1); % 4000;
     md.inversion.cost_functions_coefficients(:,2) = coefs(2); % 1.5;
     md.inversion.cost_functions_coefficients(:,3) = coefs(3); % 2e-8;
-    pos=find(md.mask.ice_levelset>0);
-    md.inversion.cost_functions_coefficients(pos,1:2)=0;
+    
+    % remove non-ice and nans from misfit in cost function (will only rely on regularisation)
+    pos = find(md.mask.ice_levelset > 0);
+    md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
+
+    pos = find(isnan(md.inversion.vel_obs));
+    md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
     %Controls
     md.inversion.control_parameters={'FrictionC'};
@@ -80,7 +85,7 @@ function [md] = budd2schoof(md, coefs)
     md.inversion.min_parameters=CS_min*ones(md.mesh.numberofvertices,1);
     md.inversion.max_parameters=CS_max*ones(md.mesh.numberofvertices,1);
     md.inversion.control_scaling_factors=1;
-    md.inversion.dxmin = 0.01;
+    md.inversion.dxmin = 0.001;
     %Additional parameters
     md.stressbalance.restol=0.01;
     md.stressbalance.reltol=0.1;
@@ -98,55 +103,3 @@ function [md] = budd2schoof(md, coefs)
     % plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'figure', 43); %exportgraphics(gcf, 'vel.png')
     % plotmodel(md, 'data', md.results.StressbalanceSolution.FrictionC, 'figure', 44); %exportgraphics(gcf, 'vel.png')
 end
-
-
-
-	% % Set the friction law to schoof's
-    % md.friction=frictionschoof();
-    % md.friction.m = 1.0/3.0*ones(md.mesh.numberofelements,1);
-    % md.friction.Cmax = Cmax*ones(md.mesh.numberofvertices,1);
-    % md.friction.C = 2000*ones(md.mesh.numberofvertices,1);
-    % md.friction.coupling = 2;
-
-    % %No friction on PURELY ocean element
-    % pos_e = find(min(md.mask.ice_levelset(md.mesh.elements),[],2)<0);
-    % flags=ones(md.mesh.numberofvertices,1);
-    % flags(md.mesh.elements(pos_e,:))=0;
-    % md.friction.C(find(flags))=100;
-
-    % %Control general
-    % md.inversion=m1qn3inversion(md.inversion);
-    % md.inversion.iscontrol=1;
-    % md.verbose=verbose('solution',false,'control',true);
-    % md.transient.amr_frequency = 0;
-
-    % %Cost functions
-    % md.inversion.cost_functions=[101 103 501];
-    % md.inversion.cost_functions_coefficients=zeros(md.mesh.numberofvertices,numel(md.inversion.cost_functions));
-    % md.inversion.cost_functions_coefficients(:,1)=5000;
-    % md.inversion.cost_functions_coefficients(:,2)=1.1;
-    % md.inversion.cost_functions_coefficients(:,3)=2e-8;
-    % pos=find(md.mask.ice_levelset>0);
-    % md.inversion.cost_functions_coefficients(pos,1:2)=0;
-
-    % %Controls
-    % md.inversion.control_parameters={'FrictionC'};
-    % md.inversion.maxsteps=100;
-    % md.inversion.maxiter =100;
-    % md.inversion.min_parameters=CS_min*ones(md.mesh.numberofvertices,1);
-    % md.inversion.max_parameters=CS_max*ones(md.mesh.numberofvertices,1);
-    % md.inversion.control_scaling_factors=1;
-    % md.inversion.dxmin = 0.01;
-    % %Additional parameters
-    % md.stressbalance.restol=0.01;
-    % md.stressbalance.reltol=0.1;
-    % md.stressbalance.abstol=NaN;
-
-    % %Go solve
-    % md.cluster=cluster;
-    % md=solve(md,'sb');
-
-    % %Put results back into the model
-    % md.friction.C=md.results.StressbalanceSolution.FrictionC;
-    % md.initialization.vx=md.results.StressbalanceSolution.Vx;
-    % md.initialization.vy=md.results.StressbalanceSolution.Vy;

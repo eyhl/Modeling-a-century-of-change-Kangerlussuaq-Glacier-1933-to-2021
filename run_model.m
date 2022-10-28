@@ -25,7 +25,7 @@ function [md] = run_model(config_name, plotting_flag)
     friction_law = config.friction_law;
 
     % Inversion parameters
-    cf_weights = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3];
+    cf_weights = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3]; %TODO: CHANGE THIS 
     cs_min = config.cs_min;
     cs_max = config.cs_max;
     ref_smb_start_time = 1972; % don't change
