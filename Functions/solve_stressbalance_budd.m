@@ -17,7 +17,7 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max)
     pos = find(md.mask.ice_levelset > 0);
     md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
-    pos = find(isnan(md.inversion.vel_obs));
+    pos = find(isnan(md.inversion.vel_obs) | md.inversion.vel_obs == 0);
     md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
     %Controls

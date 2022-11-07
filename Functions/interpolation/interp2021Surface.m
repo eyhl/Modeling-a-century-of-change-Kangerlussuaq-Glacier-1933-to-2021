@@ -18,10 +18,16 @@ function [surface_interpolated] = interp2021Surface(md, mesh)
     F = scatteredInterpolant(x, y, topo, 'linear', 'linear');
 
     surface_interpolated = F(mesh_x, mesh_y);
+
+    % convert heights to reference to the geoid:
+    geoid = interpBmGreenland(mesh_x, mesh_y, 'geoid');
+
+    % NOTE: z_ellip = z_geoid + geoid. This is not super intuitive, but look at a drawing it makes sense
+    surface_interpolated = surface_interpolated - geoid; 
+
     % figure(2);
     % imagesc(x_lin, y_lin, flipud(surface_interpolated)); colorbar()
 
     % plotmodel(md, 'data', surface_interpolated, 'figure', 3); %exportgraphics(gcf, 'thick1.png')
     % plotmodel(md, 'data', isnan(surface_interpolated), 'figure', 4); %exportgraphics(gcf, 'thick1.png')
-
 end

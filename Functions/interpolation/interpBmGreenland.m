@@ -14,6 +14,10 @@ elseif strcmp(part, 'bed')
 elseif strcmp(part, 'surface')
     surface_data = double(ncread(ncdata, 'surface'));
     out = InterpFromGridToMesh(x_bm, y_bm, flipud(surface_data'), mesh_x, mesh_y, nan);
+
+elseif strcmp(part, 'geoid')
+    surface_data = double(ncread(ncdata, 'geoid'));
+    out = InterpFromGridToMesh(x_bm, y_bm, flipud(surface_data'), mesh_x, mesh_y, nan);
 end
 
 end

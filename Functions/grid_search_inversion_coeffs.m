@@ -1,17 +1,17 @@
 function [mae_list] = grid_search_inversion_coeffs(friction_law)
     if strcmp(friction_law, 'schoof')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
-        c_max_list = linspace(0.3, 1.2, 4);
+        c_max_list = 0.667; % linspace(0.3, 1.2, 4);
         coefficient_1 = 4000;
-        coefficient_2 = [2.2, 5.8]; % linspace(1, 7, 6);
-        coefficient_3 = logspace(-9, -3, 10);
+        coefficient_2 = [2.2]; % linspace(1, 7, 6);
+        coefficient_3 = logspace(-15, -1, 40); 
 
     elseif strcmp(friction_law, 'budd')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
         c_max_list = [NaN]; % array with length 1, budd does not have cmax
-        coefficient_1 = 4000;
-        coefficient_2 = linspace(0.5, 5, 6);
-        coefficient_3 = logspace(-9, -3, 10);
+        coefficient_1 = [8000];  %try 350, 1, 1e-12
+        coefficient_2 = [1.75]; % linspace(0.5, 5, 6);
+        coefficient_3 = logspace(-15, 1, 40); % 1.0608e-06
 
     else
         warning("Friction law not implemented")
@@ -23,13 +23,13 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
     mae_list = zeros(total_iterations, 1);
     coef_setting = zeros(total_iterations, 4);
     counter = 1;
-    fid = fopen(['coef_settings', friction_law, '.txt'],'w');
+    fid = fopen(['coef_settings_', friction_law, '.txt'],'w');
 
     tStart = tic;
-    for i=1:length(c_max_list)
+    for i=1:length(coefficient_1)
         for j=1:length(coefficient_2)
             for k=1:length(coefficient_3)
-                coefs = [coefficient_1, coefficient_2(j), coefficient_3(k), c_max_list(i)];
+                coefs = [coefficient_1(i), coefficient_2(j), coefficient_3(k), c_max_list(1)];
                 fprintf("Current coefficient setting: %s\n", num2str(coefs))
 
 
@@ -47,10 +47,13 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
                 mae_list(counter) = md_tmp.results.StressbalanceSolution.J(end, end); %mean(abs(misfit_velocity), 'omitnan');
 
                 fprintf("Misfit level: %.10f\n", mae_list(counter))
-
-                plotmodel(md_tmp, 'data', md_tmp.results.StressbalanceSolution.Vel, 'figure', 43, 'title', 'Vel'); exportgraphics(gcf, sprintf("vel_%d%d%d.png", i, j, k))
-                plotmodel(md_tmp, 'data', friction_field, 'figure', 44, 'title', 'fc'); exportgraphics(gcf, sprintf("fc_%d%d%d.png", i, j, k))
-                fprintf(fid, '%s %.2f %.2f %.2E %s\n', datetime, coefs(4), coefs(2), coefs(3), num2str(md_tmp.results.StressbalanceSolution.J(end, :)));
+                vel_tmp = md_tmp.results.StressbalanceSolution.Vel;
+                plotmodel(md_tmp, 'data', vel_tmp, 'figure', 43, 'title', 'Vel', 'levelset', md.mask.ice_levelset, 'gridded', 1); exportgraphics(gcf, sprintf("vel_%d%d%d.png", i, j, k - 1), 'Resolution', 200);
+                plotmodel(md_tmp, 'data', friction_field, 'figure', 44, 'title', 'fc', 'levelset', md.mask.ice_levelset, 'gridded', 1); exportgraphics(gcf, sprintf("fc_%d%d%d.png", i, j, k - 1), 'Resolution', 200);
+                save(sprintf("vel_%d%d%d.mat", i, j, k - 1), 'vel_tmp', '-v7.3');
+                save(sprintf("fc_%d%d%d.mat", i, j, k - 1), 'friction_field', '-v7.3');
+                % save setup
+                fprintf(fid, '%s %.2f %.2f %.4E %s\n', datetime, coefs(4), coefs(2), coefs(3), num2str(md_tmp.results.StressbalanceSolution.J(end, :)));
 
                 coef_setting(counter, :) = coefs;
                 counter = counter + 1;

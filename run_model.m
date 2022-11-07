@@ -25,9 +25,11 @@ function [md] = run_model(config_name, plotting_flag)
     friction_law = config.friction_law;
 
     % Inversion parameters
-    cf_weights = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3]; %TODO: CHANGE THIS 
-    cs_min = config.cs_min;
-    cs_max = config.cs_max;
+    % cf_weights = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3]; %TODO: CHANGE THIS 
+    budd_coeff = [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
+    schoof_coeff = [16000, 75, 5e-09, 0.8]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
+    cs_min = 0.01; %config.cs_min;
+    cs_max = 1e4; %config.cs_max;
     ref_smb_start_time = 1972; % don't change
     ref_smb_final_time = 1989; % don't change
 
@@ -113,7 +115,7 @@ function [md] = run_model(config_name, plotting_flag)
     if perform(org, 'budd')
 
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
-        md = solve_stressbalance(md, cf_weights, cs_min, cs_max);
+        md = solve_stressbalance_budd(md, budd_coeff, cs_min, cs_max);
         savemodel(org, md);
 
         if plotting_flag
@@ -143,8 +145,8 @@ function [md] = run_model(config_name, plotting_flag)
         friction_law = 'schoof';
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
         % md = loadmodel('/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat');
-        coefs = [4000, 2.2, 2.51e-9, 0.667]; % TODO: MOVE TO CONFIG INPUT
-        [md] = budd2schoof(md, coefs);
+        md = budd2schoof(md, schoof_coeff, cs_min, cs_max);
+        
         savemodel(org, md);
         if plotting_flag
             figure(3);
@@ -221,7 +223,7 @@ function [md] = run_model(config_name, plotting_flag)
         end
         
         if strcmp(config.friction_law, 'schoof')
-            md.friction.C(extrapolated_pos) = extrapolated_friction;
+            md.friction.C(extrapolated_pos) = extrapolated_friction + 1500;
             if plotting_flag
                 figure(5);
                 plotmodel(md, 'data', md.friction.C, 'title', 'Budd Friction Law', ...
@@ -274,6 +276,9 @@ function [md] = run_model(config_name, plotting_flag)
     %% 8 Transient: setup & run
     if perform(org, 'transient')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_fronts.mat');
+
+        md.timestepping.start_time = 1900;
+        md.timestepping.final_time = 1900.1;
 
         % meltingrate
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];

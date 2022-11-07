@@ -1,4 +1,4 @@
-function [md] = budd2schoof(md, coefs, cs_min, cs_max)
+function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
     % md = loadmodel("/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat");
 
     % Budd's Friction coefficient from inversion
@@ -6,7 +6,8 @@ function [md] = budd2schoof(md, coefs, cs_min, cs_max)
     % Compute the basal velocity
     ub = (md.results.StressbalanceSolution.Vx.^2+md.results.StressbalanceSolution.Vy.^2).^(0.5)./md.constants.yts;
     ub(md.mask.ice_levelset>0) = nan; % remove no ice region
-    % exponents in Budd's law
+    % exponents in Budd's lawDZ6b7#rG
+    
     r = 1;
     s = 1;
     CS_min = cs_min;
@@ -27,7 +28,7 @@ function [md] = budd2schoof(md, coefs, cs_min, cs_max)
     % Schoof's law
     n = 3.0;  % from Glen's flow law
     m = 1.0/n;
-    Cmax = coefs(4); % Iken's bound, scalar in this case for simplicity
+    Cmax = coeffs(4); % Iken's bound, scalar in this case for simplicity
 
     % Compute the friction coefficient of Schoof's law
     CS = (1./(ub./(taub.^n)-ub./((Cmax.*Neff)).^n) ).^(1/n);
@@ -67,9 +68,9 @@ function [md] = budd2schoof(md, coefs, cs_min, cs_max)
     %Cost functions
     md.inversion.cost_functions=[101 103 501];
     md.inversion.cost_functions_coefficients=zeros(md.mesh.numberofvertices,numel(md.inversion.cost_functions));
-    md.inversion.cost_functions_coefficients(:,1) = coefs(1); % 4000;
-    md.inversion.cost_functions_coefficients(:,2) = coefs(2); % 1.5;
-    md.inversion.cost_functions_coefficients(:,3) = coefs(3); % 2e-8;
+    md.inversion.cost_functions_coefficients(:,1) = coeffs(1); % 4000;
+    md.inversion.cost_functions_coefficients(:,2) = coeffs(2); % 1.5;
+    md.inversion.cost_functions_coefficients(:,3) = coeffs(3); % 2e-8;
     
     % remove non-ice and nans from misfit in cost function (will only rely on regularisation)
     pos = find(md.mask.ice_levelset > 0);
