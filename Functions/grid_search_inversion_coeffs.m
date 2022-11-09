@@ -1,22 +1,21 @@
 function [mae_list] = grid_search_inversion_coeffs(friction_law)
-    if strcmp(friction_law, 'schoof')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
-        c_max_list = 0.667; % linspace(0.3, 1.2, 4);
-        coefficient_1 = 4000;
-        coefficient_2 = [2.2]; % linspace(1, 7, 6);
-        coefficient_3 = logspace(-15, -1, 40); 
-
-    elseif strcmp(friction_law, 'budd')
+    if strcmp(friction_law, 'budd')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
         c_max_list = [NaN]; % array with length 1, budd does not have cmax
-        coefficient_1 = [8000];  %try 350, 1, 1e-12
-        coefficient_2 = [1.75]; % linspace(0.5, 5, 6);
-        coefficient_3 = logspace(-15, 1, 40); % 1.0608e-06
+        coefficient_1 = [16000];  %try 350, 1, 1e-12
+        coefficient_2 = [3.0]; % linspace(0.5, 5, 6);
+        coefficient_3 = [1e-9, logspace(-7, -1, 25), 1e1]; % 1.0608e-06
+    elseif strcmp(friction_law, 'schoof')
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        c_max_list = 0.7; % linspace(0.3, 1.2, 4);
+        coefficient_1 = 6000;
+        coefficient_2 = [1.5]; % linspace(1, 7, 6);
+        coefficient_3 = [1e-12, 1e-10, logspace(-9, -4, 30), -1e-2]; %logspace(-15, -1, 40); 
 
     else
         warning("Friction law not implemented")
     end
-    cluster = generic('name', oshostname(), 'np', 66);
+    cluster = generic('name', oshostname(), 'np', 35);
     md.cluster = cluster;
 
     total_iterations = length(c_max_list) * length(coefficient_1) * length(coefficient_2) * length(coefficient_3);

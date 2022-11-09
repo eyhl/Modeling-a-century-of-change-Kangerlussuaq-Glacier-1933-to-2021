@@ -43,7 +43,7 @@ function [total_misfit, model_norm, alphas, kappa] = l_curve_analysis(data_path,
         figure(90 + k)
         loglog(total_misfit, model_norm, 'LineStyle', 'none', 'Marker', '+')
         hold on
-        scatter(total_misfit(ireg_corner), model_norm(ireg_corner), 'ro')
+        % scatter(total_misfit(ireg_corner), model_norm(ireg_corner), 'ro')
         % disp(total_misfit(ireg_corner))
         % plot(synthetic_data, data_model, 'r');
         % title_string = sprintf('corner $\\alpha=$%.2E, misfit $\\mathcal{J}_0=%.2f$', reg_corner, total_misfit(ireg_corner));

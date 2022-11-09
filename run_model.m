@@ -26,8 +26,8 @@ function [md] = run_model(config_name, plotting_flag)
 
     % Inversion parameters
     % cf_weights = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3]; %TODO: CHANGE THIS 
-    budd_coeff = [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
-    schoof_coeff = [16000, 75, 5e-09, 0.8]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
+    budd_coeff = [16000, 3.0,  1.7783e-06];% v8 [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
+    schoof_coeff = [6000, 1.5, 5e-09, 0.7]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
     cs_min = 0.01; %config.cs_min;
     cs_max = 1e4; %config.cs_max;
     ref_smb_start_time = 1972; % don't change
@@ -76,7 +76,7 @@ function [md] = run_model(config_name, plotting_flag)
 
     clear steps;
 
-    cluster=generic('name', oshostname(), 'np', 66);
+    cluster=generic('name', oshostname(), 'np', 40);
     waitonlock = Inf;
 
     %% 1 Mesh: setup and refine
@@ -104,9 +104,24 @@ function [md] = run_model(config_name, plotting_flag)
         md = parameterize(md, 'ParameterFiles/inversion_present_day.par');
 
         % Set temperature field
+        disp("Setting ISMIP6 temperature...\n")
         md = interpTemperature(md);
-        temperature_field = md.miscellaneous.dummy.temperature_field;
-        md.materials.rheology_B = cuffey(temperature_field) .* ones(md.mesh.numberofvertices, 1);  % temperature field is already in Kelvin
+
+        disp("Extrapolating temperature into fjord...\n")
+        M = 1; % polynomial order
+        md = temperature_correlation_model(md, M, add_constant, plotting_flag);
+        md.materials.rheology_B = cuffey(md.miscellaneous.dummy.temperature_field) .* ones(md.mesh.numberofvertices, 1);  % temperature field is already in Kelvin
+        
+        if plotting_flag
+            figure(67);
+            plotmodel(md, 'data', md.materials.rheology_B, 'title', 'Rheology B', ...
+            'colorbar', 'off', 'xtick', [], 'ytick', []); 
+            set(gca,'fontsize',12);
+            set(colorbar,'visible','off')
+            h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+            colormap('turbo'); 
+            exportgraphics(gcf, "rheology_B_extrapolated.png")
+        end
 
         savemodel(org, md);
     end
@@ -226,13 +241,13 @@ function [md] = run_model(config_name, plotting_flag)
             md.friction.C(extrapolated_pos) = extrapolated_friction + 1500;
             if plotting_flag
                 figure(5);
-                plotmodel(md, 'data', md.friction.C, 'title', 'Budd Friction Law', ...
+                plotmodel(md, 'data', md.friction.C, 'title', 'Schoof Friction Law', ...
                 'colorbar', 'off', 'xtick', [], 'ytick', []); 
                 set(gca,'fontsize',12);
                 set(colorbar,'visible','off')
                 h = colorbar('Position', [0.1  0.5  0.75  0.01], 'Location', 'southoutside');
                 colormap('turbo'); 
-                exportgraphics(gcf, "budd_friction_extrapolated.png")
+                exportgraphics(gcf, "schoof_friction_extrapolated.png")
             end
             
         elseif strcmp(config.friction_law, 'budd')
@@ -250,10 +265,6 @@ function [md] = run_model(config_name, plotting_flag)
         else
             warning('Friction law not recignised, choose schoof or budd')
         end
-
-        disp("Extrapolating temperature field...\n")
-        M = 1; % polynomial order
-        % md = temperature_correlation_model(md, M, add_constant, validate_flag);
 
         savemodel(org, md);
     end

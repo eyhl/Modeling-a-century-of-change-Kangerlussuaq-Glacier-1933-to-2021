@@ -85,9 +85,9 @@ function [md] = temperature_correlation_model(md, M, add_constant, validate_flag
     end
     extrapolated_temperature = G_front * m;
     extrapolated_temperature = extrapolated_temperature * temperature_data_std + temperature_data_mean + add_constant;
+    temperature_field(extrapolated_pos) = extrapolated_temperature;    
 
     if validate_flag
-        temperature_field(extrapolated_pos) = extrapolated_temperature;    
         title_string = sprintf('MAE = %.2f', mae);
         plotmodel(md, 'data', temperature_field, 'figure', 82, 'title', title_string, ...
         'colorbar', 'off', 'xtick', [], 'ytick', []); 
@@ -100,5 +100,5 @@ function [md] = temperature_correlation_model(md, M, add_constant, validate_flag
         expdisp('/data/eigil/work/lia_kq/Exp/temperature_validation.exp', 'linewidth', 1, 'linestyle', 'r--')
         exportgraphics(gcf, "temp_field_poly.png")
     end
-
+    md.miscellaneous.dummy.temperature_field = temperature_field;
 end
