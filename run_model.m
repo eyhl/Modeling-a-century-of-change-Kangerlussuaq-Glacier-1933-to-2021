@@ -26,10 +26,18 @@ function [md] = run_model(config_name, plotting_flag)
 
     % Inversion parameters
     % cf_weights = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3]; %TODO: CHANGE THIS 
-    budd_coeff = [16000, 3.0,  1.7783e-06];% v8 [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
-    schoof_coeff = [6000, 1.5, 5e-09, 0.7]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
-    cs_min = 0.01; %config.cs_min;
-    cs_max = 1e4; %config.cs_max;
+    budd_coeff = [16000, 3.0,  1.7783e-06]; % newest: [16000, 3.0,  1.7783e-06];% v8 [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
+    schoof_coeff = [5000, 2.0, 6.3096e-08, 0.6]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
+
+    if strcmp(config.friction_law, 'budd')
+        cs_min = 0.01; %config.cs_min;
+        cs_max = 1e4; %config.cs_max;
+        display_coefs = num2str(budd_coeff);
+    elseif strcmp(config.friction_law, 'schoof')
+        cs_min = 0.01; %config.cs_min;
+        cs_max = 1e4; %config.cs_max;
+        display_coefs = num2str(schoof_coeff);
+    end
     ref_smb_start_time = 1972; % don't change
     ref_smb_final_time = 1989; % don't change
 
@@ -71,8 +79,13 @@ function [md] = run_model(config_name, plotting_flag)
 
     % Organizer
     org = organizer('repository', ['./Models'], 'prefix', ['Model_' glacier '_'], 'steps', steps); 
-    fprintf("Running model from %d to %d\n", start_time, final_time);
-    fprintf("with computation steps %s\n", config.ran_steps);
+    fprintf("Running model from %d to %d, with:\n", start_time, final_time);
+    fprintf(" - algorithm steps %s\n", config.ran_steps);
+    fprintf(" - friction law: %s\n", config.friction_law);
+    fprintf("   - parameters: %s\n", display_coefs);
+    fprintf("   - [CS_min, CS_max] = [%.3g, %.3g]\n", cs_min, cs_max);
+
+
 
     clear steps;
 

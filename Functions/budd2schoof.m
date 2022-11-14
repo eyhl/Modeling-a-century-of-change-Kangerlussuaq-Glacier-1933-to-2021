@@ -76,7 +76,7 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
     pos = find(md.mask.ice_levelset > 0);
     md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
-    pos = find(isnan(md.inversion.vel_obs));
+    pos = find(isnan(md.inversion.vel_obs) | md.inversion.vel_obs == 0);
     md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
     %Controls
@@ -86,7 +86,8 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
     md.inversion.min_parameters=CS_min*ones(md.mesh.numberofvertices,1);
     md.inversion.max_parameters=CS_max*ones(md.mesh.numberofvertices,1);
     md.inversion.control_scaling_factors=1;
-    md.inversion.dxmin = 0.001;
+    md.inversion.gttol = 1e-3;
+    md.inversion.dxmin = 1e-10;
     %Additional parameters
     md.stressbalance.restol=0.01;
     md.stressbalance.reltol=0.1;

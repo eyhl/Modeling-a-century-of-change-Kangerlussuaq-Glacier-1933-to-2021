@@ -6,16 +6,16 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
         coefficient_2 = [3.0]; % linspace(0.5, 5, 6);
         coefficient_3 = [1e-9, logspace(-7, -1, 25), 1e1]; % 1.0608e-06
     elseif strcmp(friction_law, 'schoof')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
-        c_max_list = 0.7; % linspace(0.3, 1.2, 4);
-        coefficient_1 = 6000;
-        coefficient_2 = [1.5]; % linspace(1, 7, 6);
-        coefficient_3 = [1e-12, 1e-10, logspace(-9, -4, 30), -1e-2]; %logspace(-15, -1, 40); 
+        md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
+        c_max_list = [0.2, 0.4, 0.6, 0.7, 0.8]; %linspace(0.15, 0.84, 6);
+        coefficient_1 = [5000]; %måske ned
+        coefficient_2 = [2.0, 5.0]; % måske op linspace(1, 7, 6);
+        coefficient_3 = [logspace(-9, -5, 20), 1e-3, 1e-1]; %logspace(-15, -1, 40); 
 
     else
         warning("Friction law not implemented")
     end
-    cluster = generic('name', oshostname(), 'np', 35);
+    cluster = generic('name', oshostname(), 'np', 30);
     md.cluster = cluster;
 
     total_iterations = length(c_max_list) * length(coefficient_1) * length(coefficient_2) * length(coefficient_3);
@@ -25,10 +25,10 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
     fid = fopen(['coef_settings_', friction_law, '.txt'],'w');
 
     tStart = tic;
-    for i=1:length(coefficient_1)
+    for i=1:length(c_max_list)
         for j=1:length(coefficient_2)
             for k=1:length(coefficient_3)
-                coefs = [coefficient_1(i), coefficient_2(j), coefficient_3(k), c_max_list(1)];
+                coefs = [coefficient_1(1), coefficient_2(j), coefficient_3(k), c_max_list(i)];
                 fprintf("Current coefficient setting: %s\n", num2str(coefs))
 
 
@@ -53,9 +53,11 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
                 save(sprintf("fc_%d%d%d.mat", i, j, k - 1), 'friction_field', '-v7.3');
                 % save setup
                 fprintf(fid, '%s %.2f %.2f %.4E %s\n', datetime, coefs(4), coefs(2), coefs(3), num2str(md_tmp.results.StressbalanceSolution.J(end, :)));
-
+                
                 coef_setting(counter, :) = coefs;
                 counter = counter + 1;
+
+                %save(sprintf('md%d', counter), 'md_tmp');
         end
     end
 end
@@ -78,3 +80,12 @@ fprintf('%d minutes and %f seconds\n', floor(tEnd/60), rem(tEnd,60));
 % 101: SurfaceAbsVelMisfit
 % 103: SurfaceLogVelMisfit
 % 501: DragCoefficientAbsGradient
+
+
+
+
+
+
+
+
+
