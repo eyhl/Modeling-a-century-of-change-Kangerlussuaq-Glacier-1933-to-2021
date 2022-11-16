@@ -16,12 +16,13 @@ function [total_misfit, model_norm, alphas, kappa] = l_curve_analysis(data_path,
     N = height(data_table) / n_alphas;
     
     k = 1;
+    figure(777);
     for i = 1:N
         alphas = data_table.Var5(i + n_alphas * (i - 1) : n_alphas +  n_alphas * (i - 1));
         misfit = data_table.Var6(i + n_alphas * (i - 1) : n_alphas +  n_alphas * (i - 1));
         log_misfit = data_table.Var7(i + n_alphas * (i - 1) : n_alphas +  n_alphas * (i - 1));
         model_norm = data_table.Var8(i + n_alphas * (i - 1) : n_alphas +  n_alphas * (i - 1));
-
+        c_max = data_table.Var3(i + n_alphas * (i - 1))
         model_norm = model_norm ./ alphas;
         total_misfit = misfit + log_misfit;
 
@@ -40,7 +41,7 @@ function [total_misfit, model_norm, alphas, kappa] = l_curve_analysis(data_path,
         [reg_corner, ireg_corner, kappa] = l_curve_corner(total_misfit, model_norm, alphas);
 
 
-        figure(90 + k)
+        subplot(1, 1, k)
         loglog(total_misfit, model_norm, 'LineStyle', 'none', 'Marker', '+')
         hold on
         % scatter(total_misfit(ireg_corner), model_norm(ireg_corner), 'ro')
@@ -56,6 +57,8 @@ function [total_misfit, model_norm, alphas, kappa] = l_curve_analysis(data_path,
 		'FontSize',10,'HorizontalAlignment','left','VerticalAlignment','Middle')
         xlabel('$\mathrm{log}(\mathcal{J}_0$)','Interpreter','latex')
         ylabel('$\mathrm{log}(\mathcal{R})$','Interpreter','latex')
+        title(sprintf('$C_{max}=%.2f$', c_max),'Interpreter','latex');
+
         k = k + 1;
 
         hold off

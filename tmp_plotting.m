@@ -1,6 +1,9 @@
 function [] = tmp_plotting(absolute, zoom, cval)
     n_alphas = 15;
     res = 300;
+    % Cmax_list = [0.6000, 0.6300, 0.6500, 0.6800, 0.7100, 0.7300, 0.7600, 0.7900, 0.8100, 0.8400];
+    Cmax_list = [0.7400, 0.7543, 0.7686, 0.7829, 0.7971, 0.8114, 0.8257, 0.8400, 0.8543, 0.8686, 0.8829, 0.8971, 0.9114, 0.9257, 0.9400];
+
     if nargin < 1
         absolute = false
     end
@@ -51,6 +54,9 @@ function [] = tmp_plotting(absolute, zoom, cval)
     else
         for i=2:n_alphas+1
             disp(i-1)
+            md1 = loadmodel(sprintf("Results/grid_search_schoof/schoof10/models/md%d.mat", i));
+            disp(md1.inversion.cost_functions_coefficients(1, 3))
+            
             fprintf("md%d.mat\n", i);
             fprintf("md%d.mat\n", i + n_alphas);
             fprintf("md%d.mat\n", i + n_alphas * 2);
@@ -66,7 +72,7 @@ function [] = tmp_plotting(absolute, zoom, cval)
             fprintf("md%d.mat\n", i + n_alphas * 12);
             fprintf("md%d.mat\n", i + n_alphas * 13);
             fprintf("md%d.mat\n\n", i + n_alphas * 14);
-
+            
             md1 = loadmodel(sprintf("Results/grid_search_schoof/schoof10/models/md%d.mat", i));
             md2 = loadmodel(sprintf("Results/grid_search_schoof/schoof10/models/md%d.mat", i + n_alphas));
             md3 = loadmodel(sprintf("Results/grid_search_schoof/schoof10/models/md%d.mat", i + n_alphas * 2));
@@ -160,9 +166,6 @@ function [] = tmp_plotting(absolute, zoom, cval)
             maf14 = mean(abs((misfit14(misfit_at_front_pos))));
             maf15 = mean(abs((misfit15(misfit_at_front_pos))));
 
-            % Cmax_list = [0.6000, 0.6300, 0.6500, 0.6800, 0.7100, 0.7300, 0.7600, 0.7900, 0.8100, 0.8400];
-            Cmax_list = [0.7400, 0.7543, 0.7686, 0.7829, 0.7971, 0.8114, 0.8257, 0.8400, 0.8543, 0.8686, 0.8829, 0.8971, 0.9114, 0.9257, 0.9400];
-
             title_budd = sprintf('Budd, MAE_f=%.2f', maf_budd);
             title_1 = sprintf('MAE_f=%.2f, Cmax=%.2f', maf1, Cmax_list(1));
             title_2 = sprintf('MAE_f=%.2f, Cmax=%.2f', maf2, Cmax_list(2));
@@ -179,8 +182,6 @@ function [] = tmp_plotting(absolute, zoom, cval)
             title_13 = sprintf('MAE_f=%.2f, Cmax=%.2f', maf13, Cmax_list(13));
             title_14 = sprintf('MAE_f=%.2f, Cmax=%.2f', maf14, Cmax_list(14));
             title_15 = sprintf('MAE_f=%.2f, Cmax=%.2f', maf15, Cmax_list(15));
-
-            % TODO: plot J contours as a function of cmax and alpha
 
             plotmodel(md1,  ...
             'data', vel_budd, 'title', title_budd,  ...
@@ -296,23 +297,6 @@ function [] = tmp_plotting(absolute, zoom, cval)
             'data', md14.friction.C, 'title', title_14, ...
             'data', md15.friction.C, 'title', title_15, ...
              'axis#all', zoom, 'fontsize#all', 7, 'log#all', 10, 'caxis#all', [0.001 1e4], 'figure', 125); colormap('turbo'); exportgraphics(gcf, sprintf("friction_C_log%d.png", i - 1), 'Resolution', res);
-
-            % misfit1 = abs(misfit1);
-            % misfit2 = abs(misfit2);
-            % misfit3 = abs(misfit3);
-            % misfit4 = abs(misfit4);
-            % misfit5 = abs(misfit5);
-            % plotmodel(md1, 'data', misfit1, 'data', misfit2, 'data', misfit3, 'data', misfit4, 'data', misfit5, 'axis#all', zoom, 'caxis#all', cval(1, :), 'figure', 120); exportgraphics(gcf, sprintf("abs_misfit%d.png", i - 1), 'Resolution', res);
         end
-
     end
-    % md1.inversion.cost_functions_coefficients(1, 3)
-    % md2.inversion.cost_functions_coefficients(1, 3)
-    % md3.inversion.cost_functions_coefficients(1, 3)
-    % md4.inversion.cost_functions_coefficients(1, 3)
-    % md5.inversion.cost_functions_coefficients(1, 3)
-
-    % plotmodel(md1, 'data', md1.inversion.cost_functions_coefficients(:, 3), 'data', md2.inversion.cost_functions_coefficients(:, 3), 'data', md3.inversion.cost_functions_coefficients(:, 3), ...
-    % 'data', md4.inversion.cost_functions_coefficients(:, 3), 'data', md5.inversion.cost_functions_coefficients(:, 3), 'axis#all', zoom, 'figure', 122)
-
 end

@@ -7,11 +7,11 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
         coefficient_3 = [1e-9, logspace(-7, -1, 25), 1e1]; % 1.0608e-06
     elseif strcmp(friction_law, 'schoof')
         md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
-        c_max_list = linspace(0.74, 0.94, 15);
+        c_max_list = [0.81]; %linspace(0.2, 1.0, 15);
         coefficient_1 = [2500]; %måske ned
         coefficient_2 = [2.0]; % måske op linspace(1, 7, 6);
-        % coefficient_3 = logspace(-8, -7, 15)%[logspace(-9, -5, 20), 1e-3, 1e-1]; %logspace(-15, -1, 40); 
-        coefficient_3 = linspace(1e-8, 8e-8, 15);
+        coefficient_3 = [logspace(-11, -9, 3), 5e-9, linspace(1e-8, 1e-7, 10), 2e-7, 3e-7, 4e-7, 5e-7,logspace(-6, -1, 6)]; %logspace(-15, -1, 40); 
+        % coefficient_3 = linspace(1e-8, 8e-8, 15);
     else
         warning("Friction law not implemented")
     end

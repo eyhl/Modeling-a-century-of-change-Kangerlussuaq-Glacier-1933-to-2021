@@ -27,7 +27,7 @@ function [md] = run_model(config_name, plotting_flag)
     % Inversion parameters
     % cf_weights = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3]; %TODO: CHANGE THIS 
     budd_coeff = [16000, 3.0,  1.7783e-06]; % newest: [16000, 3.0,  1.7783e-06];% v8 [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
-    schoof_coeff = [2500, 2.0, 2.3096e-08, 0.80]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
+    schoof_coeff = [2500, 2.0, 3e-08, 0.811428571428571]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
 
     if strcmp(config.friction_law, 'budd')
         cs_min = 0.01; %config.cs_min;
@@ -172,10 +172,11 @@ function [md] = run_model(config_name, plotting_flag)
     %% 4 Friction law setup: Schoof
     if perform(org, 'schoof')
         friction_law = 'schoof';
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
-        % md.toolkits.DefaultAnalysis=bcgslbjacobioptions(); % TODO: temporary, should be activated for all mds
-        % md = loadmodel('/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat');
-        md.toolkits
+        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
+        md.toolkits.DefaultAnalysis=bcgslbjacobioptions(); % TODO: temporary, should be activated for all mds ALSO np in cluster does not get activated before in the end!!
+        md.cluster = cluster;
+
         md = budd2schoof(md, schoof_coeff, cs_min, cs_max);
         
         savemodel(org, md);
