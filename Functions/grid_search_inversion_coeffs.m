@@ -7,15 +7,16 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
         coefficient_3 = [1e-9, logspace(-7, -1, 25), 1e1]; % 1.0608e-06
     elseif strcmp(friction_law, 'schoof')
         md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
-        c_max_list = [0.2, 0.4, 0.6, 0.7, 0.8]; %linspace(0.15, 0.84, 6);
-        coefficient_1 = [5000]; %måske ned
-        coefficient_2 = [2.0, 5.0]; % måske op linspace(1, 7, 6);
-        coefficient_3 = [logspace(-9, -5, 20), 1e-3, 1e-1]; %logspace(-15, -1, 40); 
-
+        c_max_list = linspace(0.74, 0.94, 15);
+        coefficient_1 = [2500]; %måske ned
+        coefficient_2 = [2.0]; % måske op linspace(1, 7, 6);
+        % coefficient_3 = logspace(-8, -7, 15)%[logspace(-9, -5, 20), 1e-3, 1e-1]; %logspace(-15, -1, 40); 
+        coefficient_3 = linspace(1e-8, 8e-8, 15);
     else
         warning("Friction law not implemented")
     end
     cluster = generic('name', oshostname(), 'np', 30);
+    md.toolkits.DefaultAnalysis=bcgslbjacobioptions();
     md.cluster = cluster;
 
     total_iterations = length(c_max_list) * length(coefficient_1) * length(coefficient_2) * length(coefficient_3);
@@ -33,11 +34,11 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
 
 
                 if strcmp(friction_law, 'schoof')
-                    [md_tmp] = budd2schoof(md, coefs, 0.01, 1e4);
+                    [md_tmp] = budd2schoof(md, coefs, 0.001, 1e4);
                     friction_field = md_tmp.friction.C;
                 elseif strcmp(friction_law, 'budd')
                     md_tmp = solve_stressbalance_budd(md,  coefs, 0.01, 1e4);
-                    friction_field = md.friction.coefficient;
+                    friction_field = md_tmp.friction.coefficient;
                 else
                     warning("Friction law not implemented")
                 end
@@ -47,8 +48,8 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
 
                 fprintf("Misfit level: %.10f\n", mae_list(counter))
                 vel_tmp = md_tmp.results.StressbalanceSolution.Vel;
-                plotmodel(md_tmp, 'data', vel_tmp, 'figure', 43, 'title', 'Vel', 'levelset', md.mask.ice_levelset, 'gridded', 1); exportgraphics(gcf, sprintf("vel_%d%d%d.png", i, j, k - 1), 'Resolution', 200);
-                plotmodel(md_tmp, 'data', friction_field, 'figure', 44, 'title', 'fc', 'levelset', md.mask.ice_levelset, 'gridded', 1); exportgraphics(gcf, sprintf("fc_%d%d%d.png", i, j, k - 1), 'Resolution', 200);
+                plotmodel(md_tmp, 'data', vel_tmp, 'figure', 43, 'title', 'Vel', 'levelset', md_tmp.mask.ice_levelset, 'gridded', 1); exportgraphics(gcf, sprintf("vel_%d%d%d.png", i, j, k - 1), 'Resolution', 200);
+                plotmodel(md_tmp, 'data', friction_field, 'figure', 44, 'title', 'fc', 'levelset', md_tmp.mask.ice_levelset, 'gridded', 1); exportgraphics(gcf, sprintf("fc_%d%d%d.png", i, j, k - 1), 'Resolution', 200);
                 save(sprintf("vel_%d%d%d.mat", i, j, k - 1), 'vel_tmp', '-v7.3');
                 save(sprintf("fc_%d%d%d.mat", i, j, k - 1), 'friction_field', '-v7.3');
                 % save setup
@@ -57,7 +58,7 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
                 coef_setting(counter, :) = coefs;
                 counter = counter + 1;
 
-                %save(sprintf('md%d', counter), 'md_tmp');
+                save(sprintf('md%d', counter), 'md_tmp');
         end
     end
 end

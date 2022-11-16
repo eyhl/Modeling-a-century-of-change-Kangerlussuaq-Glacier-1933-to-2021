@@ -87,14 +87,14 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
     md.inversion.max_parameters=CS_max*ones(md.mesh.numberofvertices,1);
     md.inversion.control_scaling_factors=1;
     md.inversion.gttol = 1e-3;
-    md.inversion.dxmin = 1e-10;
+    md.inversion.dxmin = 1e-20;
     %Additional parameters
     md.stressbalance.restol=0.01;
     md.stressbalance.reltol=0.1;
     md.stressbalance.abstol=NaN;
 
     %Go solve
-    md=solve(md,'sb');
+    md=solve(md, 'sb');
 
     %Put results back into the model
     md.friction.C = md.results.StressbalanceSolution.FrictionC;
