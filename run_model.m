@@ -253,9 +253,12 @@ function [md] = run_model(config_name, plotting_flag)
         else
             warning("Invalid extrapolation method from config file. Choose random_field, linear or constant")
         end
+
+        % set values under cs min to cs min
+        extrapolated_friction(extrapolated_friction < cs_min) = cs_min;
         
         if strcmp(config.friction_law, 'schoof')
-            md.friction.C(extrapolated_pos) = extrapolated_friction + 1500;
+            md.friction.C(extrapolated_pos) = extrapolated_friction;
             if plotting_flag
                 figure(5);
                 plotmodel(md, 'data', md.friction.C, 'title', 'Schoof Friction Law', ...

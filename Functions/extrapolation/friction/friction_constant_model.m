@@ -22,17 +22,16 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_constant_mode
     % preprocess model data
     friction_data = friction_field(friction_data_pos);
     mean_friction = mean(friction_data, 1);
-    extrapolated_friction = ones(length(friction_data), 1) .* mean_friction;
-
-    % preprocess validation data
-    friction_val = friction_field(friction_validation);
+    extrapolated_friction = ones(length(friction_field(extrapolated_pos)), 1) .* mean_friction;
 
     if validate_flag
+        % preprocess validation data
+        friction_val = friction_field(friction_validation);
+        
         %% Validate
         mae = mean(abs(friction_val - ones(length(friction_val), 1) .* mean_friction));
 
-        friction_field(extrapolated_pos) = mean_friction;    
-        friction_field(friction_field <= cs_min) = cs_min;
+        
         title_string = sprintf('MAE = %.2f', mae);
         plotmodel(md, 'data', friction_field, 'figure', 81, 'title', title_string, ...
         'colorbar', 'off', 'xtick', [], 'ytick', []); 
