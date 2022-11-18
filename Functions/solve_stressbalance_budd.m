@@ -27,7 +27,7 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max)
     md.inversion.min_parameters = cb_min * ones(md.mesh.numberofvertices, 1);
     md.inversion.max_parameters = cb_max * ones(md.mesh.numberofvertices, 1);
     md.inversion.control_scaling_factors = 1;
-    md.inversion.dxmin = 0.001;
+    md.inversion.dxmin = 1e-20;
 
     %Additional parameters
     md.stressbalance.restol = 0.01; % mechanical equilibrium residual convergence criterion

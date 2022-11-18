@@ -1,36 +1,40 @@
 function [surface_interpolated] = interpLiaSurface(mesh_x, mesh_y)
-
-    % md = loadmodel('Models/Model_kangerlussuaq_friction.mat');
     data = load('Data/shape/kauq/KG_surface_1900b.txt');
     x = data(:, 1);
     y = data(:, 2);
     topo = data(:, 3);
 
-
     x_lin = linspace(min(x), max(x), 600);  % I think i chose 600 is arbitrarily, but sufficient
     y_lin = linspace(min(y), max(y), 600);
     [x_grid, y_grid] = meshgrid(x_lin, y_lin);
     topo_grid = griddata(x, y, topo, x_grid, y_grid);
-    % imagesc(x_grid, y_grid, topo_grid); exportgraphics(gcf, 'test.png');
 
     surface_interpolated = InterpFromGridToMesh(x_lin', y_lin', topo_grid, mesh_x, mesh_y, 0);
-    % plotmodel(md, 'data', surface_interpolated, 'figure', 111); %exportgraphics(gcf, 'thick1.png')
 
+    %% Missing values
+    % there is missing surface elevation data on the edges of the domain (set to 0) so we want to interpolate those
+    % we want to avoid touching the front area so I have made an exp for that:
     not_front_area = ~ContourToNodes(mesh_x, mesh_y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_large.exp', 2);
 
-    % fix edges
-    missing_surface = surface_interpolated > 10;
-    pos1 = find(missing_surface & not_front_area);
+    % Find low surface elevation everywhere but the front area, 10 meters is a buffer.
+    known_surface = surface_interpolated > 10;
+    pos1 = find(known_surface & not_front_area);
     missing_surface = surface_interpolated < 10;
     pos2 = find(missing_surface & not_front_area);
 
-    interpolator_data = surface_interpolated(pos1);
-    F = scatteredInterpolant(mesh_x(pos1), mesh_y(pos1), interpolator_data, 'natural', 'nearest');
+    % interpolate
+    F = scatteredInterpolant(mesh_x(pos1), mesh_y(pos1), surface_interpolated(pos1), 'natural', 'nearest');
     val = F(mesh_x(pos2), mesh_y(pos2));
     surface_interpolated(pos2) = val;
 
-    % plotmodel(md, 'data', surface_interpolated, 'figure', 2); %exportgraphics(gcf, 'thick1.png')
-    % plotmodel(md, 'data', md.geometry.surface, 'figure', 3); %exportgraphics(gcf, 'thick2.png')
-
-    % scatter(md.mesh.x, md.mesh.y, 5, surface_interpolated); exportgraphics(gcf, 'test.png');
+    %% Missing values at the front
+    % The 1900 front position and surface observation does not align perfectly, so there is an area
+    % between front position and surface != 0 where the surface is 0. The most safe thing would be
+    % to define this area in a general manner, but as there is no 0's left, except at the front, so
+    % we will be able to make a boolean mask. 
+    pos1 = find(surface_interpolated ~= 0);
+    pos2 = find(surface_interpolated == 0);
+    F = scatteredInterpolant(mesh_x(pos1), mesh_y(pos1), surface_interpolated(pos1), 'natural', 'nearest');
+    val = F(mesh_x(pos2), mesh_y(pos2));
+    surface_interpolated(pos2) = val;
 end

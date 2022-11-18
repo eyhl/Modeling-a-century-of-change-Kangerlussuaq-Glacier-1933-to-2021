@@ -135,7 +135,8 @@ function [md] = run_model(config_name, plotting_flag)
             colormap('turbo'); 
             exportgraphics(gcf, "rheology_B_extrapolated.png")
         end
-
+        md.toolkits.DefaultAnalysis=bcgslbjacobioptions();
+        md.cluster = cluster;
         savemodel(org, md);
     end
 
@@ -143,7 +144,6 @@ function [md] = run_model(config_name, plotting_flag)
     if perform(org, 'budd')
 
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
-        md.toolkits.DefaultAnalysis=bcgslbjacobioptions(); % TODO: temporary, should be activated for all mds
         md = solve_stressbalance_budd(md, budd_coeff, cs_min, cs_max);
         savemodel(org, md);
 
@@ -174,9 +174,6 @@ function [md] = run_model(config_name, plotting_flag)
         friction_law = 'schoof';
         % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
         md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
-        md.toolkits.DefaultAnalysis=bcgslbjacobioptions(); % TODO: temporary, should be activated for all mds ALSO np in cluster does not get activated before in the end!!
-        md.cluster = cluster;
-
         md = budd2schoof(md, schoof_coeff, cs_min, cs_max);
         
         savemodel(org, md);
@@ -232,7 +229,8 @@ function [md] = run_model(config_name, plotting_flag)
     %% 6 Parameterize LIA, extrapolate friction coefficient to LIA front
     if perform(org, 'lia_param')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
-        
+        md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat'); %TODO: DELETE
+
         disp("Parameterizing to LIA initial state")
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
         validate_flag = false;
@@ -285,6 +283,15 @@ function [md] = run_model(config_name, plotting_flag)
         else
             warning('Friction law not recignised, choose schoof or budd')
         end
+
+        % CHECK INITIAL STATE:
+        md.inversion.iscontrol = 0;
+        md = solve(md, 'sb');
+        plotmodel(md, 'data', log(md.friction.coefficient)./log(10), 'title', 'FC', ...
+        'data', md.results.StressbalanceSolution.Vel, 'xtick', [], 'ytick', [], 'figure', 666); 
+        set(gca,'fontsize',12);
+        colormap('turbo'); 
+        exportgraphics(gcf, "initial_step.png")
 
         savemodel(org, md);
     end

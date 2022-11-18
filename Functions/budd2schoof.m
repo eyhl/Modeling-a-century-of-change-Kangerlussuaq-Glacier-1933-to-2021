@@ -3,7 +3,15 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
 
     % Budd's Friction coefficient from inversion
     CB = md.friction.coefficient;
-    % Compute the basal velocity
+d.materials.rho_water*md.constants.g*(0-md.geometry.base);
+    % water pressure can not be positive
+    p_water(p_water<0) = 0;
+    % effective pressure
+    Neff = p_ice - p_water;
+    Neff(Neff<md.friction.effective_pressure_limit) = md.friction.effective_pressure_limit;
+
+    % basal shear stress from Budd's law
+    taub = CB.^2.*Neff.^r.*ub.^s;    % Compute the basal velocity
     ub = (md.results.StressbalanceSolution.Vx.^2+md.results.StressbalanceSolution.Vy.^2).^(0.5)./md.constants.yts;
     ub(md.mask.ice_levelset>0) = nan; % remove no ice region
     % exponents in Budd's lawDZ6b7#rG
@@ -15,15 +23,7 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
 
     % To compute the effective pressure
     p_ice   = md.constants.g*md.materials.rho_ice*md.geometry.thickness;
-    p_water = md.materials.rho_water*md.constants.g*(0-md.geometry.base);
-    % water pressure can not be positive
-    p_water(p_water<0) = 0;
-    % effective pressure
-    Neff = p_ice - p_water;
-    Neff(Neff<md.friction.effective_pressure_limit) = md.friction.effective_pressure_limit;
-
-    % basal shear stress from Budd's law
-    taub = CB.^2.*Neff.^r.*ub.^s;
+    p_water = m
 
     % Schoof's law
     n = 3.0;  % from Glen's flow law

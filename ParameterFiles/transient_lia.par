@@ -5,7 +5,7 @@ md.transient.ismovingfront = 1;
 %% Interpolating mask
 disp('   Interpolating mask');
 
-% set ice levelset corresponding to lia
+%% set ice levelset corresponding to lia
 tmp_levelset = ExpToLevelSet(md.mesh.x, md.mesh.y, 'Exp/first_front.exp');
 pos = tmp_levelset(1:end-1) > 0;  % positive distances
 md.mask.ice_levelset(pos) = -1;
@@ -20,6 +20,17 @@ pos=find(md.geometry.thickness <= 10);
 md.geometry.surface(pos) = md.geometry.base(pos) + 10; %Minimum thickness
 md.geometry.thickness = md.geometry.surface - md.geometry.bed;
 md.masstransport.min_thickness = 10;
+
+%% The floating part at the front is different, so we will fix this
+% Floating condition see "Ralfe Greve, Heinz Blatter - Dynamics Of Ice Sheets And Glaciers (2009)"
+% rho * H = rho_w * (z_sl - h), where h is ice surface and z_sl is z wrt sea level. (eq. 6.44).
+% from equation (6.57) we find that H/b <= rho_w / rho_i = 1.1
+condition1 =  md.geometry.thickness ./ abs(md.geometry.bed)<=1.1;
+condition2 = md.mask.ocean_levelset<0; % it is within the fjord, condtion 1 also true in non-glacier areas for some reason.
+% condition3 = ContourToNodes(md.mesh.x, md.mesh.y, 'Exp/first_front.exp'); % doesn't matter because the remaining stuff is outside ice levelset
+pos = find(condition1 & condition2);
+md.geometry.thickness(pos) = md.materials.rho_water / (md.materials.rho_ice - md.materials.rho_water) * md.geometry.surface(pos);
+plotmodel(md, 'data', md.geometry.thickness, 'figure', 34, 'expdisp', 'ice_front.exp') 
 
 %% Ice mask adjustment
 disp('   Adjusting ice mask');
@@ -41,6 +52,7 @@ disp('      -- reconstruct thickness');
 % md.geometry.surface(front_area_pos) = 0;  
 
 md.geometry.thickness = md.geometry.surface - md.geometry.base;
+plotmodel(md, 'data', md.geometry.thickness, 'figure', 35, 'expdisp', 'ice_front.exp') 
 
 % set boundary conditions
 % pos = find((md.mask.ice_levelset < 0) .* (md.mesh.vertexonboundary));
