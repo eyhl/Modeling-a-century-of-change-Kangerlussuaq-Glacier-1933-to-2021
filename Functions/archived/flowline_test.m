@@ -2,10 +2,10 @@ clear
 close all
 
 glacier = 'Kangerlussuaq';
-Nf = 1;
+Nf = 2;
 
 %% Load model {{{
-projPath = '/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_transient.mat';
+projPath = '/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat';
 saveflag = 1;
 plotflag = 1;
 folder = '/baseline/';
@@ -19,10 +19,15 @@ if strcmp(glacier,'Jakobshavn')
 elseif strcmp(glacier,'Kangerlussuaq')
     % 4.8808e+05 -2.2931e+06
     % 4.9043e+05 -2.2907e+06
-	x0 = linspace(4.8808e5, 4.9043e5, Nf);
-	y0 = linspace(-2.2931e6, -2.2907e6, Nf);
-	xmin = 361900; xmax = 519100;
-	ymin = -2330100; ymax = -2160900;
+	% x0 = linspace(4.8808e5, 4.9043e5, Nf);
+	% y0 = linspace(-2.2931e6, -2.2907e6, Nf);
+    % x0 = [507308, 508680, 504786];
+    % y0 = [-2294540, -2296520, -2298880];
+    x0 = [507680, 503080.707450693];
+    y0 = [-2297520, -2298408.27018442];
+
+	xmin = 361900; xmax = 510001;
+	ymin = -2310000; ymax = -2160900;
 elseif strcmp(glacier,'Helheim')
 	x0 = 310400*ones(Nf, 1);
 	y0 = linspace(-2575500, -2580000, Nf);
@@ -33,12 +38,12 @@ end
 steps = 0;
 % org=organizer('repository', [projPath, 'Models', folder], 'prefix', ['Model_' glacier '_'], 'steps', steps);
 % md = loadmodel(org, stepName);
-md = loadmodel('/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_transient.mat');
+md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat');
 %}}}
 %% create flowlines {{{
 if plotflag
     figure
-    plotmodel(md, 'data', md.initialization.vel,...
+    plotmodel(md, 'data', md.results.StressbalanceSolution.Vel,...
         'mask', (md.mask.ice_levelset<1),...
         'xlim', [xmin, xmax], 'ylim', [ymin, ymax], 'caxis', [0,10000])
     hold on
@@ -49,7 +54,11 @@ y = md.mesh.y;
 % [u, v]=interpJoughinCompositeGreenland(md.mesh.x,md.mesh.y);
 data_vx = 'Data/measure_multi_year_v1/greenland_vel_mosaic250_vx_v1.tif';
 data_vy = 'Data/measure_multi_year_v1/greenland_vel_mosaic250_vy_v1.tif';
-[vel_obs, u, v] = interpVelocity(md, data_vx, data_vy);
+% [vel, u, v] = interpVelocity(md, data_vx, data_vy);
+
+vel = md.results.StressbalanceSolution.Vel .* 0.15;
+u = md.results.StressbalanceSolution.Vx .* 0.15;
+v = md.results.StressbalanceSolution.Vy .* 0.15;
 
 
 % u = fillInNan(md, u);
@@ -69,13 +78,15 @@ ticks = 80;
 % compute the flowline
 for i = 1: length(x0)
     % get the flowline
-    flowlineList{i} =flowlines(index,x,y,u,v,x0(i),y0(i));
+    flowlineList{i} =flowlines(index,x,y,u,v,x0(i),y0(i), 'maxiter', 400);
     % get the distance along the flowline
     flowlineList{i}.Xmain = cumsum([0; sqrt((flowlineList{i}.x(2:end) - flowlineList{i}.x(1:end-1)) .^ 2 + (flowlineList{i}.y(2:end) - flowlineList{i}.y(1:end-1)) .^ 2)]') / 1000;
     % get the distance along the flowline from the calving front side
     flowlineList{i}.Xmain_calving = flowlineList{i}.Xmain + (100 - flowlineList{i}.Xmain(end));
     % bedrock elevation along the flowline
     flowlineList{i}.bed = InterpFromMeshToMesh2d(md.mesh.elements,md.mesh.x,md.mesh.y,md.geometry.bed,flowlineList{i}.x,flowlineList{i}.y);
+    flowlineList{i}.base = InterpFromMeshToMesh2d(md.mesh.elements,md.mesh.x,md.mesh.y,md.geometry.base,flowlineList{i}.x,flowlineList{i}.y);
+    flowlineList{i}.surface = InterpFromMeshToMesh2d(md.mesh.elements,md.mesh.x,md.mesh.y,md.geometry.surface,flowlineList{i}.x,flowlineList{i}.y);
     % name
     flowlineList{i}.name = fnameList{i};
     % To visualize the flowlines
@@ -93,7 +104,7 @@ end
 %}}}
 %% Save data{{{
 if saveflag
-    save(['/data/eigil/work/lia_kq/Results/flowlines/KG_flowlines.mat'], 'x0', 'y0', 'flowlineList');
+    save(['/data/eigil/work/lia_kq/KG_flowlines.mat'], 'x0', 'y0', 'flowlineList');
 end
 %}}}
 %% plot {{{

@@ -42,7 +42,7 @@ function [md] = run_model(config_name, plotting_flag)
     ref_smb_final_time = 1989; % don't change
 
     % temperature field extrapolation offset, qualitative
-    add_constant = 2.5;
+    add_constant = 0;% 2.5;
 
     % Shape file and model name
     glacier = 'kangerlussuaq';
