@@ -1,4 +1,4 @@
-clear
+%clear
 close all
 
 glacier = 'Kangerlussuaq';
@@ -74,11 +74,11 @@ else
 end
 % fnameList(1:3) = {'N', 'C', 'S'};
 flowlineList = cell(length(x0), 1);
-ticks = 80;
+ticks = -80;
 % compute the flowline
 for i = 1: length(x0)
     % get the flowline
-    flowlineList{i} =flowlines(index,x,y,u,v,x0(i),y0(i), 'maxiter', 400);
+    flowlineList{i} =flowlines(index,x,y,u,v,x0(i),y0(i), 'maxiter', 200);
     % get the distance along the flowline
     flowlineList{i}.Xmain = cumsum([0; sqrt((flowlineList{i}.x(2:end) - flowlineList{i}.x(1:end-1)) .^ 2 + (flowlineList{i}.y(2:end) - flowlineList{i}.y(1:end-1)) .^ 2)]') / 1000;
     % get the distance along the flowline from the calving front side
@@ -92,7 +92,7 @@ for i = 1: length(x0)
     % To visualize the flowlines
     [~,I] = min(abs(flowlineList{i}.Xmain-ticks));
     if plotflag
-        plot(flowlineList{i}.x, flowlineList{i}.y, 'Linewidth', 1.5);
+        plot(flowlineList{i}.x(1:end-5), flowlineList{i}.y(1:end-5), 'Linewidth', 1.5, 'LineStyle', 'none', 'Marker', 'x');
         plot(flowlineList{i}.x(I), flowlineList{i}.y(I), 'ko', 'Linewidth', 1.5);
     end
 end
@@ -111,8 +111,18 @@ end
 if plotflag
 	figure(2)
 	for i = 1: length(x0)
-	    plot(flowlineList{i}.Xmain, flowlineList{i}.bed);
+	    plot(flowlineList{i}.Xmain(1:end-5), flowlineList{i}.bed(1:end-5));
 	    hold on
 	end
 	% xlim([72, 95])
 end%}}}
+% figure(33)
+% index1 = 330;                                                 
+% plot(dist1(index1:end), bed1(index1:end)); hold on;
+% plot(dist1(index1:end), base1(index1:end));
+% plot(dist1(index1:end), surface1(index1:end));        
+% index2 = 100;     
+% figure(34);                                            
+% plot(dist2(index2:end), bed2(index2:end)); hold on
+% plot(dist2(index2:end), base2(index2:end));
+% plot(dist2(index2:end), surface2(index2:end));

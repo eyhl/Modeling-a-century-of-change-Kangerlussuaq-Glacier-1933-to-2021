@@ -42,7 +42,7 @@ function [md] = run_model(config_name, plotting_flag)
     ref_smb_final_time = 1989; % don't change
 
     % temperature field extrapolation offset, qualitative
-    add_constant = 0;% 2.5;
+    add_constant = 2.5;
 
     % Shape file and model name
     glacier = 'kangerlussuaq';
@@ -229,18 +229,17 @@ function [md] = run_model(config_name, plotting_flag)
     %% 6 Parameterize LIA, extrapolate friction coefficient to LIA front
     if perform(org, 'lia_param')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
-        md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat'); %TODO: DELETE
 
         disp("Parameterizing to LIA initial state")
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
-        validate_flag = false;
+        validate_flag = true;
        
         disp("Extrapolating friction coefficient...")
         if strcmp(config.friction_extrapolation, "random_field")
             disp("Extrapolating friction coefficient using Random field method")
             [extrapolated_friction, extrapolated_pos, mae_rf] = friction_random_field_model(md, cs_min, config.friction_law, validate_flag); 
         elseif strcmp(config.friction_extrapolation, "bed_correlation")
-            M = 1; % polynomial order
+            M = 6; % polynomial order
 
             disp("Extrapolating friction coefficient correlated linearly with bed topography")
             [extrapolated_friction, extrapolated_pos, mae_poly] = friction_correlation_model(md, cs_min, M, config.friction_law, validate_flag); 
@@ -253,45 +252,39 @@ function [md] = run_model(config_name, plotting_flag)
         end
 
         % set values under cs min to cs min
-        extrapolated_friction(extrapolated_friction < cs_min) = cs_min;
+        extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
         
         if strcmp(config.friction_law, 'schoof')
             md.friction.C(extrapolated_pos) = extrapolated_friction;
-            if plotting_flag
-                figure(5);
-                plotmodel(md, 'data', md.friction.C, 'title', 'Schoof Friction Law', ...
-                'colorbar', 'off', 'xtick', [], 'ytick', []); 
-                set(gca,'fontsize',12);
-                set(colorbar,'visible','off')
-                h = colorbar('Position', [0.1  0.5  0.75  0.01], 'Location', 'southoutside');
-                colormap('turbo'); 
-                exportgraphics(gcf, "schoof_friction_extrapolated.png")
-            end
+            friction_field = md.friction.C;
             
         elseif strcmp(config.friction_law, 'budd')
             md.friction.coefficient(extrapolated_pos) = extrapolated_friction;
-            if plotting_flag
-                figure(6);
-                plotmodel(md, 'data', md.friction.coefficient, 'title', 'Budd Friction Law', ...
-                'colorbar', 'off', 'xtick', [], 'ytick', []); 
-                set(gca,'fontsize',12);
-                set(colorbar,'visible','off')
-                h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
-                colormap('turbo'); 
-                exportgraphics(gcf, "budd_friction_extrapolated.png")
-            end
+            friction_field = md.friction.coefficient;
         else
             warning('Friction law not recignised, choose schoof or budd')
         end
 
-        % CHECK INITIAL STATE:
-        md.inversion.iscontrol = 0;
-        md = solve(md, 'sb');
-        plotmodel(md, 'data', log(md.friction.coefficient)./log(10), 'title', 'FC', ...
-        'data', md.results.StressbalanceSolution.Vel, 'xtick', [], 'ytick', [], 'figure', 666); 
-        set(gca,'fontsize',12);
-        colormap('turbo'); 
-        exportgraphics(gcf, "initial_step.png")
+        if plotting_flag
+            figure(6);
+            plotmodel(md, 'data', friction_field, 'title', 'Friction Coefficient', ...
+            'colorbar', 'off', 'xtick', [], 'ytick', []); 
+            set(gca,'fontsize',12);
+            set(colorbar,'visible','off')
+            h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+            colormap('turbo'); 
+            exportgraphics(gcf, "budd_friction_extrapolated.png")
+
+            % CHECK INITIAL STATE:
+            md.inversion.iscontrol = 0;
+            md = solve(md, 'sb');
+            plotmodel(md, 'data', log(friction_field)./log(10), 'title', 'FC', ...
+            'data', md.results.StressbalanceSolution.Vel, 'xtick', [], 'ytick', [], 'figure', 666); 
+            set(gca,'fontsize',12);
+            colormap('turbo'); 
+            exportgraphics(gcf, "initial_step.png")
+        end
+        
 
         savemodel(org, md);
     end

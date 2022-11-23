@@ -77,9 +77,10 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_m
     extrapolated_friction = G_front * m;
     extrapolated_friction = extrapolated_friction * friction_data_std + friction_data_mean;
 
+    friction_field(extrapolated_pos) = extrapolated_friction;    
+    friction_field(friction_field <= cs_min) = cs_min;
+
     if validate_flag
-        friction_field(extrapolated_pos) = extrapolated_friction;    
-        friction_field(friction_field <= cs_min) = cs_min;
         title_string = sprintf('MAE = %.2f', mae);
         plotmodel(md, 'data', friction_field, 'figure', 82, 'title', title_string, ...
         'colorbar', 'off', 'xtick', [], 'ytick', []); 
