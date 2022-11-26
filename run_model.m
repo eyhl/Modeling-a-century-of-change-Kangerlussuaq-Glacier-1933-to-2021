@@ -27,7 +27,9 @@ function [md] = run_model(config_name, plotting_flag)
     % Inversion parameters
     % cf_weights = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3]; %TODO: CHANGE THIS 
     budd_coeff = [16000, 3.0,  1.7783e-06]; % newest: [16000, 3.0,  1.7783e-06];% v8 [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
+    % schoof_coeff = [2500, 300.0, 7.5e-08, 0.811428571428571]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
     schoof_coeff = [2500, 2.0, 3e-08, 0.811428571428571]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
+
 
     if strcmp(config.friction_law, 'budd')
         cs_min = 0.01; %config.cs_min;
@@ -172,8 +174,14 @@ function [md] = run_model(config_name, plotting_flag)
     %% 4 Friction law setup: Schoof
     if perform(org, 'schoof')
         friction_law = 'schoof';
+        
         % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
         md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
+        md.cluster = cluster;
+        md.verbose.solution = 1;
+
+        % fast solver
+        md.toolkits.DefaultAnalysis=bcgslbjacobioptions();
         md = budd2schoof(md, schoof_coeff, cs_min, cs_max);
         
         savemodel(org, md);
@@ -229,6 +237,8 @@ function [md] = run_model(config_name, plotting_flag)
     %% 6 Parameterize LIA, extrapolate friction coefficient to LIA front
     if perform(org, 'lia_param')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
+        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
 
         disp("Parameterizing to LIA initial state")
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
@@ -239,7 +249,7 @@ function [md] = run_model(config_name, plotting_flag)
             disp("Extrapolating friction coefficient using Random field method")
             [extrapolated_friction, extrapolated_pos, mae_rf] = friction_random_field_model(md, cs_min, config.friction_law, validate_flag); 
         elseif strcmp(config.friction_extrapolation, "bed_correlation")
-            M = 6; % polynomial order
+            M = 2; % polynomial order
 
             disp("Extrapolating friction coefficient correlated linearly with bed topography")
             [extrapolated_friction, extrapolated_pos, mae_poly] = friction_correlation_model(md, cs_min, M, config.friction_law, validate_flag); 
@@ -254,19 +264,24 @@ function [md] = run_model(config_name, plotting_flag)
         % set values under cs min to cs min
         extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
         
+        % find rocks and apply high friction
+        mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
+        pos_rocks = find(mask == 1 & md.results.StressbalanceSolution.Vel < 50);
+        
         if strcmp(config.friction_law, 'schoof')
             md.friction.C(extrapolated_pos) = extrapolated_friction;
+            md.friction.C(pos_rocks) = cs_max;
             friction_field = md.friction.C;
             
         elseif strcmp(config.friction_law, 'budd')
             md.friction.coefficient(extrapolated_pos) = extrapolated_friction;
+            md.friction.coefficient(pos_rocks) = cs_max;
             friction_field = md.friction.coefficient;
         else
             warning('Friction law not recignised, choose schoof or budd')
         end
 
         if plotting_flag
-            figure(6);
             plotmodel(md, 'data', friction_field, 'title', 'Friction Coefficient', ...
             'colorbar', 'off', 'xtick', [], 'ytick', []); 
             set(gca,'fontsize',12);

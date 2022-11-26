@@ -14,8 +14,7 @@ function [] = movie_smb(md, movieName)
     nframes = length(1:12:(Nt-12));
     disp(nframes)
 
-    xl = [4.078, 5.152]*1e5;
-    yl = [-2.3239, -2.2063]*1e6;
+    
  
     clear mov;
     close all;
