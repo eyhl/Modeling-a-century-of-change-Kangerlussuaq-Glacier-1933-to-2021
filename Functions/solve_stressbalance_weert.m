@@ -1,5 +1,9 @@
-function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max)
+function [md] = solve_stressbalance_weert(md, coefs, cb_min, cb_max)
     md = sethydrostaticmask(md);
+    md.friction = frictionweertman();
+    m = 3.0;
+    md.friction.m = m * ones(md.mesh.numberofelements,1);
+    md.friction.C = 3000 * ones(md.mesh.numberofvertices,1);
 
     % Control general
     md.inversion = m1qn3inversion(md.inversion);

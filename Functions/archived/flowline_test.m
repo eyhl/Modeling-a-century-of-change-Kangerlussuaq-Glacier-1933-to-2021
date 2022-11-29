@@ -1,5 +1,5 @@
 %clear
-close all
+% close all
 
 glacier = 'Kangerlussuaq';
 Nf = 2;
@@ -38,7 +38,7 @@ end
 steps = 0;
 % org=organizer('repository', [projPath, 'Models', folder], 'prefix', ['Model_' glacier '_'], 'steps', steps);
 % md = loadmodel(org, stepName);
-md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat');
+md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
 %}}}
 %% create flowlines {{{
 if plotflag

@@ -101,6 +101,15 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
     md.friction.C = md.results.StressbalanceSolution.FrictionC;
     md.initialization.vx = md.results.StressbalanceSolution.Vx;
     md.initialization.vy = md.results.StressbalanceSolution.Vy;
+    md.initialization.vel = md.results.StressbalanceSolution.Vel;
+
+    % Save present day inversion results in misc (If SB is recomputed for LIA these are lost)
+    md.miscellaneous.dummy.J = md.results.StressbalanceSolution.J;
+    md.miscellaneous.dummy.Adjointx = md.results.StressbalanceSolution.Adjointx;
+    md.miscellaneous.dummy.Adjointy = md.results.StressbalanceSolution.Adjointy;
+    md.miscellaneous.dummy.FrictionC = md.results.StressbalanceSolution.FrictionC;
+    md.miscellaneous.dummy.Gradient1 = md.results.StressbalanceSolution.Gradient1;
+
 
     % save 'model_extrapolated_friction.mat' md;
     % plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'figure', 43); %exportgraphics(gcf, 'vel.png')

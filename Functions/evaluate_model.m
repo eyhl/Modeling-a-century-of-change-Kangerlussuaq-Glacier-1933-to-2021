@@ -159,7 +159,7 @@ if find(strcmp(plot_options, 'thickness'))
     fileID = fopen(fullfile(save_path, 'rmse_thickness.txt'),'w');
     fprintf(fileID, "RMSE Thickness in 2007 is %f \n", rmse);
 
-    plotmodel(md, 'data', residual_thickness, 'figure', 9, 'title', 'Thickness Misfit (2007 avg)');
+    plotmodel(md, 'data', residual_thickness, 'figure', 9, 'title', 'Thickness Misfit (2007 avg)', 'caxis', [-400, 400]);
     saveas(gcf, fullfile(save_path, 'residual_thickness.png'))
 
     times = [md.results.TransientSolution.time];
@@ -174,8 +174,8 @@ if find(strcmp(plot_options, 'thickness'))
     misfit_thickness = pred_thickness - obs_thickness; 
 
     % base mae computation on relevant areas
-    misfit_thickness(misfit_thickness<-error_cap) = -error_cap;
-    misfit_thickness(misfit_thickness>=error_cap) = error_cap;
+    % misfit_thickness(misfit_thickness<-error_cap) = -error_cap;
+    % misfit_thickness(misfit_thickness>=error_cap) = error_cap;
     
      % remove ice-free areas:
     ice_levelset_end_of_year = md.results.TransientSolution(pos(end)).MaskIceLevelset;
