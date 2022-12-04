@@ -82,8 +82,8 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
 
     %Controls
     md.inversion.control_parameters={'FrictionC'};
-    md.inversion.maxsteps=100;
-    md.inversion.maxiter =100;
+    md.inversion.maxsteps=200;
+    md.inversion.maxiter =200;
     md.inversion.min_parameters=CS_min*ones(md.mesh.numberofvertices,1);
     md.inversion.max_parameters=CS_max*ones(md.mesh.numberofvertices,1);
     md.inversion.control_scaling_factors=1;

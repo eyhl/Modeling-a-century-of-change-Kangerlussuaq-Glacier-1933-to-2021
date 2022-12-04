@@ -22,8 +22,8 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max)
 
     %Controls
     md.inversion.control_parameters={'FrictionCoefficient'};
-    md.inversion.maxsteps = 100;
-    md.inversion.maxiter = 100;
+    md.inversion.maxsteps = 200;
+    md.inversion.maxiter = 200;
     md.inversion.min_parameters = cb_min * ones(md.mesh.numberofvertices, 1);
     md.inversion.max_parameters = cb_max * ones(md.mesh.numberofvertices, 1);
     md.inversion.control_scaling_factors = 1;
@@ -47,6 +47,6 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max)
     md.miscellaneous.dummy.J = md.results.StressbalanceSolution.J;
     md.miscellaneous.dummy.Adjointx = md.results.StressbalanceSolution.Adjointx;
     md.miscellaneous.dummy.Adjointy = md.results.StressbalanceSolution.Adjointy;
-    md.miscellaneous.dummy.FrictionC = md.results.StressbalanceSolution.FrictionC;
+    md.miscellaneous.dummy.FrictionCoefficient = md.results.StressbalanceSolution.FrictionCoefficient;
     md.miscellaneous.dummy.Gradient1 = md.results.StressbalanceSolution.Gradient1;
 end

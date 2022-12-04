@@ -1,4 +1,4 @@
-function [md] = solve_stressbalance_weert(md, coefs, cb_min, cb_max)
+function [md] = solve_stressbalance_weert(md, coefs, cw_min, cw_max)
     md = sethydrostaticmask(md);
     md.friction = frictionweertman();
     m = 3.0;
@@ -9,7 +9,7 @@ function [md] = solve_stressbalance_weert(md, coefs, cb_min, cb_max)
     md.inversion = m1qn3inversion(md.inversion);
     md.inversion.iscontrol = 1;
     md.verbose = verbose('solution', false, 'control', true);
-
+    
     %Cost functions
     md.inversion.cost_functions = [101 103 501];
     md.inversion.cost_functions_coefficients = zeros(md.mesh.numberofvertices, numel(md.inversion.cost_functions));
@@ -25,11 +25,11 @@ function [md] = solve_stressbalance_weert(md, coefs, cb_min, cb_max)
     md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
     %Controls
-    md.inversion.control_parameters={'FrictionCoefficient'};
-    md.inversion.maxsteps = 100;
-    md.inversion.maxiter = 100;
-    md.inversion.min_parameters = cb_min * ones(md.mesh.numberofvertices, 1);
-    md.inversion.max_parameters = cb_max * ones(md.mesh.numberofvertices, 1);
+    md.inversion.control_parameters={'FrictionC'};
+    md.inversion.maxsteps = 200;
+    md.inversion.maxiter = 200;
+    md.inversion.min_parameters = cw_min * ones(md.mesh.numberofvertices, 1);
+    md.inversion.max_parameters = cw_max * ones(md.mesh.numberofvertices, 1);
     md.inversion.control_scaling_factors = 1;
     md.inversion.dxmin = 1e-20;
 
@@ -39,10 +39,10 @@ function [md] = solve_stressbalance_weert(md, coefs, cb_min, cb_max)
     md.stressbalance.abstol = NaN; % velocity absolute convergence criterion (NaN=not applied)
 
     % Solve
-    md=solve(md, 'Stressbalance');
+    md = solve(md, 'sb');
 
     % Put results back into the model
-    md.friction.coefficient = md.results.StressbalanceSolution.FrictionCoefficient;
+    md.friction.C = md.results.StressbalanceSolution.FrictionC;
     md.initialization.vx = md.results.StressbalanceSolution.Vx;
     md.initialization.vy = md.results.StressbalanceSolution.Vy;
     md.initialization.vel = md.results.StressbalanceSolution.Vel;

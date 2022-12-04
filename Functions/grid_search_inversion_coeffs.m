@@ -4,7 +4,7 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
         cs_min = 0.01;
         cs_max = 1e4;
         c_max_list = [NaN]; % array with length 1, budd does not have cmax
-        coefficient_1 = [16000];  %try 350, 1, 1e-12
+        coefficient_1 = [8000];  %try 350, 1, 1e-12
         coefficient_2 = [3.0]; % linspace(0.5, 5, 6);
         coefficient_3 = [1e-9, logspace(-7, -1, 25), 1e1]; % 1.0608e-06
     elseif strcmp(friction_law, 'schoof')
@@ -60,9 +60,9 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
 
                 % Measure LIA misfit wrt to Budd solution
                 md_schoof_lia = parameterize(md_tmp, 'ParameterFiles/transient_lia.par');
-                [extrapolated_friction, extrapolated_pos, ~] = friction_correlation_model(md_schoof_lia, cs_min, 6, 'schoof', false); 
+                [extrapolated_friction, extrapolated_pos, ~] = friction_constant_model(md_schoof_lia, cs_min, 'budd', false); 
                 extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
-                md_schoof_lia.friction.C(extrapolated_pos) = extrapolated_friction;
+                md_schoof_lia.friction.coefficient(extrapolated_pos) = extrapolated_friction;
                 md_schoof_lia.inversion.iscontrol = 0;
                 md_schoof_lia = solve(md_schoof_lia, 'sb');
 
@@ -97,7 +97,7 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
                 
                 coef_setting(counter, :) = coefs;
 
-                save(sprintf('md%d_%.2f_%d_%d_%.2g.mat', counter, coefs(4), coefs(1), coefs(2), coefs(3)), 'md_schoof_lia');
+                save(sprintf('/data/eigil/work/lia_kq/budd_grid_alpha/md%d_%.2f_%d_%d_%.2g.mat', counter, coefs(4), coefs(1), coefs(2), coefs(3)), 'md_schoof_lia');
                 counter = counter + 1;
         end
     end

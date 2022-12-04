@@ -7,6 +7,10 @@ function [md] = run_model(config_name, plotting_flag)
     if nargin < 2
         plotting_flag = false;
     end
+
+    % for plotting:
+    xl = [4.578, 5.132]*1e5;
+    yl = [-2.3239, -2.2563]*1e6;
     
     % read config file
     config_path_name = append('Configs/', config_name);
@@ -26,16 +30,33 @@ function [md] = run_model(config_name, plotting_flag)
 
     % Inversion parameters
     % cf_weights = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3]; %TODO: CHANGE THIS 
-    budd_coeff = [16000, 3.0,  1.7783e-06]; % newest: [16000, 3.0,  1.7783e-06];% v8 [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
+   % BUDD COEFFICIENTS
+    % budd_coeff = [16000, 3.0,  1.7783e-06]; % newest: [16000, 3.0,  1.7783e-06];% v8 [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
+    % budd_coeff = [16000, 3.0,  1e-07]; % newest: [16000, 3.0,  1.7783e-06];% v8 [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
+    % budd_coeff = [8000, 3.0,  5.6234e-06]; 
+    % budd_coeff = [8000, 3.0,  1e-05]; 
+
+    % try both:
+    % budd_coeff = [16000, 3.0,  1.7783e-06];
+    budd_coeff = [8000, 3.0,  1.7783e-05]; 
+
+    % SCHOOF COEFFICIENTS
     % schoof_coeff = [2500, 2.0, 3e-08, 0.811428571428571]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
     % schoof_coeff = [2500, 300.0, 7.5e-08, 0.811428571428571]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
     schoof_coeff = [2500, 2.0, 1e-07, 0.74]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
 
+    % WEERTMAND COEFFICIENTS
+    % weertman_coeff = [16000, 2.0,  7.5e-08];
+    weertman_coeff = [16000, 2.0,  7.5e-08];
 
     if strcmp(config.friction_law, 'budd')
         cs_min = 0.01; %config.cs_min;
         cs_max = 1e4; %config.cs_max;
         display_coefs = num2str(budd_coeff);
+    elseif strcmp(config.friction_law, 'weertman')
+        cs_min = 0.01; %config.cs_min;
+        cs_max = 1e4; %config.cs_max;
+        display_coefs = num2str(weertman_coeff);
     elseif strcmp(config.friction_law, 'schoof')
         cs_min = 0.01; %config.cs_min;
         cs_max = 1e4; %config.cs_max;
@@ -72,13 +93,7 @@ function [md] = run_model(config_name, plotting_flag)
     data_vx = 'Data/measure_multi_year_v1/greenland_vel_mosaic250_vx_v1.tif';
     data_vy = 'Data/measure_multi_year_v1/greenland_vel_mosaic250_vy_v1.tif';
 
-    if sum(steps == 6) == 1
-        run_lia_parameterisation = 1;
-        disp(run_lia_parameterisation)
-    else
-        run_lia_parameterisation = 0;
-        disp(run_lia_parameterisation)
-    end
+    run_lia_parameterisation = 1; %TODO: put into config
 
     % Organizer
     org = organizer('repository', ['./Models'], 'prefix', ['Model_' glacier '_'], 'steps', steps); 
@@ -131,7 +146,7 @@ function [md] = run_model(config_name, plotting_flag)
         if plotting_flag
             figure(67);
             plotmodel(md, 'data', md.materials.rheology_B, 'title', 'Rheology B', ...
-            'colorbar', 'off', 'xtick', [], 'ytick', []); 
+            'colorbar', 'off', 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 21); 
             set(gca,'fontsize',12);
             set(colorbar,'visible','off')
             h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
@@ -153,7 +168,7 @@ function [md] = run_model(config_name, plotting_flag)
         if plotting_flag
             figure(1);
             plotmodel(md, 'data', md.friction.coefficient, 'title', 'Budd Friction Law, Coefficient', ...
-            'colorbar', 'off', 'xtick', [], 'ytick', []); 
+            'colorbar', 'off', 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 31); 
             set(gca,'fontsize',12);
             set(colorbar,'visible','off')
             h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
@@ -162,7 +177,7 @@ function [md] = run_model(config_name, plotting_flag)
 
             figure(2);
             plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'title', 'Budd Friction Law, Velocity', ...
-            'colorbar', 'off', 'xtick', [], 'ytick', []); 
+            'colorbar', 'off', 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 32); 
             set(gca,'fontsize',12);
             set(colorbar,'visible','off')
             h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
@@ -172,16 +187,42 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 4 Friction law setup: Schoof
+    %% 4 Friction law setup: Weertman
+    if perform(org, 'weertman')
+
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
+        md = solve_stressbalance_weert(md, weertman_coeff, cs_min, cs_max);
+        savemodel(org, md);
+
+        if plotting_flag
+            figure(1);
+            plotmodel(md, 'data', md.friction.C, 'title', 'Budd Friction Law, Coefficient', ...
+            'colorbar', 'off', 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 31); 
+            set(gca,'fontsize',12);
+            set(colorbar,'visible','off')
+            h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+            colormap('turbo'); 
+            exportgraphics(gcf, "budd_friction.png")
+
+            figure(2);
+            plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'title', 'Budd Friction Law, Velocity', ...
+            'colorbar', 'off', 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 32); 
+            set(gca,'fontsize',12);
+            set(colorbar,'visible','off')
+            h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+            colormap('turbo'); 
+            exportgraphics(gcf, "budd_sb_vel.png")
+        end
+        
+    end
+
+    %% 5 Friction law setup: Schoof
     if perform(org, 'schoof')
         friction_law = 'schoof';
         
-        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
-        md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        % md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
         % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
-        % md.inversion.vel_obs = md.results.StressbalanceSolution.Vel;
-        % md.inversion.vx_obs = md.results.StressbalanceSolution.Vx;
-        % md.inversion.vy_obs = md.results.StressbalanceSolution.Vy;
 
         % md = loadmodel('Models/kg_budd_lia.mat');
         md.cluster = cluster;
@@ -194,7 +235,7 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
         if plotting_flag
             plotmodel(md, 'data', md.friction.C, 'title', 'Schoof Friction Law, Coefficient', ...
-            'colorbar', 'off', 'xtick', [], 'ytick', [], 'figure', 41); 
+            'colorbar', 'off', 'xtick', [], 'ytick', [], 'figure', 41, 'xlim#all', xl, 'ylim#all', yl); 
             set(gca,'fontsize',12);
             set(colorbar,'visible','off')
             h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
@@ -202,7 +243,7 @@ function [md] = run_model(config_name, plotting_flag)
             exportgraphics(gcf, "schoof_friction.png")
 
             plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'title', 'Schoof Friction Law, Velocity', ...
-            'colorbar', 'off', 'xtick', [], 'ytick', [], 'figure', 42); 
+            'colorbar', 'off', 'xtick', [], 'ytick', [], 'figure', 42, 'xlim#all', xl, 'ylim#all', yl); 
             set(gca,'fontsize',12);
             set(colorbar,'visible','off')
             h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
@@ -211,14 +252,14 @@ function [md] = run_model(config_name, plotting_flag)
         end
     end
 
-    %% 5 Forcings: Interpolate SMB
+    %% 6 Forcings: Interpolate SMB
     if perform(org, 'smb')
         if strcmp(config.friction_law, 'schoof')
-            % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
-            md = loadmodel('/data/eigil/work/lia_kq/Models/kg_schoof_lia.mat');
+            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
+            % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_schoof_lia.mat');
         elseif strcmp(config.friction_law, 'budd')
-            % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
-            md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
+            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+            % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
 
         else
             warning("Friction law not implemented")
@@ -242,15 +283,16 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 6 Parameterize LIA, extrapolate friction coefficient to LIA front
+    %% 7 Parameterize LIA, extrapolate friction coefficient to LIA front
     if perform(org, 'lia_param')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
         % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_weertman.mat');
         % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
 
         disp("Parameterizing to LIA initial state")
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
-        validate_flag = true;
+        validate_flag = true; % TODO: move into config
        
         disp("Extrapolating friction coefficient...")
         if strcmp(config.friction_extrapolation, "random_field")
@@ -259,12 +301,18 @@ function [md] = run_model(config_name, plotting_flag)
         elseif strcmp(config.friction_extrapolation, "bed_correlation")
             M = 1; % polynomial order
 
+            % save M for reference
+            md.miscellaneous.dummy.bed_corr_polynomial_order = M;
+
             disp("Extrapolating friction coefficient correlated linearly with bed topography")
-            [extrapolated_friction, extrapolated_pos, mae_poly] = friction_correlation_model(md, cs_min, M, config.friction_law, validate_flag); 
+            [extrapolated_friction, extrapolated_pos, ~] = friction_correlation_model(md, cs_min, M, config.friction_law, validate_flag); 
+
+        elseif strcmp(config.friction_extrapolation, 'exponential_correlation')
+            [extrapolated_friction, extrapolated_pos, ~] = friction_exponential_model(md, cs_min, friction_law, validate_flag);
  
         elseif strcmp(config.friction_extrapolation, "constant")
             disp("Extrapolating friction coefficient using constant value")
-            [extrapolated_friction, extrapolated_pos, mae_const] = friction_constant_model(md, cs_min, config.friction_law, validate_flag);
+            [extrapolated_friction, extrapolated_pos, ~] = friction_constant_model(md, cs_min, config.friction_law, validate_flag);
         else
             warning("Invalid extrapolation method from config file. Choose random_field, linear or constant")
         end
@@ -272,51 +320,87 @@ function [md] = run_model(config_name, plotting_flag)
         % set values under cs min to cs min
         extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
         
-        % find rocks and apply high friction
-        mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
-        pos_rocks = find(mask == 1 & md.results.StressbalanceSolution.Vel < 50);
+        % find rocks and apply high friction %TODO: Make exp instead
+        % mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
+        % pos_rocks = find(mask == 1 & md.results.StressbalanceSolution.Vel < 50);
+        % pos_rocks = find(mask == 1 & md.geometry.bed>0;);
         
-        if strcmp(config.friction_law, 'schoof')
+
+        if strcmp(config.friction_law, 'budd')
+            md.friction.coefficient(extrapolated_pos) = extrapolated_friction;
+            % md.friction.coefficient(pos_rocks) = cs_max;
+            friction_field = md.friction.coefficient;
+        elseif strcmp(config.friction_law, 'weertman')
             md.friction.C(extrapolated_pos) = extrapolated_friction;
-            md.friction.C(pos_rocks) = cs_max;
+            % md.friction.coefficient(pos_rocks) = cs_max;
+            friction_field = md.friction.C;
+        elseif strcmp(config.friction_law, 'schoof')
+            md.friction.C(extrapolated_pos) = extrapolated_friction;
+            % md.friction.C(pos_rocks) = cs_max;
             friction_field = md.friction.C;
             
-        elseif strcmp(config.friction_law, 'budd')
-            md.friction.coefficient(extrapolated_pos) = extrapolated_friction;
-            md.friction.coefficient(pos_rocks) = cs_max;
-            friction_field = md.friction.coefficient;
+        
         else
             warning('Friction law not recignised, choose schoof or budd')
         end
 
         if plotting_flag
             plotmodel(md, 'data', friction_field, 'title', 'Friction Coefficient', ...
-            'colorbar', 'off', 'xtick', [], 'ytick', []); 
+            'colorbar', 'off', 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 61); 
             set(gca,'fontsize',12);
             set(colorbar,'visible','off')
             h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
             colormap('turbo'); 
             exportgraphics(gcf, "budd_friction_extrapolated.png")
-
-            % CHECK INITIAL STATE:
-            md.inversion.iscontrol = 0;
-            md = solve(md, 'sb');
-            plotmodel(md, 'data', log(friction_field)./log(10), 'title', 'FC', ...
-            'data', md.results.StressbalanceSolution.Vel, 'xtick', [], 'ytick', [], 'figure', 666); 
-            set(gca,'fontsize',12);
-            colormap('turbo'); 
-            exportgraphics(gcf, "initial_step.png")
         end
-        
+
+        % CHECK INITIAL STATE:
+        md.inversion.iscontrol = 0;
+        md = solve(md, 'sb');
+        plotmodel(md, 'data', log(friction_field)./log(10), 'title', 'Initial state, FC and Vel', ...
+        'data', md.results.StressbalanceSolution.Vel, 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 62); 
+        set(gca,'fontsize',12);
+        colormap('turbo'); 
+        exportgraphics(gcf, "initial_state.png")
 
         savemodel(org, md);
     end
 
-    %% 7 Initialise: Setup and load calving fronts
+    %% 8 Correct friction coefficient
+    if perform(org, 'friction_correction')
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat');
+        if ~strcmp(config.friction_law, 'budd')
+
+            % md_budd = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd_lia.mat');
+            md_budd = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
+            md.inversion.vel_obs = md_budd.results.StressbalanceSolution.Vel;
+            md.inversion.vx_obs = md_budd.results.StressbalanceSolution.Vx;
+            md.inversion.vy_obs = md_budd.results.StressbalanceSolution.Vy;
+
+            % side_areas = ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/sides.exp', 2);
+            % md.inversion.min_parameters = md.friction.C(~side_areas);
+            % md.inversion.max_parameters = md.friction.C(~side_areas);
+
+            % TODO: FIX BUDD2SCHOOF SUCH THAT IT ALLOWS CS_MIN CS_MAX ARRAYS
+            % md.inversion.iscontrol = 1;
+            % md = solve(md, 'sb');
+            md = budd2schoof(md_budd, schoof_coeff, cs_min, cs_max);
+            
+            friction_field = md.friction.C;
+            plotmodel(md, 'data', log(friction_field)./log(10), 'title', 'Initial state, FC and Vel', ...
+            'data', md.results.StressbalanceSolution.Vel, 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 62); 
+            set(gca,'fontsize',12);
+            colormap('turbo'); 
+            exportgraphics(gcf, "corrected_initial_state.png")
+        end
+        savemodel(org, md);
+    end
+
+    %% 9 Initialise: Setup and load calving fronts
     if perform(org, 'fronts')
         if run_lia_parameterisation == 1
             disp("Using LIA initial conditoins")
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat');
+            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_friction_correction.mat');
         else
             disp("Not using LIA initial conditions")
             md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_friction.mat');
@@ -327,13 +411,9 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 8 Transient: setup & run
+    %% 10 Transient: setup & run
     if perform(org, 'transient')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_fronts.mat');
-
-        % for testing
-        % md.timestepping.start_time = 1900;
-        % md.timestepping.final_time = 1900.1;
 
         % meltingrate
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];

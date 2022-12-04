@@ -13,6 +13,9 @@ md.mask.ice_levelset(pos) = -1;
 disp('      reading LIA surface');
 md.geometry.surface = interpLiaSurface(md.mesh.x, md.mesh.y);
 
+% make sure that ther is not ice outside levelset
+pos = tmp_levelset(1:end-1) < 0;
+md.geometry.surface(pos) = 0;
 % try to set exposed bedrock to 
 % mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
 

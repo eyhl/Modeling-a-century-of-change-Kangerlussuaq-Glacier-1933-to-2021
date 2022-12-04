@@ -1,4 +1,4 @@
-function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_model(md, cs_min, M, friction_law, validate_flag)
+function [extrapolated_friction, extrapolated_pos, mae] = friction_exponential_model(md, cs_min, friction_law, validate_flag)
 
     if nargin < 3
         validate_flag = false;
@@ -15,7 +15,7 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_m
     end
 
     %% LOAD DATA AND CREATE RELEVANT VARIABLES
-    friction_data_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_data.exp', 2));
+    friction_data_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_data_large.exp', 2));
     friction_validation = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_validation.exp', 2));
     extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area_slim.exp', 2));
 
@@ -23,65 +23,39 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_m
     friction_data = friction_field(friction_data_pos);
     friction_data_mean = mean(friction_data, 1);
     friction_data_std = std(friction_data, 1);
-    friction_data_normalised = (friction_data - friction_data_mean) / friction_data_std;
     bed_data = md.geometry.bed(friction_data_pos);
-    bed_data_normalised = (bed_data - mean(bed_data)) / std(bed_data); 
-    
+
     % preprocess validation data
     friction_val = friction_field(friction_validation);
-    friction_val_normalised = (friction_val - friction_data_mean) / friction_data_std;
     bed_val = md.geometry.bed(friction_validation);
-    bed_val_normalised = (bed_val - mean(bed_data)) / std(bed_data); 
 
     % extrapolation area
     bed_front = md.geometry.bed(extrapolated_pos);
-    bed_front_normalised = (bed_front - mean(bed_data)) / std(bed_data); 
 
-    %% Polynomial basis model
-    G = ones(length(bed_data_normalised), 1);
-    size(G)
-    for n = 1:M
-        G = [G, bed_data_normalised.^n];
-    end
-    m = G \ friction_data_normalised;
+    %% Exponential 1-term model
+    f = fit(bed_data, friction_data, 'exp1');
 
     if validate_flag
         %% Validate
-        G = ones(length(bed_val_normalised), 1);
-        for n = 1:M
-            G = [G, bed_val_normalised.^n];
-        end
-        friction_syn = G * m;
-        friction_syn = friction_syn * friction_data_std + friction_data_mean;
+        friction_syn = f(bed_val); 
         mae = mean(abs(friction_val - friction_syn));
 
         %% Plotting
-        x_syn = linspace(min(bed_val_normalised), max(bed_val_normalised), 100)';
-        G = ones(length(x_syn), 1);
-        for n = 1:M
-            G = [G, x_syn.^n];
-        end
-        friction_plot = G * m;
-        friction_plot = friction_plot * friction_data_std + friction_data_mean;
+        bed_plot = linspace(min(bed_val), max(bed_val), 100)';
+        friction_plot = f(bed_plot); 
 
-        close 821
         figure(821);                                                                                                                                  
-        scatter(bed_val_normalised, friction_val); 
+        scatter(bed_val, friction_val); 
         hold on; 
         title(sprintf('MAE in validation area = %f', mae))
-        plot(x_syn, friction_plot);
+        plot(bed_plot, friction_plot);
         exportgraphics(gcf, "bed_friction_correlation.png")
     else
         mae = 800; % from earlier runs    
     end
 
     %% Extrapolate into front area using polynomial basis,
-    G_front = ones(length(bed_front_normalised), 1);
-    for n = 1:M
-        G_front = [G_front, bed_front_normalised.^n];
-    end
-    extrapolated_friction = G_front * m;
-    extrapolated_friction = extrapolated_friction * friction_data_std + friction_data_mean;
+    extrapolated_friction = f(bed_front); 
 
     friction_field(extrapolated_pos) = extrapolated_friction;    
     friction_field(friction_field <= cs_min) = cs_min;
