@@ -37,8 +37,8 @@ function [md] = run_model(config_name, plotting_flag)
     % budd_coeff = [8000, 3.0,  1e-05]; 
 
     % try both:
-    % budd_coeff = [16000, 3.0,  1.7783e-06];
-    budd_coeff = [8000, 3.0,  1.7783e-05]; 
+    budd_coeff = [16000, 3.0,  1.7783e-06];
+    % budd_coeff = [8000, 3.0,  1.7783e-05]; 
 
     % SCHOOF COEFFICIENTS
     % schoof_coeff = [2500, 2.0, 3e-08, 0.811428571428571]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
@@ -97,10 +97,11 @@ function [md] = run_model(config_name, plotting_flag)
 
     % Organizer
     org = organizer('repository', ['./Models'], 'prefix', ['Model_' glacier '_'], 'steps', steps); 
+    
     fprintf("Running model from %d to %d, with:\n", start_time, final_time);
-    fprintf(" - algorithm steps %s\n", config.ran_steps);
+    fprintf(" - algorithm steps: [%s]\n", num2str(steps));
     fprintf(" - friction law: %s\n", config.friction_law);
-    fprintf("   - parameters: %s\n", display_coefs);
+    fprintf("   - inversion coefficients: %s\n", display_coefs);
     fprintf("   - [CS_min, CS_max] = [%.3g, %.3g]\n", cs_min, cs_max);
 
 
@@ -158,10 +159,33 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 3 Friction law setup: Budd
+    %% 3 Forcings: Interpolate SMB
+    if perform(org, 'smb')
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
+
+        if strcmp(config.smb_name, "box")
+            md = interpolate_box_smb(md, start_time, final_time, smb_file);
+        else
+            the_files = dir(fullfile(smb_file, '*.nc'));
+            %TODO: CANNOT HANDLE ONLY PRE 1958 SELECTION (cat() reconstruct_racmo should be tested for this)
+            % reconstruct racmo if year<1958
+            if start_time < 1958 || final_time < 1958
+                disp("post 1958 - interpolating racmo")
+                md = interpolate_racmo_smb(md, 1958, final_time, the_files); % -1 to run to end 2021
+                disp("pre 1958 - reconstructing racmo")
+                md = reconstruct_racmo(md, start_time, final_time, ref_smb_start_time, ref_smb_final_time);
+            else
+                disp("post 1958 - interpolating racmo")
+                md = interpolate_racmo_smb(md, start_time, final_time, the_files);
+            end
+        end 
+        savemodel(org, md);
+    end
+
+    %% 4 Friction law setup: Budd
     if perform(org, 'budd')
 
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
         md = solve_stressbalance_budd(md, budd_coeff, cs_min, cs_max);
         savemodel(org, md);
 
@@ -187,10 +211,10 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 4 Friction law setup: Weertman
+    %% 5 Friction law setup: Weertman
     if perform(org, 'weertman')
 
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
         md = solve_stressbalance_weert(md, weertman_coeff, cs_min, cs_max);
         savemodel(org, md);
 
@@ -216,11 +240,11 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 5 Friction law setup: Schoof
+    %% 6 Friction law setup: Schoof
     if perform(org, 'schoof')
         friction_law = 'schoof';
         
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd_1.mat');
         % md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
         % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
 
@@ -252,40 +276,20 @@ function [md] = run_model(config_name, plotting_flag)
         end
     end
 
-    %% 6 Forcings: Interpolate SMB
-    if perform(org, 'smb')
+    %% 7 Parameterize LIA, extrapolate friction coefficient to LIA front
+    if perform(org, 'lia_param')
         if strcmp(config.friction_law, 'schoof')
             md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
             % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_schoof_lia.mat');
         elseif strcmp(config.friction_law, 'budd')
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd_1.mat'); %TODO: CHANGE WHEN TRYING DIFFERENT SETTINGS
             % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
-
+        elseif strcmp(config.friction_law, 'weertman')
+            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_weertman.mat');
         else
             warning("Friction law not implemented")
         end
-        if strcmp(config.smb_name, "box")
-            md = interpolate_box_smb(md, start_time, final_time, smb_file);
-        else
-            the_files = dir(fullfile(smb_file, '*.nc'));
-            %TODO: CANNOT HANDLE ONLY PRE 1958 SELECTION (cat() reconstruct_racmo should be tested for this)
-            % reconstruct racmo if year<1958
-            if start_time < 1958 || final_time < 1958
-                disp("post 1958 - interpolating racmo")
-                md = interpolate_racmo_smb(md, 1958, final_time, the_files); % -1 to run to end 2021
-                disp("pre 1958 - reconstructing racmo")
-                md = reconstruct_racmo(md, start_time, final_time, ref_smb_start_time, ref_smb_final_time);
-            else
-                disp("post 1958 - interpolating racmo")
-                md = interpolate_racmo_smb(md, start_time, final_time, the_files);
-            end
-        end 
-        savemodel(org, md);
-    end
-
-    %% 7 Parameterize LIA, extrapolate friction coefficient to LIA front
-    if perform(org, 'lia_param')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
+        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
         % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
         % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_weertman.mat');
         % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
@@ -293,7 +297,7 @@ function [md] = run_model(config_name, plotting_flag)
         disp("Parameterizing to LIA initial state")
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
         validate_flag = true; % TODO: move into config
-       
+
         disp("Extrapolating friction coefficient...")
         if strcmp(config.friction_extrapolation, "random_field")
             disp("Extrapolating friction coefficient using Random field method")
@@ -319,7 +323,7 @@ function [md] = run_model(config_name, plotting_flag)
 
         % set values under cs min to cs min
         extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
-        
+
         % find rocks and apply high friction %TODO: Make exp instead
         % mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
         % pos_rocks = find(mask == 1 & md.results.StressbalanceSolution.Vel < 50);
@@ -339,7 +343,6 @@ function [md] = run_model(config_name, plotting_flag)
             % md.friction.C(pos_rocks) = cs_max;
             friction_field = md.friction.C;
             
-        
         else
             warning('Friction law not recignised, choose schoof or budd')
         end
@@ -371,8 +374,8 @@ function [md] = run_model(config_name, plotting_flag)
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat');
         if ~strcmp(config.friction_law, 'budd')
 
-            % md_budd = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd_lia.mat');
-            md_budd = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
+            md_budd = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_budd_1.mat');
+            % md_budd = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
             md.inversion.vel_obs = md_budd.results.StressbalanceSolution.Vel;
             md.inversion.vx_obs = md_budd.results.StressbalanceSolution.Vx;
             md.inversion.vy_obs = md_budd.results.StressbalanceSolution.Vy;
@@ -381,11 +384,13 @@ function [md] = run_model(config_name, plotting_flag)
             % md.inversion.min_parameters = md.friction.C(~side_areas);
             % md.inversion.max_parameters = md.friction.C(~side_areas);
 
-            % TODO: FIX BUDD2SCHOOF SUCH THAT IT ALLOWS CS_MIN CS_MAX ARRAYS
+            % TODO: correct_schoof_lia_friction does not work. Try to flip order such that Schoof LIA is inverted from Budd,
+            % first then ask to recompute present Schoof LIA without touching the sides. 
             % md.inversion.iscontrol = 1;
             % md = solve(md, 'sb');
-            md = budd2schoof(md_budd, schoof_coeff, cs_min, cs_max);
-            
+            % md = budd2schoof(md_budd, schoof_coeff, cs_min, cs_max);
+            md = correct_schoof_lia_friction(md, md_budd, schoof_coeff, cs_min, cs_max);
+
             friction_field = md.friction.C;
             plotmodel(md, 'data', log(friction_field)./log(10), 'title', 'Initial state, FC and Vel', ...
             'data', md.results.StressbalanceSolution.Vel, 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 62); 
@@ -425,6 +430,13 @@ function [md] = run_model(config_name, plotting_flag)
 
         % fast solver
         md.toolkits.DefaultAnalysis=bcgslbjacobioptions();
+
+        % for testing
+        % md.timestepping.start_time = 1900;
+        % md.timestepping.final_time = 1900.1;
+
+        % fix front, option
+        md.transient.ismovingfront = 0;
         
         % get output
         md.transient.requested_outputs={'default', 'IceVolume', 'IceVolumeAboveFloatation'}; %,'IceVolume','MaskIceLevelset', 'MaskOceanLevelset'};
