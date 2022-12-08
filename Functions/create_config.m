@@ -23,8 +23,10 @@ function [config_file_name] = create_config()
     todays_date.Format = 'yyyy-MM-dd''T''HHmm';              
     todays_date = string(dateshift(todays_date, 'start', 'minute'));
 
+    control_run = false;
+
     % create table
-    config = table(todays_date, ran_steps, start_time, final_time, ice_temp, cf_weights, cs_min, cs_max, smb_name, friction_extrapolation, friction_law, model_name);
+    config = table(todays_date, ran_steps, start_time, final_time, ice_temp, cf_weights, cs_min, cs_max, smb_name, friction_extrapolation, friction_law, model_name, control_run);
 
     % save table
     config_file_name = append('config-', string(start_time), '-', string(final_time), '-D', todays_date, '.csv');

@@ -64,7 +64,6 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_m
         friction_plot = G * m;
         friction_plot = friction_plot * friction_data_std + friction_data_mean;
 
-        close 821
         figure(821);                                                                                                                                  
         scatter(bed_val_normalised, friction_val); 
         hold on; 

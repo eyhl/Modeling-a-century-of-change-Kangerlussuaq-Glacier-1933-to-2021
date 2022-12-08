@@ -55,7 +55,7 @@ function [surface_interpolated] = interpLiaSurface(mesh_x, mesh_y)
         xl = [4.778, 5.132]*1e5;
         yl = [-2.3039, -2.2763]*1e6;
 
-        md = loadmodel('/data/eigil/work/lia_kq/Models/accepted_models/Model_kangerlussuaq_budd.mat');
+        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
         
         figure(2);
         scatter(x, y, 50, topo, 'filled'); 
