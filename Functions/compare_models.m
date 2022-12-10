@@ -1,11 +1,15 @@
-function [] = compare_models(md_list, md_control_list, md_names, folder) %md1, md2, md3, md_control, folder)
-    close all;
+function [] = compare_models(md_list, md_control_list, md_names, folder, present_thickness) %md1, md2, md3, md_control, folder)
     save_path = folder;
     N = length(md_list);
-    CM = jet(N);
-    dt = 1/12;
-    start_time = md1.smb.mass_balance(end, 1);
-    final_time = md1.smb.mass_balance(end, end);
+    CM = parula(2*N);
+    if N > 1
+        CM = CM(2:4, :);
+    end
+    % dt = 1/12;
+    % start_time = md_list(1).smb.mass_balance(end, 1);
+    % final_time = md_list(1).smb.mass_balance(end, end);
+    marker_control = {':', '--', '-.'};
+    final_mass_loss = integrate_field_spatially(md_list(1), md_list(1).geometry.thickness - present_thickness) / (1e9) * 0.9167
     figure(111)
     for i=1:N
         md = md_list(i);
@@ -19,12 +23,16 @@ function [] = compare_models(md_list, md_control_list, md_names, folder) %md1, m
         vol_c = cell2mat({md_control.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
         vol_times_c = cell2mat({md_control.results.TransientSolution(:).time});
 
-        plot(vol_times1, vol1 - vol1(1), 'color', CM(i,:), 'LineWidth', 2, 'LineStyle', '-');
-        plot(vol_times_c, vol_c - vol_c(1), 'color', CM(i,:), 'LineWidth', 2, 'LineStyle', '-.');
+        plot(vol_times1, vol1 - vol1(1), 'color', CM(i,:), 'LineWidth', 1.5);
+        hold on;
+        plot(vol_times_c, vol_c - vol_c(1), 'color', CM(i,:), 'LineWidth', 1.5, 'LineStyle', marker_control{i});
+        % s1 = scatter(vol_times_c, vol_c - vol_c(1), 'color', CM(i,:), 'Marker', marker_control{i});
     end
+    % scatter(vol_times_c(end), final_mass_loss, 'r');
     ylabel('Year')
     ylabel('Mass [Gt]')
     xlim([1897, 2023])
+    % ylim([-400, 1000])
     legend(md_names, 'Location', 'northwest')
     grid on
 

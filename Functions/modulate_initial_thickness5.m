@@ -61,7 +61,7 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
             disp('SOLVE')
             md = solve(md,'Transient','runtimename',false); 
             fprintf("SAVE at iteration %d\n", i-1);
-            save("/data/eigil/work/lia_kq/Models/budd_corrected_dH.mat" , 'md', '-v7.3');
+            save(sprintf("/data/eigil/work/lia_kq/Models/budd_dec9_bedc_%d.mat", i-1) , 'md', '-v7.3');
         end
         if smoothing_factor_schedule
             if rem(i-1, round(n/length(smoothing_factor))) == 0
@@ -104,10 +104,10 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
         dH(nodes_with_large_err) = misfit_thickness(nodes_with_large_err);
 
         % propagate positions back in time 
-        [x_back, y_back, temporal_avg_field, ~] = flowline_traceback(md, dH, false);
+        [x_back, y_back, temporal_avg_field, ~] = flowline_traceback(md, dH, true);
         
         plotmodel(md, 'data', temporal_avg_field, 'figure', 500, 'title', 'update', 'caxis', [-300, 300]); ; exportgraphics(gcf, sprintf("temporal_avg_field%d.png", i-1));
-
+        pause
         % remove area with points that end up in the water.
         dH = temporal_avg_field;
         dH(front_area_small) = 0;

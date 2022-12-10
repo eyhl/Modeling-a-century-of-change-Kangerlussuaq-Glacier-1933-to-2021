@@ -17,7 +17,7 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_m
     %% LOAD DATA AND CREATE RELEVANT VARIABLES
     friction_data_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_data.exp', 2));
     friction_validation = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_validation.exp', 2));
-    extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area_slim.exp', 2));
+    extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area_slim_extend.exp', 2));
 
     % preprocess model data
     friction_data = friction_field(friction_data_pos);

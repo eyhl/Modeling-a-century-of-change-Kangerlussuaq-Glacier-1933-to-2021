@@ -82,7 +82,7 @@ function [md] = correct_schoof_lia_friction(md, md_budd, coeffs, cs_min, cs_max)
     md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
     %Controls
-    side_areas = ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/sides.exp', 2);
+    side_areas = ContourToNodes(md.mesh.x, md.mesh.y, 'Exp/1900_extrapolation_area_slim_extend.exp', 2);
     md.inversion.control_parameters={'FrictionC'};
     md.inversion.maxsteps=200;
     md.inversion.maxiter =200;
@@ -90,6 +90,8 @@ function [md] = correct_schoof_lia_friction(md, md_budd, coeffs, cs_min, cs_max)
     md.inversion.max_parameters = CS_max*ones(md.mesh.numberofvertices,1);
     md.inversion.min_parameters(~side_areas) = present_friction_C(~side_areas);
     md.inversion.max_parameters(~side_areas) = present_friction_C(~side_areas);
+    md.inversion.min_parameters(md.mask.ocean_levelset<0) = CS_min; 
+    md.inversion.max_parameters(md.mask.ocean_levelset<0) = CS_min;
     md.inversion.control_scaling_factors=1;
     md.inversion.gttol = 1e-3;
     md.inversion.dxmin = 1e-20;

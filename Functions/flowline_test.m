@@ -81,7 +81,7 @@ function [] = flowline_test(md, pos1, pos2)
     % compute the flowline
     for i = 1: length(x0)
         % get the flowline
-        flowlineList{i} =flowlines(index,x,y,u,v,x0(i),y0(i), 'maxiter', 200);
+        flowlineList{i} =flowlines(index,x,y,u,v,x0(i),y0(i), 'maxiter', 150);
         % get the distance along the flowline
         flowlineList{i}.Xmain = cumsum([0; sqrt((flowlineList{i}.x(2:end) - flowlineList{i}.x(1:end-1)) .^ 2 + (flowlineList{i}.y(2:end) - flowlineList{i}.y(1:end-1)) .^ 2)]') / 1000;
         % get the distance along the flowline from the calving front side
@@ -95,7 +95,7 @@ function [] = flowline_test(md, pos1, pos2)
         % To visualize the flowlines
         [~,I] = min(abs(flowlineList{i}.Xmain-ticks));
         if plotflag
-            plot(flowlineList{i}.x(1:end-5), flowlineList{i}.y(1:end-5), 'Linewidth', 1.5, 'LineStyle', 'none', 'Marker', 'x');
+            plot(flowlineList{i}.x, flowlineList{i}.y, 'Linewidth', 1.5, 'LineStyle', 'none', 'Marker', 'x');
             plot(flowlineList{i}.x(I), flowlineList{i}.y(I), 'ko', 'Linewidth', 1.5);
         end
     end
@@ -114,7 +114,7 @@ function [] = flowline_test(md, pos1, pos2)
     if plotflag
         figure(2)
         for i = 1: length(x0)
-            plot(flowlineList{i}.Xmain(1:end-5), flowlineList{i}.bed(1:end-5));
+            plot(flowlineList{i}.Xmain, flowlineList{i}.bed);
             hold on
         end
         % xlim([72, 95])

@@ -281,11 +281,14 @@ function [md] = run_model(config_name, plotting_flag)
         offset = true;
         if strcmp(config.friction_law, 'schoof')
             md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
+            M = 4; % polynomial order
         elseif strcmp(config.friction_law, 'budd')
             md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat'); %TODO: CHANGE WHEN TRYING DIFFERENT SETTINGS
+            M = 4; % polynomial order
             % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
         elseif strcmp(config.friction_law, 'weertman')
             md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_weertman.mat');
+            M = 4; % polynomial order
         else
             warning("Friction law not implemented")
         end
@@ -311,14 +314,11 @@ function [md] = run_model(config_name, plotting_flag)
             disp("Extrapolating friction coefficient using Random field method")
             [extrapolated_friction, extrapolated_pos, mae_rf] = friction_random_field_model(md, cs_min, config.friction_law, validate_flag); 
         elseif strcmp(config.friction_extrapolation, "bed_correlation")
-            M = 6; % polynomial order
-
             % save M for reference
             md.miscellaneous.dummy.bed_corr_polynomial_order = M;
 
             disp("Extrapolating friction coefficient correlated linearly with bed topography")
-            [extrapolated_friction, extrapolated_pos, ~] = friction_correlation_model(md, cs_min, M, config.friction_law, validate_flag); 
-
+            [extrapolated_friction, extrapolated_pos, ~] = friction_correlation_model(md, cs_min, M, config.friction_law, validate_flag);
         elseif strcmp(config.friction_extrapolation, 'exponential_correlation')
             [extrapolated_friction, extrapolated_pos, ~] = friction_exponential_model(md, cs_min, friction_law, validate_flag);
  
@@ -342,8 +342,9 @@ function [md] = run_model(config_name, plotting_flag)
             if offset
                 disp('Offset correction')
                 if strcmp(config.friction_extrapolation, "bed_correlation")
-                    offset = median(md.friction.C) / 5;
-                    md.friction.coefficient(extrapolated_pos) = extrapolated_friction + offset;
+                    % offset = median(md.friction.coefficient) / 5;
+                    offset = 2;
+                    md.friction.coefficient(extrapolated_pos) = extrapolated_friction * offset;
                 elseif strcmp(config.friction_extrapolation, "constant")
                     offset = 25;
                     md.friction.coefficient(extrapolated_pos) = offset;
@@ -352,14 +353,15 @@ function [md] = run_model(config_name, plotting_flag)
                 md.friction.coefficient(extrapolated_pos) = extrapolated_friction;
             end
             % md.friction.coefficient(pos_rocks) = cs_max;
+            md.friction.coefficient(md.mask.ocean_levelset<0) = cs_min; 
             friction_field = md.friction.coefficient;
 
         elseif strcmp(config.friction_law, 'weertman')
             if offset
                 disp('Offset correction')
                 if strcmp(config.friction_extrapolation, "bed_correlation")
-                    offset = 0;
-                    md.friction.C(extrapolated_pos) = extrapolated_friction + offset;
+                    offset = 1.0;
+                    md.friction.C(extrapolated_pos) = extrapolated_friction * offset;
                 elseif strcmp(config.friction_extrapolation, "constant")
                     offset = 2350;
                     md.friction.C(extrapolated_pos) = offset;
@@ -368,14 +370,16 @@ function [md] = run_model(config_name, plotting_flag)
                 md.friction.C(extrapolated_pos) = extrapolated_friction;
             end
             % md.friction.coefficient(pos_rocks) = cs_max;
+            md.friction.C(md.mask.ocean_levelset<0) = cs_min; 
             friction_field = md.friction.C;
 
         elseif strcmp(config.friction_law, 'schoof')
             if offset
                 disp('Offset correction')
                 if strcmp(config.friction_extrapolation, "bed_correlation")
-                    offset = median(md.friction.C) / 10;
-                    md.friction.C(extrapolated_pos) = extrapolated_friction + offset;
+                    % offset = median(md.friction.C) / 10;
+                    offset = 1.5;
+                    md.friction.C(extrapolated_pos) = extrapolated_friction * offset;
                 elseif strcmp(config.friction_extrapolation, "constant")
                     offset = 2000;
                     md.friction.C(extrapolated_pos) = offset;
@@ -384,6 +388,7 @@ function [md] = run_model(config_name, plotting_flag)
                 md.friction.C(extrapolated_pos) = extrapolated_friction;
             end
             % md.friction.C(pos_rocks) = cs_max;
+            md.friction.C(md.mask.ocean_levelset<0) = cs_min; 
             friction_field = md.friction.C;
             
         else
@@ -421,7 +426,7 @@ function [md] = run_model(config_name, plotting_flag)
         friction_correction = false;
         if friction_correction
             disp("Correcting friction!!")
-            md_budd = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_budd.mat');
+            md_budd = loadmodel('Models/dec8_bed_corr/Model_kangerlussuaq_transient_budd.mat');
             % md_budd = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
             md.inversion.vel_obs = md_budd.results.StressbalanceSolution.Vel;
             md.inversion.vx_obs = md_budd.results.StressbalanceSolution.Vx;
@@ -485,7 +490,6 @@ function [md] = run_model(config_name, plotting_flag)
         % fix front, option
         if config.control_run
             disp('-------------- CONTROL RUN --------------')
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_transient_budd.mat');
             md.transient.ismovingfront = 0;
         end
 

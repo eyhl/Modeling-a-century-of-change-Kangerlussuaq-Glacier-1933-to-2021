@@ -16,6 +16,7 @@ function [surface_interpolated] = interpLiaSurface(mesh_x, mesh_y)
     geoid = interpBmGreenland(mesh_x, mesh_y, 'geoid');
 
     surface_interpolated = surface_interpolated - geoid;
+    % this is because sea surface is set to 0 in ellipsoid ref (bad choice of NaN imo), so actual sea surface ends up below 0.
     surface_interpolated(surface_interpolated<0) = 0;
 
     %% Missing values
