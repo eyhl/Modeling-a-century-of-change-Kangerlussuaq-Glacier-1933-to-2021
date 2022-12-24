@@ -1,6 +1,7 @@
-function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_initial_thickness5(md, step_size, n, smoothing_factor)
-    error_cap = 50;
+function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_initial_thickness6(md, step_size, n, smoothing_factor)
+    error_cap = 20;
     min_thickness = 10;
+    md0 = loadmodel('Models/Model_kangerlussuaq_param.mat');
 
     if nargin < 5
         smoothing_factor = 1;
@@ -45,14 +46,16 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
     updated_thickness(:, 1) = md.geometry.thickness;
 
     % load observed thickness in 2021 from Ice Sat 2
-    obs_surface = interp2021Surface(md, [md.mesh.x, md.mesh.y]);                             
-    obs_thickness = obs_surface - md.geometry.base;
+    % obs_surface = interp2021Surface(md, [md.mesh.x, md.mesh.y]);                             
+    obs_thickness = md0.geometry.thickness;
 
     % ocean + some spots on the cliffs which are not a part of the glacier
     front_area_small = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_small.exp', 2));
+    % front_area_small = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area_slim.exp', 2));
     front_area_large = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_large.exp', 2));
     area_of_no_error = ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/area_of_missing_error_1900.exp', 2);
-    
+    interior = ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/interior_errors.exp', 2);
+    boundary_nodes = find(md.mesh.vertexonboundary);
 
     fid = fopen('status.txt','w');
     j = 1;
@@ -72,7 +75,7 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
             end
         end
         times = [md.results.TransientSolution.time];
-        index_2021 = find(times > 2020 & times < 2022);
+        index_2021 = find(times > 2010 & times < 2021);
 
         pred_thickness = mean([md.results.TransientSolution(index_2021).Thickness], 2, 'omitnan');
 
@@ -80,10 +83,12 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
         misfit_thickness = pred_thickness - obs_thickness; 
 
         % base mae computation on relevant areas
-        misfit_thickness(misfit_thickness<-error_cap) = -error_cap;
-        misfit_thickness(misfit_thickness>=error_cap) = error_cap;
+        % misfit_thickness(misfit_thickness<-error_cap) = -error_cap;
+        % misfit_thickness(misfit_thickness>=error_cap) = error_cap;
         
         % misfit_thickness(final_levelset > 0) = NaN; % ocean
+        % misfit_thickness(~interior) = NaN; % ocean / irrelavant front area, cannot be updated
+        % misfit_thickness(boundary_nodes) = NaN; % ocean / irrelavant front area, cannot be updated
         misfit_thickness(front_area_small) = NaN; % ocean / irrelavant front area, cannot be updated
         % misfit_thickness(mask == 1) = NaN; % non-ice areas
 
@@ -111,18 +116,20 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
         % remove area with points that end up in the water.
         dH = temporal_avg_field;
         dH(front_area_small) = 0;
+        dH(boundary_nodes) = 0;
 
         % % smooth update
         % dH = averaging(md, dH, smooth);
 
         % decrease the step size if you overshoot
-        if mae_thickness >= mae_list(i-1) % increasing
-            step_size = 0.9 * step_size;
-        end
+        % if mae_thickness >= mae_list(i-1) % increasing
+        %     step_size = 0.5 * step_size;
+        % end
         step_size_history(i) = step_size;
 
         updated_thickness(:, i) = updated_thickness(:, i-1) - step_size .* dH;
 
+        pos_update = dH ~= 0;
         % update initial thickness
         md.geometry.thickness = updated_thickness(:, i);
 
@@ -135,16 +142,17 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
         md.geometry.surface(pos) = md.geometry.base(pos) + 10; % Minimum thickness
         md.geometry.thickness = md.geometry.surface - md.geometry.base; % thickness=surface-base
 
+        plotmodel(md, 'data', md.geometry.base ~= md.geometry.bed, 'figure', 999)
+
         % update transient boundary spc thickness
         pos = find(md.mesh.vertexonboundary);
         md.masstransport.spcthickness(pos, 1) = md.geometry.thickness(pos);
 
         % status plotting
-        plotmodel(md, 'data', md.geometry.surface, 'figure', 53, 'title', 'current surface'); exportgraphics(gcf, sprintf("currentSurf%d.png", i-1));
-        plotmodel(md, 'data', misfit_thickness, 'figure', 48, 'title', 'misfit', 'caxis', [-300, 300]); exportgraphics(gcf, sprintf("misfit%d.png", i-1));
-        plotmodel(md, 'data', dH, 'figure', 50, 'title', 'update', 'caxis', [-300, 300]); exportgraphics(gcf, sprintf("update%d.png", i-1));
-        plotmodel(md, 'data', updated_thickness(:, i) - updated_thickness(:, i-1), 'figure', 51, 'title', 'difference between thickness i and i-1'); exportgraphics(gcf, sprintf("difference%d.png", i-1));
-        plotmodel(md, 'data', updated_thickness(:, i), 'figure', 52, 'title', 'current thickness', 'caxis', [0, 2500]); exportgraphics(gcf, sprintf("currentH%d.png", i-1));
+        plotmodel(md, 'data', md.geometry.surface, 'figure', 53, 'title', 'current surface', 'mask', md.results.TransientSolution(end).MaskIceLevelset<0); colormap('turbo'); exportgraphics(gcf, sprintf("currentSurf%d.png", i-1));
+        plotmodel(md, 'data', misfit_thickness, 'figure', 48, 'title', 'misfit', 'caxis', [-200, 200], 'mask', md.results.TransientSolution(end).MaskIceLevelset<0); colormap('turbo'); exportgraphics(gcf, sprintf("misfit%d.png", i-1));
+        plotmodel(md, 'data', updated_thickness(:, i) - updated_thickness(:, i-1), 'figure', 51, 'title', 'difference between thickness i and i-1', 'mask', md.results.TransientSolution(end).MaskIceLevelset<0); colormap('turbo'); exportgraphics(gcf, sprintf("difference%d.png", i-1));
+        plotmodel(md, 'data', updated_thickness(:, i), 'figure', 52, 'title', 'current thickness', 'caxis', [0, 2500], 'mask', md.results.TransientSolution(end).MaskIceLevelset<0); colormap('turbo'); exportgraphics(gcf, sprintf("currentH%d.png", i-1));
         fprintf(fid, '%d  %f  %f  %f  %s\n', i-1, mae_thickness, mean_thickness_list(i-1), step_size, datetime);
 
         % for saving the variables

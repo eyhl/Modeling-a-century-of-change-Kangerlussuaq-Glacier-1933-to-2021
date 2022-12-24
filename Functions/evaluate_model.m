@@ -8,15 +8,15 @@ function [md] = evaluate_model(md, folder, plot_options)
         final_time = md.smb.mass_balance(end, end);
 
         %% Volume plot
-        vol = cell2mat({md.results.TransientSolution(:).IceVolume});
-        vol_times = cell2mat({md.results.TransientSolution(:).time});
-        figure(1);
-        plot(vol_times, vol / (1e9), '-r');
-        title('Ice Volume, RACMO')
-        ylabel('Volume [km^3]')
-        xlim([1897, 2023])
-        % ylim([2.32e4 2.48e4])
-        saveas(gcf, fullfile(save_path, 'ice_volume.png'))
+        % vol = cell2mat({md.results.TransientSolution(:).IceVolume});
+        % vol_times = cell2mat({md.results.TransientSolution(:).time});
+        % figure(1);
+        % plot(vol_times, vol / (1e9), '-r');
+        % title('Ice Volume, RACMO')
+        % ylabel('Volume [km^3]')
+        % xlim([1897, 2023])
+        % % ylim([2.32e4 2.48e4])
+        % saveas(gcf, fullfile(save_path, 'ice_volume.png'))
 
         % % Diagnostics
         % smb_data = md.miscellaneous.dummy.smb_anomaly;
@@ -51,18 +51,17 @@ function [md] = evaluate_model(md, folder, plot_options)
         saveas(gcf, 'smb_racmo_ref.png')
 
 
-        I_smb = integrate_field_spatially(md, md.smb.mass_balance(1:end-1, :)) * md.materials.rho_ice * 1e-12; % from m^3/yr to Gt/yr
+        I_smb = integrate_field_spatially(md, md.smb.mass_balance(1:end-1, :)) * md.materials.rho_ice / 1e12; % from m^3/yr to Gt/yr
         I_cumulative_smb = dt * cumtrapz(I_smb); % * with 1/12 because doc of cumtrapz says that it is equivalent to inputting the distance between data points.
         I_cumulative_smb_anom = dt * cumtrapz(smb_anomaly');
 
 
-        % figure(6);
-        % plot(linspace(start_time, final_time, length(I_cumulative_smb)), I_cumulative_smb, '-r');
-        % title('SMB, Cumulative sum')
-        % % ylabel('SMB [m^3/yr (IE)]')
-        % ylabel('SMB [Gt/yr]')
-        % xlim([1897, 2023])
-        % saveas(gcf, fullfile(save_path, 'smb_cumulative.png'))
+        figure(6);
+        plot(linspace(start_time, final_time, length(I_cumulative_smb)), I_cumulative_smb, '-r');
+        title('SMB, Cumulative')
+        ylabel('SMB [Gt]')
+        xlim([1897, 2023])
+        saveas(gcf, fullfile(save_path, 'smb_cumulative.png'))
 
         % figure(61);
         % plot(linspace(start_time, final_time, length(I_cumulative_smb_anom)), I_cumulative_smb_anom, '-r');
@@ -73,12 +72,12 @@ function [md] = evaluate_model(md, folder, plot_options)
         % saveas(gcf, fullfile(save_path, 'smb_anomaly_cumulative.png'))
 
         smb_times = linspace(start_time, final_time, length(I_smb));
-        dt = mean(diff(smb_times)); % = 1/12
-        vol_interp = interp1(vol_times, vol, smb_times, 'linear', 'extrap');
-        disp(mean(vol_interp))
-        vol_diff = diff(vol_interp) ./ dt;
-        disp(mean(vol_diff))
-        vol_diff = vol_diff * md.materials.rho_ice * 1e-12; % density of ice in Gt/km^3
+        % dt = mean(diff(smb_times)); % = 1/12
+        % vol_interp = interp1(vol_times, vol, smb_times, 'linear', 'extrap');
+        % disp(mean(vol_interp))
+        % vol_diff = diff(vol_interp) ./ dt;
+        % disp(mean(vol_diff))
+        % vol_diff = vol_diff * md.materials.rho_ice * 1e-12; % density of ice in Gt/km^3
 
         figure(7);
         subplot(2, 1, 1);
@@ -88,16 +87,16 @@ function [md] = evaluate_model(md, folder, plot_options)
         ylabel('SMB [Gt/yr]')
         xlim([1897, 2023])
 
-        subplot(2, 1, 2);
-        plot(smb_times(2:end), vol_diff, '-r');
-        title('Ice volume derivative')
-        % ylabel('Volume change [km^3/yr]')
-        ylabel('Volume change [Gt/yr]')
-        xlim([1897, 2023])
-        saveas(gcf, fullfile(save_path, 'smb_vs_vol.png'))
+        % subplot(2, 1, 2);
+        % plot(smb_times(2:end), vol_diff, '-r');
+        % title('Ice volume derivative')
+        % % ylabel('Volume change [km^3/yr]')
+        % ylabel('Volume change [Gt/yr]')
+        % xlim([1897, 2023])
+        % saveas(gcf, fullfile(save_path, 'smb_vs_vol.png'))
 
         I_mov_avg = movmean(I_smb, 120);
-        vol_diff_mov_avg = movmean(vol_diff, 120);
+        % vol_diff_mov_avg = movmean(vol_diff, 120);
         smb_anom_mov_avg = movmean(smb_anomaly, 120);
         time_10_yrs = linspace(1900, 2022, length(I_mov_avg));
 
@@ -110,12 +109,12 @@ function [md] = evaluate_model(md, folder, plot_options)
         ylabel('SMB [Gt/yr]')
         xlim([1897, 2023])
 
-        subplot(3, 1, 2);
-        plot(time_10_yrs(2:end), vol_diff_mov_avg, '-r');
-        title('Ice volume derivative')
-        % ylabel('Volume change [km^3/yr]')
-        ylabel('Volume change [Gt/yr]')
-        xlim([1897, 2023])
+        % subplot(3, 1, 2);
+        % plot(time_10_yrs(2:end), vol_diff_mov_avg, '-r');
+        % title('Ice volume derivative')
+        % % ylabel('Volume change [km^3/yr]')
+        % ylabel('Volume change [Gt/yr]')
+        % xlim([1897, 2023])
 
         subplot(3, 1, 3);
         plot(time_10_yrs, dt * cumtrapz(smb_anom_mov_avg), '-r');

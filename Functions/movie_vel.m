@@ -11,8 +11,8 @@ function [] = movie_vel(md, movieName)
     Nt =  length(time);
     nstep = 1;
     nframes = floor(Nt/nstep);
-    xl = [4.758, 5.102]*1e5;
-    yl = [-2.3039, -2.2763]*1e6;
+    xl = [4.658, 5.102]*1e5;
+    yl = [-2.3039, -2.2663]*1e6;
 
     clear mov;
     close all;
@@ -21,14 +21,14 @@ function [] = movie_vel(md, movieName)
     count = 1;
     for i = 1:nstep:Nt
         plotmodel(md,'data', md.results.TransientSolution(i).Vel,...
-            'levelset', md.results.TransientSolution(i).MaskIceLevelset, 'gridded', 1,...
+            'levelset', md.mask.ice_levelset, 'gridded', 1,...
             'caxis', [0, 13e3], 'colorbar', 'on',...
             'xtick', [], 'ytick', [], ...
             'xlim', xl, 'ylim', yl);%, ...
             % 'tightsubplot#all', 1,...
             % 'hmargin#all', [0.01,0.0], 'vmargin#all',[0,0.06], 'gap#all',[.0 .0]); %,...
             % 'subplot', [nRows,nCols,subind(j)]);
-        title(sprintf('Velocity, %s', datestr(decyear2date(time(i)))))
+        title(sprintf('Velocity in %s', datestr(decyear2date(time(i)), 'yyyy')))
         set(gca,'fontsize', 10);
         % set(colorbar,'visible','off')
         % h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
