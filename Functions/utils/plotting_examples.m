@@ -47,7 +47,7 @@ function [] = investigation_plotting(name)
     %% Check velocity data
     check_data = false;
     if check_data
-        data = 'Data/nsidc_2006/greenland_vel_mosaic500_2006_2007_vv_v02.1.tif';
+        warning("Does not exist anymore: Data/nsidc_2006/greenland_vel_mosaic500_2006_2007_vv_v02.1.tif\n NSIDC data on local machine");
             [A, R] = readgeoraster(data);
             X_range = R.XWorldLimits(1):500:R.XWorldLimits(2);
             Y_range = R.YWorldLimits(1):500:R.YWorldLimits(2);

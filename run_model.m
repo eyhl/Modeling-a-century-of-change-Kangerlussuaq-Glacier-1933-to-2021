@@ -73,7 +73,7 @@ function [md] = run_model(config_name, plotting_flag)
     md.miscellaneous.name = config.model_name;
 
     % Relevant data paths
-    front_shp_file = 'Data/fronts/merged_fronts/merged_fronts.shp';
+    front_shp_file = 'Data/shape/fronts/merged_fronts/merged_fronts.shp';
 
     if strcmp(config.friction_extrapolation, "texture_synth")
         friction_simulation_file = 'synthetic_friction.mat'; % 'synthetic_friction.mat'; før: texture_synth_friction
