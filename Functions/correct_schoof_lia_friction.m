@@ -82,7 +82,7 @@ function [md] = correct_schoof_lia_friction(md, md_budd, coeffs, cs_min, cs_max)
     md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
     %Controls
-    side_areas = ContourToNodes(md.mesh.x, md.mesh.y, 'Exp/1900_extrapolation_area_slim_extend.exp', 2);
+    side_areas = ContourToNodes(md.mesh.x, md.mesh.y, 'Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2);
     md.inversion.control_parameters={'FrictionC'};
     md.inversion.maxsteps=200;
     md.inversion.maxiter =200;

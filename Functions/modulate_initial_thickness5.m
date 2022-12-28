@@ -49,9 +49,9 @@ function [md, mae_list, misfit_thickness_list, mean_thickness_list] = modulate_i
     obs_thickness = obs_surface - md.geometry.base;
 
     % ocean + some spots on the cliffs which are not a part of the glacier
-    front_area_small = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_small.exp', 2));
-    front_area_large = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_large.exp', 2));
-    area_of_no_error = ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/area_of_missing_error_1900.exp', 2);
+    front_area_small = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_small.exp', 2));
+    front_area_large = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_large.exp', 2));
+    area_of_no_error = ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/modulation/area_of_missing_error_1900.exp', 2);
     
 
     fid = fopen('status.txt','w');

@@ -18,11 +18,11 @@ function [surface_interpolated] = interpLiaSurface(mesh_x, mesh_y)
     surface_interpolated = surface_interpolated - geoid;
     % this is because sea surface is set to 0 in ellipsoid ref (bad choice of NaN imo), so actual sea surface ends up below 0.
     surface_interpolated(surface_interpolated<0) = 0;
-
+    
     %% Missing values
     % there is missing surface elevation data on the edges of the domain (set to 0) so we want to interpolate those
     % we want to avoid touching the front area so I have made an exp for that:
-    not_front_area = ~ContourToNodes(mesh_x, mesh_y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_large.exp', 2);
+    not_front_area = ~ContourToNodes(mesh_x, mesh_y, '/data/eigil/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_large.exp', 2);
 
     % % Find low surface elevation everywhere but the front area, 10 meters is a buffer.
     known_surface = surface_interpolated > 10;
@@ -41,7 +41,7 @@ function [surface_interpolated] = interpLiaSurface(mesh_x, mesh_y)
     % between front position and surface != 0 where the surface is 0. The most safe thing would be
     % to define this area in a general manner, but as there is no 0's left, except at the front, so
     % we will be able to make a boolean mask.
-    ice_levelset =  ContourToNodes(mesh_x, mesh_y, '/data/eigil/work/lia_kq/Exp/ice_front.exp', 2);
+    ice_levelset =  ContourToNodes(mesh_x, mesh_y, '/data/eigil/work/lia_kq/Exp/first_front/first_front.exp', 2);
     cond1 = surface_interpolated > missing_value_at_front;
     cond2 = surface_interpolated <= missing_value_at_front & ice_levelset;
     pos1 = find(cond1);
@@ -66,8 +66,8 @@ function [surface_interpolated] = interpLiaSurface(mesh_x, mesh_y)
         ylim(yl);
         colormap('turbo');
 
-        plotmodel(md, 'data', surface_interpolated, 'mask', cond1, 'figure', 3, 'expdisp#all', 'Exp/ice_front.exp', 'xlim', xl, 'ylim', yl);
-        plotmodel(md, 'data', surface_interpolated, 'mask', cond2, 'figure', 4, 'expdisp#all', 'Exp/ice_front.exp', 'xlim', xl, 'ylim', yl);
+        plotmodel(md, 'data', surface_interpolated, 'mask', cond1, 'figure', 3, 'expdisp#all', 'Exp/first_front.exp', 'xlim', xl, 'ylim', yl);
+        plotmodel(md, 'data', surface_interpolated, 'mask', cond2, 'figure', 4, 'expdisp#all', 'Exp/first_front.exp', 'xlim', xl, 'ylim', yl);
 
         mask = int8(interpBmGreenland(mesh_x, mesh_y, 'mask'));
         surf_plot = surface_interpolated;

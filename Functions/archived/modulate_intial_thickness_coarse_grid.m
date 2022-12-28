@@ -38,7 +38,7 @@ function [md, dh, misfit_thk, mean_thicknesses] = modulate_intial_thickness(md, 
     % if spatial smoothing is enabled, get observations on coarse grid
     if spatial_smooth
         % interpolate 2021 surface
-        domain = ['Exp/' 'Kangerlussuaq_new' '.exp'];
+        domain = ['Exp/domain/' 'Kangerlussuaq_new' '.exp'];
         coarse_md = triangle(model, domain, 1500); % "model" is an empty md object
         coarse_mesh = [coarse_md.mesh.x, coarse_md.mesh.y];
         mask = int8(interpBmGreenland(coarse_md.mesh.x, coarse_md.mesh.y, 'mask'));

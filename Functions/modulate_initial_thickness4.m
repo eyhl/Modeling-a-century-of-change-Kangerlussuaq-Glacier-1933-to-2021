@@ -60,8 +60,8 @@ function [md, mae_list, misfit_thk, mean_thicknesses, adam_steps] = modulate_ini
     final_levelset = md.levelset.spclevelset(1:end-1, end);
     mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
     % ocean + some spots on the cliffs which are not a part of the glacier
-    front_area_small = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_small.exp', 2));
-    front_area_large = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_large.exp', 2));
+    front_area_small = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_small.exp', 2));
+    front_area_large = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_large.exp', 2));
 
     updated_thickness = zeros(length(md.geometry.surface), n+1);
     updated_thickness(:, 1) = md.geometry.thickness;

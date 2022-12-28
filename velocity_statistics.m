@@ -9,7 +9,7 @@ function [stats, vel] = velocity_statistics(md)
     stats.dist = {};
     stats.log_dist = {};
 
-    fast_flow_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, 'Exp/fast_flowing_region.exp', 2));
+    fast_flow_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, 'Exp/fast_flow/fast_flowing_region.exp', 2));
     vel = md.results.StressbalanceSolution.Vel(fast_flow_pos);
     vel(vel == 0) = NaN;
     vel(vel >= 1e4) = [];

@@ -28,7 +28,7 @@ function [x, y, temporal_avg_field, accumulated_field] = flowline_traceback(md, 
     x = zeros(length(md.mesh.x), N_times);
     y = zeros(length(md.mesh.y), N_times);
 
-    domain = ['Exp/' 'Kangerlussuaq_full_basin_no_sides' '.exp'];
+    domain = ['Exp/domain/' 'Kangerlussuaq_full_basin_no_sides' '.exp'];
     coarse_md = triangle(model, domain, 1500);
     coarse_md.mesh.epsg=3413;
     accumulated_field = zeros(length(coarse_md.mesh.y), N_times);

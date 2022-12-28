@@ -37,8 +37,8 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_random_field_
 
     %find glacier frony from earlier
     extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
-    friction_data_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_data.exp', 2));
-    friction_validation_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_validation.exp', 2));
+    friction_data_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_utils/friction_data.exp', 2));
+    friction_validation_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_utils/friction_validation.exp', 2));
     friction_val = friction_field(friction_validation_pos);
 
     % TODO: change to md.results.Stressbalancesolution.friction -> remove averaging 
@@ -105,8 +105,8 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_random_field_
         h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
         title(h, "Friction Coefficient")
         colormap('turbo') 
-        expdisp('/data/eigil/work/lia_kq/Exp/friction_data.exp', 'linewidth', 1, 'linestyle', 'r--')
-        expdisp('/data/eigil/work/lia_kq/Exp/friction_validation.exp', 'linewidth', 1, 'linestyle', 'r--')
+        expdisp('/data/eigil/work/lia_kq/Exp/extrapolation_utils/friction_data.exp', 'linewidth', 1, 'linestyle', 'r--')
+        expdisp('/data/eigil/work/lia_kq/Exp/extrapolation_utils/friction_validation.exp', 'linewidth', 1, 'linestyle', 'r--')
         exportgraphics(gcf, "friction_field_rf.png")
     end
 

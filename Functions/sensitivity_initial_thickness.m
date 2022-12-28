@@ -15,8 +15,8 @@ function [md, mae_list, misfit_thk, mean_thicknesses] = sensitivity_initial_thic
     mae_list = zeros(n+1, 1);
     mean_thicknesses = zeros(n, 1);
     misfit_thk = zeros(length(md.geometry.surface), n+1);
-    front_area_small = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_small.exp', 2));
-    front_area_large = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/dont_update_init_H_here_large.exp', 2));
+    front_area_small = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_small.exp', 2));
+    front_area_large = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_large.exp', 2));
 
     smooth = 20;
 

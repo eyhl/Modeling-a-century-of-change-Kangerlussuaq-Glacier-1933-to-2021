@@ -40,11 +40,11 @@ function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, re
     md.miscellaneous.dummy.ref_smb_box = ref_smb_box;
 
     % Extrapolate into fjord using avg racmo ref at front and anomaly
-    pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/ref_racmo_front.exp', 2));             
+    pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_utils/ref_racmo_front.exp', 2));             
     avg_smb_at_front = mean(ref_smb_racmo(pos)); % average in front area of ref racmo               
     
     % combine avg in front area with anomaly to get estimate for smb in retreated area
-    pos2 = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area_smb.exp', 2));
+    pos2 = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_smb.exp', 2));
     extrapolated_smb = avg_smb_at_front - smb_box_anomaly(pos2, :);                                                     
     smb_racmo_reconstructed(pos2, :) = extrapolated_smb; 
 

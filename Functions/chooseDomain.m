@@ -66,14 +66,14 @@ function [] = chooseDomain(md)
     % use exptool {{{
     % expName = CFcontour;
     % expName = 'Exp/temperature_validation.exp';
-    expName = 'Exp/1900_extrapolation_area_temp.exp';
+    expName = 'Exp/extrapolation_domain/1900_extrapolation_area_temp.exp';
     % expName = 'Exp/thickness_misfit_aoi.exp';
-    % expName = 'Exp/friction_validation.exp';
-    % expName = '../Exp/1900_refine_area.exp';
+    % expName = 'Exp/extrapolation_utils/friction_validation.exp';
+    % expName = '../Exp/domain/1900_refine_area.exp';
     % expName = 'Exp/1900_extrapolation_area.exp';
     % expName = '../Exp/ice_inside.exp'
-    % expName = '../Exp/first_front.exp';
-    % expName = '../Exp/Kangerlussuaq_new.exp'
+    % expName = '../Exp/first_front/first_front.exp';
+    % expName = '../Exp/domain/Kangerlussuaq_new.exp'
     exptool(expName)
     system(['mv ', expName, '  Exp/']);
     %}}}

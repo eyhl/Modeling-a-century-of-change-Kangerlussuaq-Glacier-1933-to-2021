@@ -21,9 +21,9 @@ function [md] = temperature_correlation_model(md, M, add_constant, validate_flag
     end
 
     %% LOAD DATA AND CREATE RELEVANT VARIABLES
-    data_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/temperature_data.exp', 2));
-    val_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/temperature_validation.exp', 2));
-    extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area_temp.exp', 2));
+    data_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_utils/temperature_data.exp', 2));
+    val_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_utils/temperature_validation.exp', 2));
+    extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_temp.exp', 2));
     temperature_field = md.miscellaneous.dummy.temperature_field;
 
     % preprocess model data
@@ -96,8 +96,8 @@ function [md] = temperature_correlation_model(md, M, add_constant, validate_flag
         h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
         title(h, "Temperature field")
         colormap('turbo')
-        expdisp('/data/eigil/work/lia_kq/Exp/temperature_data.exp', 'linewidth', 1, 'linestyle', 'r--')
-        expdisp('/data/eigil/work/lia_kq/Exp/temperature_validation.exp', 'linewidth', 1, 'linestyle', 'r--')
+        expdisp('/data/eigil/work/lia_kq/Exp/extrapolation_utils/temperature_data.exp', 'linewidth', 1, 'linestyle', 'r--')
+        expdisp('/data/eigil/work/lia_kq/Exp/extrapolation_utils/temperature_validation.exp', 'linewidth', 1, 'linestyle', 'r--')
         exportgraphics(gcf, "temp_field_poly.png")
     end
     md.miscellaneous.dummy.temperature_field = temperature_field;

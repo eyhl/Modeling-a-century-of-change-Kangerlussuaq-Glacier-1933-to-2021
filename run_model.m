@@ -114,8 +114,8 @@ function [md] = run_model(config_name, plotting_flag)
     %% 1 Mesh: setup and refine
     if perform(org, 'mesh')
         % domain of interest
-        % domain = ['Exp/' 'Kangerlussuaq_new' '.exp'];
-        domain = ['Exp/' 'Kangerlussuaq_full_basin_no_sides' '.exp'];
+        % domain = ['Exp/domain/' 'Kangerlussuaq_new' '.exp'];
+        domain = ['Exp/domain/' 'Kangerlussuaq_full_basin_no_sides' '.exp'];
 
         % Creates, refines and saves mesh in md
         check_mesh = false;
@@ -431,10 +431,6 @@ function [md] = run_model(config_name, plotting_flag)
             md.inversion.vel_obs = md_budd.results.StressbalanceSolution.Vel;
             md.inversion.vx_obs = md_budd.results.StressbalanceSolution.Vx;
             md.inversion.vy_obs = md_budd.results.StressbalanceSolution.Vy;
-
-            % side_areas = ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/sides.exp', 2);
-            % md.inversion.min_parameters = md.friction.C(~side_areas);
-            % md.inversion.max_parameters = md.friction.C(~side_areas);
 
             % TODO: correct_schoof_lia_friction does not work. Try to flip order such that Schoof LIA is inverted from Budd,
             % first then ask to recompute present Schoof LIA without touching the sides. 

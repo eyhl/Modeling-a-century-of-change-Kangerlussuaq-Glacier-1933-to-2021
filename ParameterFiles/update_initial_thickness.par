@@ -6,7 +6,7 @@ md.transient.ismovingfront = 1;
 disp('   Interpolating mask');
 
 % %% set ice levelset corresponding to lia
-% tmp_levelset = ExpToLevelSet(md.mesh.x, md.mesh.y, 'Exp/first_front.exp');
+% tmp_levelset = ExpToLevelSet(md.mesh.x, md.mesh.y, 'Exp/first_front/first_front.exp');
 % pos = tmp_levelset(1:end-1) > 0;  % positive distances
 % md.mask.ice_levelset(pos) = -1;
 
