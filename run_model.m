@@ -75,14 +75,6 @@ function [md] = run_model(config_name, plotting_flag)
     % Relevant data paths
     front_shp_file = 'Data/shape/fronts/merged_fronts/merged_fronts.shp';
 
-    if strcmp(config.friction_extrapolation, "texture_synth")
-        friction_simulation_file = 'synthetic_friction.mat'; % 'synthetic_friction.mat'; før: texture_synth_friction
-    elseif strcmp(config.friction_extrapolation, "random_field")
-        disp("RF friction extrapolation method")
-    else %TODO: This does not work, and the above is weird too....
-        friction_simulation_file = 'semivar_synth_friction.mat'; % 'synth_friction/synthetic_friction.mat';
-    end
-
     if strcmp(config.smb_name, "box")
         smb_file = 'Data/smb/box_smb/Box_Greenland_SMB_monthly_1840-2012_5km_cal_ver20141007.nc';
     else
@@ -300,24 +292,16 @@ function [md] = run_model(config_name, plotting_flag)
         % std(log(1 + mdb.results.StressbalanceSolution.Vel)/log(10)) = 0.8722
         % max(log(1 + mdb.results.StressbalanceSolution.Vel)/log(10)) = 3.8440
 
-        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
-        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
-        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_weertman.mat');
-        % md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
-
         disp("Parameterizing to LIA initial state")
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
         validate_flag = false; % TODO: move into config
 
         disp("Extrapolating friction coefficient...")
-        if strcmp(config.friction_extrapolation, "random_field")
-            disp("Extrapolating friction coefficient using Random field method")
-            [extrapolated_friction, extrapolated_pos, mae_rf] = friction_random_field_model(md, cs_min, config.friction_law, validate_flag); 
-        elseif strcmp(config.friction_extrapolation, "bed_correlation")
+        if strcmp(config.friction_extrapolation, "bed_correlation")
             % save M for reference
             md.miscellaneous.dummy.bed_corr_polynomial_order = M;
 
-            disp("Extrapolating friction coefficient correlated linearly with bed topography")
+            disp("Extrapolating friction coefficient correlated polynomially with bed topography")
             [extrapolated_friction, extrapolated_pos, ~] = friction_correlation_model(md, cs_min, M, config.friction_law, validate_flag);
         elseif strcmp(config.friction_extrapolation, 'exponential_correlation')
             [extrapolated_friction, extrapolated_pos, ~] = friction_exponential_model(md, cs_min, friction_law, validate_flag);
@@ -331,13 +315,8 @@ function [md] = run_model(config_name, plotting_flag)
 
         % set values under cs min to cs min
         extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
-
-        % find rocks and apply high friction %TODO: Make exp instead
-        % mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
-        % pos_rocks = find(mask == 1 & md.results.StressbalanceSolution.Vel < 50);
-        % pos_rocks = find(mask == 1 & md.geometry.bed>0;);
         
-
+        % OFFSET CORRECT AND SAVE IN MD:
         if strcmp(config.friction_law, 'budd')
             if offset
                 disp('Offset correction')
@@ -420,43 +399,24 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 8 Correct friction coefficient
-    if perform(org, 'friction_correction')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat');
-        friction_correction = false;
+    %% 8 Initialise: Setup and load calving fronts
+    if perform(org, 'fronts')
+        if run_lia_parameterisation == 1
+            disp("Using LIA initial conditoins")
+            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat');
+        else
+            disp("Not using LIA initial conditions")
+            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_friction.mat');
+        end
+
         if friction_correction
             disp("Correcting friction!!")
             md_budd = loadmodel('Models/dec8_bed_corr/Model_kangerlussuaq_transient_budd.mat');
-            % md_budd = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
             md.inversion.vel_obs = md_budd.results.StressbalanceSolution.Vel;
             md.inversion.vx_obs = md_budd.results.StressbalanceSolution.Vx;
             md.inversion.vy_obs = md_budd.results.StressbalanceSolution.Vy;
 
-            % TODO: correct_schoof_lia_friction does not work. Try to flip order such that Schoof LIA is inverted from Budd,
-            % first then ask to recompute present Schoof LIA without touching the sides. 
-            % md.inversion.iscontrol = 1;
-            % md = solve(md, 'sb');
-            % md = budd2schoof(md_budd, schoof_coeff, cs_min, cs_max);
             md = correct_schoof_lia_friction(md, md_budd, schoof_coeff, cs_min, cs_max);
-
-            friction_field = md.friction.C;
-            plotmodel(md, 'data', log(friction_field)./log(10), 'title', 'Initial state, FC and Vel', ...
-            'data', md.results.StressbalanceSolution.Vel, 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 62); 
-            set(gca,'fontsize',12);
-            colormap('turbo'); 
-            exportgraphics(gcf, "corrected_initial_state.png")
-        end
-        savemodel(org, md);
-    end
-
-    %% 9 Initialise: Setup and load calving fronts
-    if perform(org, 'fronts')
-        if run_lia_parameterisation == 1
-            disp("Using LIA initial conditoins")
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_friction_correction.mat');
-        else
-            disp("Not using LIA initial conditions")
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_friction.mat');
         end
 
         md = fronts_init(md, ice_temp, start_time, final_time); % initialises fronts
@@ -464,7 +424,7 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 10 Transient: setup & run
+    %% 9 Transient: setup & run
     if perform(org, 'transient')
         md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_fronts.mat');
 
