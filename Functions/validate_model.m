@@ -1,4 +1,4 @@
-function [rmse_thickness, rmse_velocity, misfit_thickness, misfit_velocity] = validate_model(results_folder_name, axes, md)
+function [] = validate_model(results_folder_name, axes, md)
     if nargin < 2
         axes = 1.0e+06 .* [0.4167    0.4923   -2.2961   -2.2039];
         if nargin < 3
@@ -6,6 +6,8 @@ function [rmse_thickness, rmse_velocity, misfit_thickness, misfit_velocity] = va
             md = loadmodel(model_file);
         end
     end
+    find_config_path = dir(fullfile(results_folder_name, '*.csv'));
+    config = readtable(fullfile(find_config_path.folder, find_config_path.name), "TextType", "string");
 
     if isnan(md.inversion.thickness_obs)
         param_models = dir(fullfile('Models/AGU', '*param.mat'));
@@ -14,74 +16,76 @@ function [rmse_thickness, rmse_velocity, misfit_thickness, misfit_velocity] = va
         md.inversion.thickness_obs = md_tmp.geometry.thickness;
     end
 
-    masked_values = mdb.results.TransientSolution(end).MaskIceLevelset<0;
+    masked_values = md.results.TransientSolution(end).MaskIceLevelset<0;
 
     %% ---------------------------------------------- SPATIAL MISFIT ----------------------------------------------
     %% Thickness
-    misfit_thickness = mdb.results.TransientSolution(end).Thickness - md0.geometry.thickness;
+    misfit_thickness = md.results.TransientSolution(end).Thickness - md.inversion.thickness_obs;
 
     % Misfit thickness caxis
     plotmodel(md, 'data', misfit_thickness, ...
                 'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'axis#all', axes, 'figure', 89); colormap('turbo'); exportgraphics(gcf, fullfile(results_folder_name, 'H_misfit_limited.png'), 'Resolution', 300)
+                'axis#all', axes, 'figure', 89); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); exportgraphics(gcf, fullfile(results_folder_name, 'H_misfit_limited.png'), 'Resolution', 300)
 
     % Misfit thickness
     plotmodel(md, 'data', misfit_thickness, ...
                 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'axis#all', axes, 'figure', 90); colormap('turbo'); exportgraphics(gcf, fullfile(results_folder_name, 'H_misfit.png'), 'Resolution', 300)
+                'figure', 90); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); exportgraphics(gcf, fullfile(results_folder_name, 'H_misfit.png'), 'Resolution', 300)
 
-    figure();
+    figure(91);
     histogram(misfit_thickness(masked_values), 200, 'Normalization','pdf')
     title('Thickness misfit distribution')
     ylabel('Normalised pdf estimate')
     xlabel('Error [m]')
+    set(gcf,'Position',[100 100 1500 1500])
     exportgraphics(gcf, fullfile(results_folder_name, 'thickess_misfit_hist.png'), 'Resolution', 300)
 
 
     %% Velocity
     % Velocity full domain
-    velocity_pred = cell2mat({mdb.results.TransientSolution(end).Vel});
+    velocity_pred = cell2mat({md.results.TransientSolution(end).Vel});
     plotmodel(md, 'data', velocity_pred, ...
-                'caxis#all', [0 1.2e3], 'mask#all', masked_values, ...
+                'caxis#all', [0 1.2e4], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'figure', 91); colormap('turbo'); 
+                'figure', 92); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited.png'), 'Resolution', 300)
 
     % Velocity axes domain, log scale
     plotmodel(md, 'data', velocity_pred, ...
-                'caxis#all', [1 1.2e3], 'mask#all', masked_values, ...
+                'caxis#all', [1 1.2e4], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'log', 10, ...
-                'axis#all', axes, 'figure', 91); colormap('turbo'); 
+                'axis#all', axes, 'figure', 93); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited.png'), 'Resolution', 300)
 
     % Velocity misfit caxes
-    misfit_velocity = velocity_pred - md0.inversion.vel_obs;
+    misfit_velocity = velocity_pred - md.inversion.vel_obs;
     plotmodel(md, 'data', misfit_velocity, ...
                 'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'axis#all', axes, 'figure', 91); colormap('turbo'); 
+                'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited.png'), 'Resolution', 300)
 
     % Velocity misfit
     plotmodel(md, 'data', misfit_velocity, ...
                 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'axis#all', axes, 'figure', 92); colormap('turbo'); 
+                'figure', 95); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit.png'), 'Resolution', 300)
     
-    figure();
+    figure(96);
     histogram(misfit_thickness(masked_values), 200, 'Normalization','pdf')
     title('Velocity misfit distribution')
     ylabel('Normalised pdf estimate')
-    xlabel('Error [m/yr]')
+    xlabel('Error [m/yr]'); 
+    set(gcf,'Position',[100 100 1500 1500]);
     exportgraphics(gcf, fullfile(results_folder_name, 'vel_misfit_hist.png'), 'Resolution', 300)
 
     %% ---------------------------------------------- TEMPORAL MISFIT ----------------------------------------------
     % Mass loss curve
-    mass_loss_curves(md_list, md_control_list, md_names, folder, present_thickness)
+    mass_balance_curve_struct = mass_loss_curves([md], [], [config.friction_law], results_folder_name);
 
     % TODO: Add mass loss from other studies
     % ...
@@ -92,7 +96,7 @@ function [rmse_thickness, rmse_velocity, misfit_thickness, misfit_velocity] = va
 
     % Write to table
     Metric = {'Domain avg. H error';'Domain avg. vel error'};
-    Values = [38;43];
+    Values = [mean_misfit_thickness; mean_misfit_velocity];
 
     T = table(Values, 'RowNames', Metric);
     writetable(T, fullfile(results_folder_name, 'metrics.dat'), 'WriteRowNames', true) 
@@ -127,15 +131,15 @@ function [rmse_thickness, rmse_velocity, misfit_thickness, misfit_velocity] = va
     % misfit_velocity = pred_velocity - obs_velocity;
 
     % base rmse computation on relevant areas
-    misfit_thickness(md.mask.ice_levelset == 1) = NaN; % ocean
-    misfit_thickness(mask == 1) = NaN; % non-ice areas
-    misfit_velocity(md.mask.ice_levelset == 1) = NaN;
-    misfit_velocity(mask == 1) = NaN;
+    % misfit_thickness(md.mask.ice_levelset == 1) = NaN; % ocean
+    % misfit_thickness(mask == 1) = NaN; % non-ice areas
+    % misfit_velocity(md.mask.ice_levelset == 1) = NaN;
+    % misfit_velocity(mask == 1) = NaN;
 
-    rmse_thickness = sqrt(mean((misfit_thickness) .^ 2, 'omitnan'));
-    rmse_velocity = sqrt(mean((misfit_velocity) .^ 2, 'omitnan'));
+    % rmse_thickness = sqrt(mean((misfit_thickness) .^ 2, 'omitnan'));
+    % rmse_velocity = sqrt(mean((misfit_velocity) .^ 2, 'omitnan'));
 
-    % remove nans and replace with 0, i.e. no misfit
-    misfit_thickness(isnan(misfit_thickness)) = 0;
-    misfit_velocity(isnan(misfit_thickness)) = 0;
+    % % remove nans and replace with 0, i.e. no misfit
+    % misfit_thickness(isnan(misfit_thickness)) = 0;
+    % misfit_velocity(isnan(misfit_thickness)) = 0;
 end

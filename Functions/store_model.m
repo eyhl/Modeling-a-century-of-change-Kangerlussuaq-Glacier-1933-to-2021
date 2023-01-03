@@ -1,4 +1,4 @@
-function results_folder_name = store_model(config_file_name)
+function [results_folder_name] = store_model(config_file_name)
     config = readtable(config_file_name, "TextType", "string");
 
     string_split = split(config_file_name, '-');
