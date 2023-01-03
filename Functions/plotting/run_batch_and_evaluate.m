@@ -72,7 +72,7 @@ function [] = run_batch_and_evaluate(axes, md_list)
 
     % md_names = {'Schoof (BedCorr)', 'Schoof control', 'Schoof (const)', 'Weertman  (BedCorr)', 'Weertman control', 'Weertman (const)'};
 
-    md0 = loadmodel('Models/Model_kangerlussuaq_budd.mat');
+    md0 = loadmodel('Models/AGU/Model_kangerlussuaq_budd.mat');
 
     title1 = sprintf('Budd, MAE=%.1f', integrate_field_spatially(md0, abs(md0.geometry.thickness - mdb.results.TransientSolution(end).Thickness)) ./ (1e9));
     title2 = sprintf('Schoof, MAE=%.1f', integrate_field_spatially(md0, abs(md0.geometry.thickness - mds.results.TransientSolution(end).Thickness)) ./ (1e9));

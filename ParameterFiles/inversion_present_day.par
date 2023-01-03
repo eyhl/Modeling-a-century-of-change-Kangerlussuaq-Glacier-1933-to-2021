@@ -64,6 +64,7 @@ md.initialization.vx  = md.inversion.vx_obs;
 md.initialization.vy  = md.inversion.vy_obs;
 md.initialization.vz  = zeros(md.mesh.numberofvertices, 1);
 md.initialization.vel = md.inversion.vel_obs;
+md.inversion.thickness_obs = md.geometry.thickness;
 
 %% Basal friction
 % TODO: CHECK OUT THE averaging function - how does it actually work? 

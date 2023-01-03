@@ -13,55 +13,46 @@ function [md] = run_model(config_name, plotting_flag)
     yl = [-2.3239, -2.2563]*1e6;
     
     % read config file
-    config_path_name = append('Configs/', config_name);
-    config = readtable(config_path_name, "TextType", "string");
+    config = readtable(config_name, "TextType", "string");
 
     %% 0 Set parameters
     try
-        steps = str2num(config.ran_steps);
+        steps = str2num(config.steps);
     catch
-        steps = config.ran_steps; % in case of single step
+        steps = config.steps; % in case of single step
     end
-
+    
+    % model start time
     start_time = config.start_time;
     final_time = config.final_time;
-    ice_temp = config.ice_temp;
+    ice_temp_offset = config.ice_temp_offset;
     friction_law = config.friction_law;
+    output_frequency = config.output_frequency;
 
     % Inversion parameters
-    % cf_weights = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3]; %TODO: CHANGE THIS 
-   % BUDD COEFFICIENTS
-    % budd_coeff = [16000, 3.0,  1.7783e-06]; % newest: [16000, 3.0,  1.7783e-06];% v8 [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
-    % budd_coeff = [16000, 3.0,  1e-07]; % newest: [16000, 3.0,  1.7783e-06];% v8 [8000, 1.75, 4.1246e-07]; % v7 [4000, 2.75, 3.2375e-05]; % v6 [4000, 2.75, 1.5264e-07];
-    % budd_coeff = [8000, 3.0,  5.6234e-06]; 
-    % budd_coeff = [8000, 3.0,  1e-05]; 
-
-    % try both:
-    budd_coeff = [16000, 3.0,  1.7783e-06];
-    % budd_coeff = [8000, 3.0,  1.7783e-05]; 
-
-    % SCHOOF COEFFICIENTS
-    schoof_coeff = [2500, 16.0, 4.0e-08, 0.811428571428571]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
-    % schoof_coeff = [2500, 300.0, 7.5e-08, 0.811428571428571]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
-    % schoof_coeff = [2500, 2.0, 1e-07, 0.74]; % [4000, 2.25, 3.4551e-08, 0.667] v2 [4000, 2.2, 2.5595e-08, 0.667];
-
-    % WEERTMAND COEFFICIENTS
-    % weertman_coeff = [16000, 2.0,  7.5e-08];
-    weertman_coeff = [16000, 2.0,  7.5e-08];
-
     if strcmp(config.friction_law, 'budd')
         cs_min = 0.01; %config.cs_min;
         cs_max = 1e4; %config.cs_max;
         display_coefs = num2str(budd_coeff);
-    elseif strcmp(config.friction_law, 'weertman')
+        budd_coeff = config.cf_weights;
+    elseif strcmp(config.friction_law, 'regcoulomb')
         cs_min = 0.01; %config.cs_min;
         cs_max = 1e4; %config.cs_max;
-        display_coefs = num2str(weertman_coeff);
+        display_coefs = num2str(schoof_coeff);
+        regcoulomb_coeff = config.cf_weights;
     elseif strcmp(config.friction_law, 'schoof')
         cs_min = 0.01; %config.cs_min;
         cs_max = 1e4; %config.cs_max;
         display_coefs = num2str(schoof_coeff);
+        schoof_coeff = config.cf_weights;
+    elseif strcmp(config.friction_law, 'weertman')
+        cs_min = 0.01; %config.cs_min;
+        cs_max = 1e4; %config.cs_max;
+        display_coefs = num2str(weertman_coeff);
+        weertman_coeff = config.cf_weights;
     end
+
+    % reference smb time
     ref_smb_start_time = 1972; % don't change
     ref_smb_final_time = 1989; % don't change
 
@@ -69,8 +60,7 @@ function [md] = run_model(config_name, plotting_flag)
     add_constant = 2.5;
 
     % Shape file and model name
-    glacier = 'kangerlussuaq';
-    md.miscellaneous.name = config.model_name;
+    glacier_name = config.glacier_name;
 
     % Relevant data paths
     front_shp_file = 'Data/shape/fronts/merged_fronts/merged_fronts.shp';
@@ -88,15 +78,13 @@ function [md] = run_model(config_name, plotting_flag)
     run_lia_parameterisation = 1; %TODO: put into config
 
     % Organizer
-    org = organizer('repository', ['./Models'], 'prefix', ['Model_' glacier '_'], 'steps', steps); 
+    org = organizer('repository', ['./Models'], 'prefix', [glacier_name '_'], 'steps', steps); 
     
     fprintf("Running model from %d to %d, with:\n", start_time, final_time);
     fprintf(" - algorithm steps: [%s]\n", num2str(steps));
     fprintf(" - friction law: %s\n", config.friction_law);
     fprintf("   - inversion coefficients: %s\n", display_coefs);
     fprintf("   - [CS_min, CS_max] = [%.3g, %.3g]\n", cs_min, cs_max);
-
-
 
     clear steps;
 
@@ -269,7 +257,7 @@ function [md] = run_model(config_name, plotting_flag)
     end
 
     %% 7 Parameterize LIA, extrapolate friction coefficient to LIA front
-    if perform(org, 'lia_param')
+    if perform(org, 'lia')
         offset = true;
         if strcmp(config.friction_law, 'schoof')
             md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
@@ -403,7 +391,7 @@ function [md] = run_model(config_name, plotting_flag)
     if perform(org, 'fronts')
         if run_lia_parameterisation == 1
             disp("Using LIA initial conditoins")
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat');
+            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia.mat');
         else
             disp("Not using LIA initial conditions")
             md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_friction.mat');
@@ -419,7 +407,7 @@ function [md] = run_model(config_name, plotting_flag)
             md = correct_schoof_lia_friction(md, md_budd, schoof_coeff, cs_min, cs_max);
         end
 
-        md = fronts_init(md, ice_temp, start_time, final_time); % initialises fronts
+        md = fronts_init(md, output_frequency, start_time, final_time); % initialises fronts
         md = fronts_transient(md, front_shp_file); % loads front observations
         savemodel(org, md);
     end

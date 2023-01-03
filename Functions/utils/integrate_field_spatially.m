@@ -17,4 +17,3 @@ function [I] = integrate_field_spatially(md, field)
         I(i) = sum(delta_smb_elements .* mesh_areas);
     end
 end
-
