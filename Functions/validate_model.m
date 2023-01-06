@@ -3,6 +3,7 @@ function [] = validate_model(results_folder_name, axes, md)
         axes = 1.0e+06 .* [0.4167    0.4923   -2.2961   -2.2039];
         if nargin < 3
             model_file = dir(fullfile(results_folder_name, '*transient.mat'));
+            model_file = fullfile(model_file.folder, model_file.name);
             md = loadmodel(model_file);
         end
     end
@@ -20,6 +21,7 @@ function [] = validate_model(results_folder_name, axes, md)
 
     %% ---------------------------------------------- SPATIAL MISFIT ----------------------------------------------
     %% Thickness
+    disp('Plotting ice thickness...')
     misfit_thickness = md.results.TransientSolution(end).Thickness - md.inversion.thickness_obs;
 
     % Misfit thickness caxis
@@ -45,6 +47,7 @@ function [] = validate_model(results_folder_name, axes, md)
 
     %% Velocity
     % Velocity full domain
+    disp('Plotting velocity...')
     velocity_pred = cell2mat({md.results.TransientSolution(end).Vel});
     plotmodel(md, 'data', velocity_pred, ...
                 'caxis#all', [0 1.2e4], 'mask#all', masked_values, ...
@@ -76,7 +79,7 @@ function [] = validate_model(results_folder_name, axes, md)
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit.png'), 'Resolution', 300)
     
     figure(96);
-    histogram(misfit_thickness(masked_values), 200, 'Normalization','pdf')
+    histogram(misfit_velocity(masked_values), 200, 'Normalization','pdf')
     title('Velocity misfit distribution')
     ylabel('Normalised pdf estimate')
     xlabel('Error [m/yr]'); 
@@ -85,12 +88,14 @@ function [] = validate_model(results_folder_name, axes, md)
 
     %% ---------------------------------------------- TEMPORAL MISFIT ----------------------------------------------
     % Mass loss curve
+    disp('Plotting mass balance...')
     mass_balance_curve_struct = mass_loss_curves([md], [], [config.friction_law], results_folder_name);
 
     % TODO: Add mass loss from other studies
     % ...
     
     %% ---------------------------------------------- Metrics ----------------------------------------------
+    disp('Computing metrics...')
     [~, mean_misfit_thickness, ~] = integrateOverDomain(md, misfit_thickness, ~masked_values); % avg misfit per area [m]
     [~, mean_misfit_velocity, ~] = integrateOverDomain(md, misfit_velocity, ~masked_values); % avg misfit per area [m/yr]
 
@@ -103,6 +108,7 @@ function [] = validate_model(results_folder_name, axes, md)
 
 
     %% Video
+    disp('Making video...')
     movie_vel(md, fullfile(results_folder_name, 'velocity_movie'))
 
     % % load bedmachine mask and time steps

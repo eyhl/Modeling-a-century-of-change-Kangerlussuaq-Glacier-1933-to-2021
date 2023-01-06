@@ -126,10 +126,10 @@ md.materials.rheology_B = cuffey(273.15 + ice_temp) * ones(md.mesh.numberofverti
 
 %%
 disp('   Geothermal flux from SeaRISE');
-md.basalforcings.geothermalflux = interpSeaRISE(md.mesh.x, md.mesh.y, 'bheatflx');
+md.basalforcings.geothermalflux = interpSeaRISE_copy(md.mesh.x, md.mesh.y, 'bheatflx');
 
 disp('   Setting up thermal model');
-md.initialization.temperature = min(0, interpSeaRISE(md.mesh.x, md.mesh.y, 'surftemp')) + 273.15;
+md.initialization.temperature = min(0, interpSeaRISE_copy(md.mesh.x, md.mesh.y, 'surftemp')) + 273.15;
 md.initialization.waterfraction = zeros(md.mesh.numberofvertices, 1);
 md.initialization.watercolumn = zeros(md.mesh.numberofvertices, 1);
 md.thermal.spctemperature = md.initialization.temperature;

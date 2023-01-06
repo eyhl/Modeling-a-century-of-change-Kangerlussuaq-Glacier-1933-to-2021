@@ -1,5 +1,5 @@
 % required Data
-md_inv = loadmodel('Models/Model_kangerlussuaq_param.mat');
+md_inv = loadmodel('Models/KG_param.mat');
 md.transient.ismovingfront = 1;
 
 %% Interpolating mask

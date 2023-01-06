@@ -10,6 +10,8 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_m
         friction_field = md.friction.C; % schoof
     elseif strcmp(friction_law, 'weertman')
         friction_field = md.friction.C; % weertman
+    elseif strcmp(friction_law, 'regcoulomb')
+        friction_field = md.friction.C; % weertman
     else
         warning("Friction Law not known: choose budd or schoof")
     end

@@ -13,7 +13,7 @@ function [md] = run_model(config_name, plotting_flag)
     yl = [-2.3239, -2.2563]*1e6;
     
     % read config file
-    config = readtable(config_name, "TextType", "string");
+    config = readtable(append('Configs/', config_name), "TextType", "string");
 
     %% 0 Set parameters
     try
@@ -33,23 +33,23 @@ function [md] = run_model(config_name, plotting_flag)
     if strcmp(config.friction_law, 'budd')
         cs_min = 0.01; %config.cs_min;
         cs_max = 1e4; %config.cs_max;
+        budd_coeff = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3];
         display_coefs = num2str(budd_coeff);
-        budd_coeff = config.cf_weights;
     elseif strcmp(config.friction_law, 'regcoulomb')
         cs_min = 0.01; %config.cs_min;
         cs_max = 1e4; %config.cs_max;
-        display_coefs = num2str(schoof_coeff);
-        regcoulomb_coeff = config.cf_weights;
+        regcoulomb_coeff = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3, config.cf_weights_4];
+        display_coefs = num2str(regcoulomb_coeff);
     elseif strcmp(config.friction_law, 'schoof')
         cs_min = 0.01; %config.cs_min;
         cs_max = 1e4; %config.cs_max;
+        schoof_coeff = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3, config.cf_weights_4];
         display_coefs = num2str(schoof_coeff);
-        schoof_coeff = config.cf_weights;
     elseif strcmp(config.friction_law, 'weertman')
         cs_min = 0.01; %config.cs_min;
         cs_max = 1e4; %config.cs_max;
+        weertman_coeff = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3];;
         display_coefs = num2str(weertman_coeff);
-        weertman_coeff = config.cf_weights;
     end
 
     % reference smb time
@@ -60,7 +60,8 @@ function [md] = run_model(config_name, plotting_flag)
     add_constant = 2.5;
 
     % Shape file and model name
-    glacier_name = config.glacier_name;
+    glacier_name = convertStringsToChars(config.glacier_name);
+    prefix = append(glacier_name, '_'); 
 
     % Relevant data paths
     front_shp_file = 'Data/shape/fronts/merged_fronts/merged_fronts.shp';
@@ -78,7 +79,8 @@ function [md] = run_model(config_name, plotting_flag)
     run_lia_parameterisation = 1; %TODO: put into config
 
     % Organizer
-    org = organizer('repository', ['./Models'], 'prefix', [glacier_name '_'], 'steps', steps); 
+    append(glacier_name, '_')
+    org = organizer('repository', ['./Models'], 'prefix', prefix, 'steps', steps); 
     
     fprintf("Running model from %d to %d, with:\n", start_time, final_time);
     fprintf(" - algorithm steps: [%s]\n", num2str(steps));
@@ -108,7 +110,7 @@ function [md] = run_model(config_name, plotting_flag)
 
     %% 2 Parameterisation: Default setup with .par file
     if perform(org, 'param')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_mesh.mat');
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'mesh.mat']);
 
         md = setflowequation(md,'SSA','all');
         md = setmask(md,'','');
@@ -116,10 +118,10 @@ function [md] = run_model(config_name, plotting_flag)
         md = parameterize(md, 'ParameterFiles/inversion_present_day.par');
 
         % Set temperature field
-        disp("Setting ISMIP6 temperature...\n")
+        disp("Setting ISMIP6 temperature...")
         md = interpTemperature(md);
 
-        disp("Extrapolating temperature into fjord...\n")
+        disp("Extrapolating temperature into fjord...")
         M = 1; % polynomial order
         md = temperature_correlation_model(md, M, add_constant, plotting_flag);
         md.materials.rheology_B = cuffey(md.miscellaneous.dummy.temperature_field) .* ones(md.mesh.numberofvertices, 1);  % temperature field is already in Kelvin
@@ -141,7 +143,7 @@ function [md] = run_model(config_name, plotting_flag)
 
     %% 3 Forcings: Interpolate SMB
     if perform(org, 'smb')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_param.mat');
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
 
         if strcmp(config.smb_name, "box")
             md = interpolate_box_smb(md, start_time, final_time, smb_file);
@@ -162,10 +164,9 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 4 Friction law setup: Budd
+    %% 4 Friction law setup: Budd %TODO: add friction step with friction_law condition inside instead.
     if perform(org, 'budd')
-
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
         md = solve_stressbalance_budd(md, budd_coeff, cs_min, cs_max);
         savemodel(org, md);
 
@@ -194,7 +195,7 @@ function [md] = run_model(config_name, plotting_flag)
     %% 5 Friction law setup: Weertman
     if perform(org, 'weertman')
 
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_smb.mat');
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
         md = solve_stressbalance_weert(md, weertman_coeff, cs_min, cs_max);
         savemodel(org, md);
 
@@ -223,8 +224,7 @@ function [md] = run_model(config_name, plotting_flag)
     %% 6 Friction law setup: Schoof
     if perform(org, 'schoof')
         friction_law = 'schoof';
-        
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
         % md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
         % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
 
@@ -260,15 +260,15 @@ function [md] = run_model(config_name, plotting_flag)
     if perform(org, 'lia')
         offset = true;
         if strcmp(config.friction_law, 'schoof')
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_schoof.mat');
-            M = 4; % polynomial order
+            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'schoof.mat']);
+            M = config.polynomial_order; % polynomial order
         elseif strcmp(config.friction_law, 'budd')
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat'); %TODO: CHANGE WHEN TRYING DIFFERENT SETTINGS
-            M = 4; % polynomial order
+            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
+            M = config.polynomial_order; % polynomial order
             % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
         elseif strcmp(config.friction_law, 'weertman')
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_weertman.mat');
-            M = 4; % polynomial order
+            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'weertman.mat']);
+            M = config.polynomial_order; % polynomial order
         else
             warning("Friction law not implemented")
         end
@@ -304,7 +304,8 @@ function [md] = run_model(config_name, plotting_flag)
         % set values under cs min to cs min
         extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
         
-        % OFFSET CORRECT AND SAVE IN MD:
+        % OFFSET CORRECT AND SAVE IN MD: 
+        %TODO: MOVE THIS LOGIC INTO CREATE_CONFIG.M FUNCTION OR CREATE SEPERATE FUNCTION.
         if strcmp(config.friction_law, 'budd')
             if offset
                 disp('Offset correction')
@@ -391,20 +392,11 @@ function [md] = run_model(config_name, plotting_flag)
     if perform(org, 'fronts')
         if run_lia_parameterisation == 1
             disp("Using LIA initial conditoins")
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia.mat');
+            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'lia.mat']);
+
         else
             disp("Not using LIA initial conditions")
-            md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_friction.mat');
-        end
-
-        if friction_correction
-            disp("Correcting friction!!")
-            md_budd = loadmodel('Models/dec8_bed_corr/Model_kangerlussuaq_transient_budd.mat');
-            md.inversion.vel_obs = md_budd.results.StressbalanceSolution.Vel;
-            md.inversion.vx_obs = md_budd.results.StressbalanceSolution.Vx;
-            md.inversion.vy_obs = md_budd.results.StressbalanceSolution.Vy;
-
-            md = correct_schoof_lia_friction(md, md_budd, schoof_coeff, cs_min, cs_max);
+            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'friction.mat']);
         end
 
         md = fronts_init(md, output_frequency, start_time, final_time); % initialises fronts
@@ -414,7 +406,7 @@ function [md] = run_model(config_name, plotting_flag)
 
     %% 9 Transient: setup & run
     if perform(org, 'transient')
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_fronts.mat');
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat']);
 
         % meltingrate
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];

@@ -42,7 +42,6 @@ function [md] = temperature_correlation_model(md, M, add_constant, validate_flag
 
     %% Polynomial basis model
     G = ones(length(bed_data), 1);
-    size(G)
     for n = 1:M
         G = [G, bed_data.^n];
 

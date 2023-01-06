@@ -3,16 +3,16 @@ function [config_file_name] = create_config(id)
     todays_date = datetime('now');
     todays_date = string(dateshift(todays_date, 'start', 'day'));
 
-    if vargin < 1
+    if nargin < 1
         id = todays_date;
     else
-        id = [id, '-', todays_date];
+        id = append(id, '-', todays_date);
     end
     % identifyer
     glacier_name = "KG";
 
     % Set parameters
-    steps = [1:9];
+    steps = [8:9]; % 4=budd, 5=schoof, 6=weertman
     start_time = 1900;
     final_time = 2020;
     ice_temp_offset = -8; % C
@@ -43,6 +43,7 @@ function [config_file_name] = create_config(id)
     % Relevant data paths
     smb_name = "racmo";
     friction_extrapolation = "bed_correlation"; % or semi-variogram
+    polynomial_order = 4;
     steps = strjoin(string(steps));
 
     control_run = false;
@@ -50,7 +51,7 @@ function [config_file_name] = create_config(id)
     % create table
     config = table(todays_date, steps, start_time, final_time, output_frequency, ...
                    ice_temp_offset, cf_weights, cs_min, cs_max, smb_name, ...
-                   friction_extrapolation, friction_law, glacier_name, control_run);
+                   friction_extrapolation, friction_law, polynomial_order, glacier_name, control_run);
 
     % save table
     config_file_name = append(id, '-config', '.csv');
