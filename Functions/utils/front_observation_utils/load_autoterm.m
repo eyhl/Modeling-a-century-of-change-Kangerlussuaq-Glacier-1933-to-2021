@@ -1,5 +1,6 @@
 function [T] = load_autoterm(file_path)
     % LOAD_AUTOTERM loads autoterm shape data and Tprojects to coordinate system epsg:3413.
+    % sorts shape files in time
     %   T = load_autoterm(file_path) returns table with autoterm data with original projection and new
     autoterm_shp = readgeotable(file_path);
     T = geotable2table(autoterm_shp,["Lat","Lon"]);

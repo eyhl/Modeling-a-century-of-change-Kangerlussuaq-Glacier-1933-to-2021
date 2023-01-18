@@ -1,10 +1,14 @@
-function condition = inside_fjord(point, fjord_shape)
-    n_intersections = count_intersections(point, fjord_shape);
-    if iseven(n_intersections)
-        condition = false;
-    elseif n_intersections == 0
-        condition = false;
-    else
-        condition = true;
-    end
+function points = inside_fjord(points, fjord_shape)
+    %% INSIDE_FJORD() returns the points which are found inside the fjord_shape
+    % points = [x; y]
+    % fjord_shape = [x_f; y_f], should be a closed shape
+
+    % finds points inside polygon
+    [in, on] = inpolygon(points(1, :), points(2, :), fjord_shape(1, :), fjord_shape(2, :));
+
+    % only points in beginning and end of polygon are expected to be noise, so keep the rest.
+    first_ind = find(in, 1, 'first');
+    last_ind = find(in, 1, 'last');
+    in(first_ind:last_ind) = 1;
+    points = points(:, in);
 end

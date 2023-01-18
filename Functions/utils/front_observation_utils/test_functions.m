@@ -21,9 +21,9 @@ end
 
 %% NEXT
 % load calfin: load_calfin()
-meridian function S [56381,-3057938] N [56381,-981106]
+% meridian function S [56381,-3057938] N [56381,-981106]
 extract most retreated front: extract_most_retreated_front()
-check intersections between each shape with fjord polygon: find_shape_intersections()
+% check intersections between each shape with fjord polygon: find_shape_intersections()
 % order in time: reorder_shape()
 order orientations: reorient_shape()
 implement get_shape_stack() to return shape stack from shape input
