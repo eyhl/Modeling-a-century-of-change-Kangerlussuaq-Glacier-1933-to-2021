@@ -36,5 +36,34 @@ combine stacks function combine_shape_stacks() -> single stack
 
 connect stack to master shape: connect_stack2master_shape()
 
-implement get_autoterm_historic_fronts()
-implement get_calfin_historic_fronts()
+implement get_autoterm_historic_fronts(md, autoterm_path, historic_path)
+            autoterm_stack = get_autoterm_stack(autoterm_path);
+            historic_stack = get_historic_stack(historic_path);
+            autoterm_historic_stack = combine_stacks(historic_stack, autoterm_stack, conditions);
+
+            md = stack2levelset(autoterm_historic_stack, master);
+                connect_stack2master_shape()
+                convert2levelset()
+                ereturn md
+
+implement get_calfin_historic_fronts(md)
+            similar
+
+
+
+
+% Implement test: compare heights of stacked tables
+% >> height(at) + heigt(hi(condition_hi,:))
+% Unrecognized function or variable 'heigt'.
+
+% >> height(at) + height(hi(condition_hi,:))
+
+% ans =
+
+%         1574
+
+% >> height(stack)
+
+% ans =
+
+%         1574
