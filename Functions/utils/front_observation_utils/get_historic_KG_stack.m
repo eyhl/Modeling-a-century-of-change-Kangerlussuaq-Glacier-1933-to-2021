@@ -4,6 +4,8 @@ function [shape_table] = get_historic_KG_stack(path, fjord_shape)
     % fjord_shape can be any [x; y] coordinates dilineating the area within
     % which you would like to keep shapes. 
     shape_table = load_historic_KG(path);
+    % shape_table = reindex_closed_shape(shape_table);
+
     % NOTE: AVOID removing points outside fjord, because floating tongue extends fjord in 1900.
     if nargin >= 2
         disp('WARNING: you are probably removing floating toungue in 1900');

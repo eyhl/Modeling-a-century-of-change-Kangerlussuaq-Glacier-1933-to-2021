@@ -38,4 +38,10 @@ function [shape_data] = load_historic_KG(file_path)
     % sort by date
     [~, ind] = sort(datetime(shape_data.Date(:)));
     shape_data = shape_data(ind, :);
+    % remove nan
+    for i=1:height(shape_data)
+        nan_index = find(isnan(shape_data.X{i}));
+        shape_data.X{i}(nan_index) = [];
+        shape_data.Y{i}(nan_index) = [];
+    end
 end
