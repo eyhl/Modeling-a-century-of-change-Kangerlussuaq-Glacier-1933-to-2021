@@ -36,14 +36,20 @@ combine stacks function combine_shape_stacks() -> single stack
 
 connect stack to master shape: connect_stack2master_shape()
 
-implement get_autoterm_historic_fronts(md, autoterm_path, historic_path)
+implement get_autoterm_historic_fronts(md, autoterm_path, historic_path, fjord_path, ice_levelset_domain_path)
             autoterm_stack = get_autoterm_stack(autoterm_path);
             historic_stack = get_historic_stack(historic_path);
-            autoterm_historic_stack = combine_stacks(historic_stack, autoterm_stack, conditions);
-
-            md = stack2levelset(autoterm_historic_stack, master);
-                connect_stack2master_shape()
-                convert2levelset()
+            autoterm_historic_stack = combine_stacks({historic_stack, autoterm_stack}, {condition1, condition2});
+            fjord = get_fjord_shape(calfin_path); % in if-statement I would like to provide my own
+            ice_domain = load_ice_domain_from_shape(ice_path);
+            stack = connect_stack2master_shape(autoterm_historic_stack, fjord, 'fjord');
+            stack = connect_stack2master_shape(stack, ice_domain, 'ice_levelset');
+            md = loadmodel(mesh.mat);
+            md = stack2levelset(md, autoterm_historic_stack);
+                convert2levelset(stack)
+                    function: get decimal dates
+                    use first front as initial
+                    md should only have mesh or somthing simple
                 ereturn md
 
 implement get_calfin_historic_fronts(md)
