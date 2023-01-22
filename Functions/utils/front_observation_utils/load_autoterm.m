@@ -20,4 +20,8 @@ function [T] = load_autoterm(file_path)
         T.X(i) = {x};
         T.Y(i) = {y};
     end
+
+    % remove duplicate dates
+    [~, ind] = unique(T.Date);
+    T = T(ind, :);
 end

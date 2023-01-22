@@ -14,4 +14,5 @@ function [shape_table] = get_calfin_stack(path, fjord_shape)
     if nargin >= 2
         shape_table = remove_points_outside_fjord(shape_table, fjord_shape);
     end
+    shape_table = shape_table(:, {'X', 'Y', 'Date'});
 end

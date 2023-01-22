@@ -11,4 +11,5 @@ function [shape_table] = get_historic_KG_stack(path, fjord_shape)
         disp('WARNING: you are probably removing floating toungue in 1900');
         shape_table = remove_points_outside_fjord(shape_table, fjord_shape);
     end
+    shape_table = shape_table(:, {'X', 'Y', 'Date'});
 end
