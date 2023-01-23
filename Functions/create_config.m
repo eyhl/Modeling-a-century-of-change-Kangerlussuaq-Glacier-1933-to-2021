@@ -10,12 +10,13 @@ function [config_file_name] = create_config(id)
     end
     % identifyer
     glacier_name = "KG";
+    front_observation_path = "/data/eigil/work/lia_kq/all_fronts.shp";
 
     % Set parameters
-    steps = [8:9]; % 4=budd, 5=schoof, 6=weertman
+    steps = [2:4, 7:9]; % 4=budd, 5=schoof, 6=weertman
     start_time = 1900;
-    final_time = 2020;
-    ice_temp_offset = -8; % C
+    final_time = 2021;
+    ice_temp_offset = 0; % C
     output_frequency = 1; % output frequency for transient run
 
     friction_law = "budd";
@@ -51,7 +52,8 @@ function [config_file_name] = create_config(id)
     % create table
     config = table(todays_date, steps, start_time, final_time, output_frequency, ...
                    ice_temp_offset, cf_weights, cs_min, cs_max, smb_name, ...
-                   friction_extrapolation, friction_law, polynomial_order, glacier_name, control_run);
+                   friction_extrapolation, friction_law, polynomial_order, glacier_name, control_run, ...
+                   front_observation_path);
 
     % save table
     config_file_name = append(id, '-config', '.csv');

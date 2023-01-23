@@ -26,6 +26,18 @@ function [T] = load_autoterm(file_path)
     duplicate_indices = setdiff( 1:numel(T.Date), w );
     T(duplicate_indices, :) = [];
 
+    % remove NaN in data
+    for i=1:height(T)
+        nan_index = find(isnan(T.X{i}));
+        T.X{i}(nan_index) = [];
+        T.Y{i}(nan_index) = [];
+
+        [v, w] = unique(T.X{i} + T.Y{i}, 'stable');
+        duplicate_indices = setdiff( 1:numel(T.X{i}), w );
+        T.X{i}(duplicate_indices) = [];
+        T.Y{i}(duplicate_indices) = [];
+    end
+
         % remove self-intersections Maybe move to PREPROCESSING
     % reshape to (N, 2)
     % for i=1:height(T)

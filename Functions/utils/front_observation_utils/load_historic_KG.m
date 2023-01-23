@@ -43,5 +43,10 @@ function [shape_data] = load_historic_KG(file_path)
         nan_index = find(isnan(shape_data.X{i}));
         shape_data.X{i}(nan_index) = [];
         shape_data.Y{i}(nan_index) = [];
+
+        [v, w] = unique(shape_data.X{i} + shape_data.Y{i}, 'stable');
+        duplicate_indices = setdiff( 1:numel(shape_data.X{i}), w );
+        shape_data.X{i}(duplicate_indices) = [];
+        shape_data.Y{i}(duplicate_indices) = [];
     end
 end

@@ -26,4 +26,9 @@ function [s1, s2] = HELPER_make_all_stacks(fjord_path)
     stack_struct = {historic_stack, calfin_stack};
     cond_struct = {cond_historic, cond_calfin};
     s2 = stack2master(stack_struct, cond_struct, 'calfin_historic', fjord_shape, ice_path);
+
+    % calfin historic
+    stack_struct = {historic_stack, calfin_stack, autoterm_stack};
+    cond_struct = {cond_historic, cond_calfin, cond_autoterm};
+    s3 = stack2master(stack_struct, cond_struct, 'calfin_historic', fjord_shape, ice_path);
 end

@@ -1,0 +1,2 @@
+todays_date,steps,start_time,final_time,output_frequency,ice_temp_offset,cf_weights_1,cf_weights_2,cf_weights_3,cs_min,cs_max,smb_name,friction_extrapolation,friction_law,polynomial_order,glacier_name,control_run,front_observation_path
+"23-Jan-2023","8 9",1900,2020,1,-8,16000,3,1.7783e-06,0.01,10000,"racmo","bed_correlation","budd",4,"KG",0,"/data/eigil/work/lia_kq/autoterm_historic.shp"

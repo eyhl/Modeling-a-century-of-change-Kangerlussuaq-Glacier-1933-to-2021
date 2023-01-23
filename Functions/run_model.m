@@ -64,7 +64,7 @@ function [md] = run_model(config_name, plotting_flag)
     prefix = append(glacier_name, '_'); 
 
     % Relevant data paths
-    front_shp_file = 'Data/shape/fronts/merged_fronts/merged_fronts.shp';
+    front_shp_file = convertStringsToChars(config.front_observation_path); %'Data/shape/fronts/merged_fronts/merged_fronts.shp';
 
     if strcmp(config.smb_name, "box")
         smb_file = 'Data/smb/box_smb/Box_Greenland_SMB_monthly_1840-2012_5km_cal_ver20141007.nc';
@@ -124,7 +124,13 @@ function [md] = run_model(config_name, plotting_flag)
         disp("Extrapolating temperature into fjord...")
         M = 1; % polynomial order
         md = temperature_correlation_model(md, M, add_constant, plotting_flag);
-        md.materials.rheology_B = cuffey(md.miscellaneous.dummy.temperature_field) .* ones(md.mesh.numberofvertices, 1);  % temperature field is already in Kelvin
+        if ice_temp_offset ~= 0
+            fprintf("NOTICE!: Offsetting temperature by %d...\n", ice_temp_offset);
+            md.miscellaneous.dummy.temperature_field = md.miscellaneous.dummy.temperature_field + ice_temp_offset;
+        end
+        md.materials.rheology_B = cuffey(md.miscellaneous.dummy.temperature_field) .* ones(md.mesh.numberofvertices, 1);  % temperature field is already in Kelvin, multiplying with ones in case of scalar temperature field
+
+
         
         if plotting_flag
             figure(67);
@@ -400,13 +406,25 @@ function [md] = run_model(config_name, plotting_flag)
         end
 
         md = fronts_init(md, output_frequency, start_time, final_time); % initialises fronts
-        md = fronts_transient(md, front_shp_file); % loads front observations
+        % md = fronts_transient(md, front_shp_file); % loads front observations
+        md = stack2levelset(md, front_shp_file); % simpler version
+
         savemodel(org, md);
     end
 
     %% 9 Transient: setup & run
     if perform(org, 'transient')
         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat']);
+
+        % CHECK INITIAL STATE:
+        md.inversion.iscontrol = 0;
+        md = solve(md, 'sb');
+        plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, ...
+                      'title', 'Initial state, Vel', 'caxis', [0 12e3], ...
+                      'xtick', [], 'ytick', [], 'xlim', xl, 'ylim', yl, 'figure', 63); 
+        set(gca,'fontsize',12);
+        colormap('turbo'); 
+        exportgraphics(gcf, "initial_state.png")
 
         % meltingrate
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];

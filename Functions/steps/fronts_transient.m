@@ -20,12 +20,13 @@ function [md] = fronts_transient(md, front_shp_file)
     dataLevelset = ExpToLevelSet(md.mesh.x, md.mesh.y, CFcontour);
 
     % load QualFlag from shape files and append to the end
-    sdata = shpread(CFcontour);
-    qflag = cell2mat({sdata.QualFlag});
-    dataLevelset = [dataLevelset; qflag];
+    % sdata = shpread(CFcontour);
+    % qflag = cell2mat({sdata.QualFlag});
+    % dataLevelset = [dataLevelset; qflag];
 
     % select fronts within simulation time. Not super precise (just starts at 1900.00), but not important on this 100 year timescale
-    time_selection = ((dataLevelset(end-1, :) > md.timestepping.start_time) & (dataLevelset(end - 1, :) <= md.timestepping.final_time));
+    % time_selection = ((dataLevelset(end-1, :) > md.timestepping.start_time) & (dataLevelset(end - 1, :) <= md.timestepping.final_time));
+    time_selection = ((dataLevelset(end, :) > md.timestepping.start_time) & (dataLevelset(end, :) <= md.timestepping.final_time));
 
     % Take data within the simulation time
     unsorted_distance = dataLevelset(:, time_selection);

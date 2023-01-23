@@ -8,40 +8,13 @@ function stack = connect_stack2master_shape(stack, master_shape, master_shape_ty
     % TODO: MOVE A LOT OF THIS INTO PREPROCESSING OR A GENERAL SHAPE LOADER TO "STACK" format!!
     % TODO: NOT SURE THE ICE LEVELSET LOGIC HOLDS IN GENERAL
 
-    % remove NaNs PREPROCESSING
-    nan_index = isnan(master_shape.X{1});
-    master_shape.X{1}(nan_index) = [];
-    nan_index = isnan(master_shape.Y{1});
-    master_shape.Y{1}(nan_index) = [];
-    
-    % remove duplicates PREPROCESSING
-    [~, w1] = unique(master_shape.X{1} + master_shape.Y{1}, 'stable');
-    duplicate_indices = setdiff(1:numel(master_shape.Y{1}), w1);
-    master_shape.Y{1}(duplicate_indices) = [];
-    master_shape.X{1}(duplicate_indices) = [];
-    assert(length(master_shape.X{1}) == length(master_shape.Y{1}), 'X and Y no longer have the same length')
-
     master_points = [master_shape.X{1}; master_shape.Y{1}];
-
 
     for i=1:height(stack)
         fprintf("Shape no. %d\n", i)
         
         % temporary for readability
         shapeA = stack(i, :);
-
-        % remove NaNs PREPROCESSING
-        nan_index = isnan(shapeA.X{1});
-        shapeA.X{1}(nan_index) = [];
-        nan_index = isnan(shapeA.Y{1});
-        shapeA.Y{1}(nan_index) = [];
-        
-        % remove duplicates PREPROCESSING
-        [~, w] = unique(shapeA.X{1} + shapeA.Y{1}, 'stable');
-        duplicate_indices = setdiff( 1:numel(shapeA.X{1}), w );
-        shapeA.X{1}(duplicate_indices) = [];
-        shapeA.Y{1}(duplicate_indices) = [];
-        assert(length(shapeA.X{1}) == length(shapeA.Y{1}), 'X and Y no longer have the same length')
 
         % extract end-points
         point_1 = [shapeA.X{1}(1); shapeA.Y{1}(1)];

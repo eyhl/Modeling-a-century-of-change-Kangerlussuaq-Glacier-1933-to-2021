@@ -9,7 +9,7 @@ function [] = movie_vel(md, movieName)
     % time = time(1:output_freq:end);
     length(time)
     Nt =  length(time);
-    nstep = 1;
+    nstep = 10;
     nframes = floor(Nt/nstep);
     xl = [4.658, 5.102]*1e5;
     yl = [-2.3039, -2.2663]*1e6;

@@ -23,12 +23,23 @@ function [fjord_shape] = get_fjord_shape(path, find_or_load)
         fjord_shape.X = {fjord_shape.X};
         fjord_shape.Y = {fjord_shape.Y};
          % remove NaN (codes for closed polygon in GIS programs etc)
-        for i=1:height(fjord_shape)
-            nan_index = find(isnan(fjord_shape.X{i}));
-            fjord_shape.X{i}(nan_index) = [];
-            fjord_shape.Y{i}(nan_index) = [];
-        end
+        % for i=1:height(fjord_shape)
+        %     nan_index = find(isnan(fjord_shape.X{i}));
+        %     fjord_shape.X{i}(nan_index) = [];
+        %     fjord_shape.Y{i}(nan_index) = [];
+        % end
     end
 
-    
+    % remove NaNs
+    nan_index = isnan(fjord_shape.X{1});
+    fjord_shape.X{1} = fjord_shape.X{1}(~nan_index);
+    fjord_shape.Y{1} = fjord_shape.Y{1}(~nan_index);
+
+    % remove duplicates
+    [v, w] = unique(fjord_shape.X{1} + fjord_shape.Y{1}, 'stable');
+    duplicate_indices = setdiff( 1:numel(fjord_shape.X{1}), w );
+    fjord_shape.X{1}(duplicate_indices) = [];
+    fjord_shape.Y{1}(duplicate_indices) = [];
+
+    assert(length(fjord_shape.X{1}) == length(fjord_shape.Y{1}), 'X and Y no longer have the same length')
 end
