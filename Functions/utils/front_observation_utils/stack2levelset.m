@@ -4,5 +4,5 @@ function [md] = stack2levelset(md, front_shp_file)
     md.levelset.spclevelset = ExpToLevelSet(md.mesh.x, md.mesh.y, front_shp_file);
 
     % levelsets should be negative where there is ice. It is already negative for the InitLevelset, so skip that column
-    md.levelset.spclevelset= -1 .* md.levelset.spclevelset;
+    md.levelset.spclevelset(1:end-1, :) = -1 .* md.levelset.spclevelset(1:end-1, :);
 end

@@ -18,6 +18,10 @@ function [mass_balance_curve_struct] = mass_loss_curves(md_list, md_control_list
     mass_balance_curve_struct = struct();
     mass_balance_curve_struct.mass_balance = {};
     mass_balance_curve_struct.time = {};
+    mass_balance_curve_struct.mouginot_t = {};
+    mass_balance_curve_struct.mouginot_mb = {};
+    mass_balance_curve_struct.mouginot_eps = {};
+    mass_balance_curve_struct.mouginot_offset = {};
     figure(111)
     set(gcf,'Position',[100 100 1500 1500])
     for i=1:N
@@ -27,9 +31,9 @@ function [mass_balance_curve_struct] = mass_loss_curves(md_list, md_control_list
         vol1 = cell2mat({md.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
         vol_times1 = cell2mat({md.results.TransientSolution(:).time});
 
-        plot(vol_times1, vol1 - vol1(1), 'color', CM(i,:), 'LineWidth', 3.5);
+        p = plot(vol_times1, vol1 - vol1(1), 'color', CM(i,:), 'LineWidth', 3.0);
         hold on;
-
+        p.Color(4) = 0.70 - (i-1)*0.40;
         mass_balance_curve_struct.mass_balance{j} = vol1 - vol1(1);
         mass_balance_curve_struct.time{j} = vol_times1;
         if length(md_control_list) ~= 0
@@ -45,7 +49,7 @@ function [mass_balance_curve_struct] = mass_loss_curves(md_list, md_control_list
             mass_balance_curve_struct.time{j} = vol_times_c;
         end
     end
-
+    
     % Assumes first model is the reference one
     mb0 = cell2mat({md_list(1).results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
     model_times = cell2mat({md_list(1).results.TransientSolution(:).time});
@@ -56,7 +60,10 @@ function [mass_balance_curve_struct] = mass_loss_curves(md_list, md_control_list
     mouginot_time_span = linspace(1972, 2018, length(cum_mb_1972_2018));
     plot(mouginot_time_span, cum_mb_1972_2018 + offset_prior_1972, '-', 'color', 'red', 'LineWidth', 1.5);
     h = errorbar(mouginot_time_span, cum_mb_1972_2018 + offset_prior_1972, cum_mb_errors, '--', 'color', 'red', 'LineWidth', 1.0);
-
+    mass_balance_curve_struct.mouginot_t{1} = mouginot_time_span;
+    mass_balance_curve_struct.mouginot_mb{1} = cum_mb_1972_2018;
+    mass_balance_curve_struct.mouginot_eps{1} = cum_mb_errors;
+    mass_balance_curve_struct.mouginot_offset{1} = offset_prior_1972;
     % Set transparency level (0:1)
     alpha = 0.65;   
     % Set transparency (undocumented)
@@ -79,7 +86,7 @@ function [mass_balance_curve_struct] = mass_loss_curves(md_list, md_control_list
     xlim([1897, 2023])
     set(gca,'fontsize', 18)
     % ylim([-400, 1000])
-    legend(md_names, 'Mouginot et al. (2019)')
+    legend([md_names, "Mouginot et al. (2019)"])
     grid on
 
     exportgraphics(gcf, fullfile(save_path, 'mass_balance_time_series.png'), 'Resolution', 300)

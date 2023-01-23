@@ -4,6 +4,16 @@ function master = stack2master(stack_struct, condition_struct, save_as, fjord_sh
     stack = connect_stack2master_shape(combined_stack, fjord_shape, 'fjord');
     master = connect_stack2master_shape(stack, ice_domain, 'ice_levelset');
 
+    % remove duplicate dates
+    size(master)
+    [~, w] = unique(master.Date, 'stable');
+    duplicate_indices = setdiff( 1:numel(master.Date), w );
+    master(duplicate_indices, :) = [];
+    size(master)
+    % % sort by date
+    % [~, ind] = sort(datetime(master.Date(:)));
+    % master = stack(ind, :);
+
     has_geometry = any(string(master.Properties.VariableNames) == "Geometry");
     if ~has_geometry
         master.Geometry = repmat("Polygon", height(master), 1);
