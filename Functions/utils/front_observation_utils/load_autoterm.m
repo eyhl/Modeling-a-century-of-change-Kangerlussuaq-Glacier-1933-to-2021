@@ -22,6 +22,17 @@ function [T] = load_autoterm(file_path)
     end
 
     % remove duplicate dates
-    [~, ind] = unique(T.Date);
-    T = T(ind, :);
+    [~, w] = unique(T.Date, 'stable');
+    duplicate_indices = setdiff( 1:numel(T.Date), w );
+    T(duplicate_indices, :) = [];
+
+        % remove self-intersections Maybe move to PREPROCESSING
+    % reshape to (N, 2)
+    % for i=1:height(T)
+    %     fprintf("Removing intersections from shape %d/%d\n", i, height(T))
+    %     S = reshape(vertcat(T.X{i}, T.Y{i}), [], 2);
+    %     S = remove_intersections(S);
+    %     T.X{1} = reshape(S(:, 1), 1, []); % not super general, but with proper loading maybe I can ensure wheter shapes are row or column vectors
+    %     T.Y{1} = reshape(S(:, 2), 1, []);
+    % end
 end

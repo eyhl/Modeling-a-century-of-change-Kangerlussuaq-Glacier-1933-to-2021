@@ -55,7 +55,8 @@ implement get_autoterm_historic_fronts(md, autoterm_path, historic_path, fjord_p
 implement get_calfin_historic_fronts(md)
             similar
 
-
+remove stack2levelset, it is done in runme
+add some unittest
 
 
 % Implement test: compare heights of stacked tables

@@ -9,5 +9,8 @@ function [shape_table] = get_autoterm_stack(path, fjord_shape)
     if nargin >= 2
         shape_table = remove_points_outside_fjord(shape_table, fjord_shape);
     end
+
+    % reduce since we don't need the other fields AND because autoterm has 'Lat' and 
+    % 'Lon' field which messes with shapewrite. Alternatively, rename them.
     shape_table = shape_table(:, {'X', 'Y', 'Date'});
 end

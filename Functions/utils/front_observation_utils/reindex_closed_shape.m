@@ -26,11 +26,5 @@ function [shape_table] = reindex_closed_shape(shape_table)
         % shift coordinates to have index 1 and end just before fjord gap
         shape_table.X{i} = circshift(shape_table.X{i}, index_offset);
         shape_table.Y{i} = circshift(shape_table.Y{i}, index_offset);
-
-        % clf;
-        % scatter(shape_table.X{i}(1:5), shape_table.Y{i}(1:5), 10, 'b'); hold on;
-        % scatter(shape_table.X{i}(end-5:end), shape_table.Y{i}(end-5:end), 10, 'r');
-        % scatter(shape_table.X{i}, shape_table.Y{i}, 1, 'k', 'filled');
-        % pause;
     end
 end

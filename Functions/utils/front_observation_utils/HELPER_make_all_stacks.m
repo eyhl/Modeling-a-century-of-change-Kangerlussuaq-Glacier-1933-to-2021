@@ -1,9 +1,12 @@
-function [] = HELPER_make_all_stacks()
+function [s1, s2] = HELPER_make_all_stacks(fjord_path)
     % get paths
     ice_path = "/data/eigil/work/lia_kq/Data/shape/icelevelset_domain/domain.shp";
     [autoterm_path, calfin_path, historic_path] = HELPER_get_file_paths_KG();
-    fjord_shape = get_fjord_shape(calfin_path, 'find');
-
+    if nargin < 1
+        fjord_shape = get_fjord_shape(calfin_path, 'find');
+    else
+        fjord_shape = get_fjord_shape(fjord_path, 'load');
+    end
     % get various stacks
     historic_stack = get_historic_KG_stack(historic_path);
     calfin_stack = get_calfin_stack(calfin_path);
@@ -17,10 +20,10 @@ function [] = HELPER_make_all_stacks()
     % autoterm historic
     stack_struct = {historic_stack, autoterm_stack};
     cond_struct = {cond_historic, cond_autoterm};
-    stack2master(stack_struct, cond_struct, 'autoterm_historic', fjord_shape, ice_path);
+    s1 = stack2master(stack_struct, cond_struct, 'autoterm_historic', fjord_shape, ice_path);
 
     % calfin historic
     stack_struct = {historic_stack, calfin_stack};
     cond_struct = {cond_historic, cond_calfin};
-    stack2master(stack_struct, cond_struct, 'calfin_historic', fjord_shape, ice_path);
+    s2 = stack2master(stack_struct, cond_struct, 'calfin_historic', fjord_shape, ice_path);
 end

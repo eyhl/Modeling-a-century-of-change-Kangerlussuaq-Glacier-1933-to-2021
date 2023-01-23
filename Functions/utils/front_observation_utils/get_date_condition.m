@@ -18,7 +18,5 @@ function condition_array = get_date_condition(shape_table, condition, date_time)
                 condition_array(i, 1) = shape_table.Date{i} <= date_time;
             end
         end
-    else
-        disp("Assuming no condition, returning all true condition array. length(condition_array)==height(shape_table)")
     end
 end
