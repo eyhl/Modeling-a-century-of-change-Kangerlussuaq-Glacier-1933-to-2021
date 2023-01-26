@@ -10,7 +10,7 @@ function [config_file_name] = create_config(id)
     end
     % identifyer
     glacier_name = "KG";
-    front_observation_path = "/data/eigil/work/lia_kq/all_fronts.shp";
+    front_observation_path = "/data/eigil/work/lia_kq/all.shp";
 
     % Set parameters
     steps = [2:4, 7:9]; % 4=budd, 5=schoof, 6=weertman

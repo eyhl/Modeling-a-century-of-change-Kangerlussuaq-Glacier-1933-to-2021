@@ -1,4 +1,4 @@
-function [s1, s2] = HELPER_make_all_stacks(fjord_path)
+function [s1, s2, s3] = HELPER_make_all_stacks(fjord_path)
     % get paths
     ice_path = "/data/eigil/work/lia_kq/Data/shape/icelevelset_domain/domain.shp";
     [autoterm_path, calfin_path, historic_path] = HELPER_get_file_paths_KG();
@@ -27,8 +27,9 @@ function [s1, s2] = HELPER_make_all_stacks(fjord_path)
     cond_struct = {cond_historic, cond_calfin};
     s2 = stack2master(stack_struct, cond_struct, 'calfin_historic', fjord_shape, ice_path);
 
-    % calfin historic
+    % all observations
+    cond_historic = get_date_condition(historic_stack);
     stack_struct = {historic_stack, calfin_stack, autoterm_stack};
     cond_struct = {cond_historic, cond_calfin, cond_autoterm};
-    s3 = stack2master(stack_struct, cond_struct, 'calfin_historic', fjord_shape, ice_path);
+    s3 = stack2master(stack_struct, cond_struct, 'all', fjord_shape, ice_path);
 end

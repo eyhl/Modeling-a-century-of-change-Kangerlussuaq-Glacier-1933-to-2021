@@ -1,4 +1,4 @@
-function [] = flowline_test(md, pos1, pos2)
+function [] = flowline_test(md, pos1, pos2, vel, u, v)
     %clear
     % close all
 
@@ -26,8 +26,8 @@ function [] = flowline_test(md, pos1, pos2)
         % y0 = [-2294540, -2296520, -2298880];
         % x0 = [507680, 503080.707450693];
         % y0 = [-2297520, -2298408.27018442];
-        x0 = [pos1(1), pos2(1)];
-        y0 = [pos1(2), pos2(2)];
+        x0 = [pos1(1)];%, pos2(1)];
+        y0 = [pos2(1)];%, pos2(2)];
 
         xmin = 361900; xmax = 510001;
         ymin = -2310000; ymax = -2160900;
@@ -47,7 +47,6 @@ function [] = flowline_test(md, pos1, pos2)
     if plotflag
         figure
         plotmodel(md, 'data', md.results.StressbalanceSolution.Vel,...
-            'mask', (md.mask.ice_levelset<1),...
             'xlim', [xmin, xmax], 'ylim', [ymin, ymax], 'caxis', [0,10000])
         hold on
     end
@@ -59,10 +58,11 @@ function [] = flowline_test(md, pos1, pos2)
     data_vy = 'Data/measure_multi_year_v1/greenland_vel_mosaic250_vy_v1.tif';
     % [vel, u, v] = interpVelocity(md, data_vx, data_vy);
 
-    vel = md.results.StressbalanceSolution.Vel;
-    u = md.results.StressbalanceSolution.Vx;
-    v = md.results.StressbalanceSolution.Vy;
-
+    if nargin < 3
+        vel = md.results.StressbalanceSolution.Vel;
+        u = md.results.StressbalanceSolution.Vx;
+        v = md.results.StressbalanceSolution.Vy;
+    end
 
     % u = fillInNan(md, u);
     % v = fillInNan(md, v);
@@ -81,7 +81,7 @@ function [] = flowline_test(md, pos1, pos2)
     % compute the flowline
     for i = 1: length(x0)
         % get the flowline
-        flowlineList{i} =flowlines(index,x,y,u,v,x0(i),y0(i), 'maxiter', 150);
+        flowlineList{i} =flowlines(index,x,y,u,v,x0(i),y0(i), 'maxiter', 350);
         % get the distance along the flowline
         flowlineList{i}.Xmain = cumsum([0; sqrt((flowlineList{i}.x(2:end) - flowlineList{i}.x(1:end-1)) .^ 2 + (flowlineList{i}.y(2:end) - flowlineList{i}.y(1:end-1)) .^ 2)]') / 1000;
         % get the distance along the flowline from the calving front side

@@ -6,7 +6,7 @@ function [shape_data] = load_historic_KG(file_path)
     save_index = zeros(height(shape_data), 1);
 
     % the 1900 date has to be handled seperately
-    shape_data.date{21} = datetime('31-07-1900', 'InputFormat', 'dd-MM-yyyy');
+    shape_data.date{21} = datetime('01-01-1900', 'InputFormat', 'dd-MM-yyyy');
     j = 0;
     for i = 1:height(shape_data)
         j = j + 1;

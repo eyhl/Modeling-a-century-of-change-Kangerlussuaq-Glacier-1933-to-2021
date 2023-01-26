@@ -1,4 +1,4 @@
-function [md] = recipe(id, config_file_name)
+function [md] = recipe(config_file_name)
     axes = 1.0e+06 .* [0.4167    0.4923   -2.2961   -2.2039];
 
     % config_file_name = create_config(id);

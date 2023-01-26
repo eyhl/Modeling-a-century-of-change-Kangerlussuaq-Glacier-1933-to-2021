@@ -90,7 +90,7 @@ function [] = validate_model(results_folder_name, axes, md)
     % Mass loss curve
     disp('Plotting mass balance...')
     mass_balance_curve_struct = mass_loss_curves([md], [], [config.friction_law], results_folder_name);
-    save(fullfile(results_folder_name, 'mass_balance_curve_struct.dat'), 'mass_balance_curve_struct');
+    save(fullfile(results_folder_name, 'mass_balance_curve_struct.mat'), 'mass_balance_curve_struct');
 
     % TODO: Add mass loss from other studies
     % ...
