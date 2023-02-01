@@ -303,13 +303,19 @@ function [md] = run_model(config_name, plotting_flag)
         elseif strcmp(config.friction_extrapolation, "constant")
             disp("Extrapolating friction coefficient using constant value")
             [extrapolated_friction, extrapolated_pos, ~] = friction_constant_model(md, cs_min, config.friction_law, validate_flag);
+        elseif strcmp(config.friction_extrapolation, "pollard")
+            disp("Extrapolating friction coefficient using pollard inversion")
+            md_pollard = loadmodel("/data/eigil/work/lia_kq/Models/PollardInversion.mat");
+            md.friction.coefficient = md_pollard.friction.coefficient;
         else
             warning("Invalid extrapolation method from config file. Choose random_field, linear or constant")
         end
 
-        % set values under cs min to cs min
-        extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
-        
+        if ~strcmp(config.friction_extrapolation, "pollard")
+            % set values under cs min to cs min
+            extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
+        end
+
         % OFFSET CORRECT AND SAVE IN MD: 
         %TODO: MOVE THIS LOGIC INTO CREATE_CONFIG.M FUNCTION OR CREATE SEPERATE FUNCTION.
         if strcmp(config.friction_law, 'budd')

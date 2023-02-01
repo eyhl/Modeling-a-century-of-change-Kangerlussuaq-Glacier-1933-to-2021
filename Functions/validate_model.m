@@ -17,7 +17,12 @@ function [] = validate_model(results_folder_name, axes, md)
         md.inversion.thickness_obs = md_tmp.geometry.thickness;
     end
 
-    masked_values = md.results.TransientSolution(end).MaskIceLevelset<0;
+    if isfield(md.results.TransientSolution, 'MaskIceLevelset')
+        masked_values = md.results.TransientSolution(end).MaskIceLevelset<0;
+    else
+        masked_values = md.mask.ice_levelset < 0;
+    end
+
 
     %% ---------------------------------------------- SPATIAL MISFIT ----------------------------------------------
     %% Thickness
@@ -61,7 +66,7 @@ function [] = validate_model(results_folder_name, axes, md)
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'log', 10, ...
                 'axis#all', axes, 'figure', 93); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
-                exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited.png'), 'Resolution', 300)
+                exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited_log.png'), 'Resolution', 300)
 
     % Velocity misfit caxes
     misfit_velocity = velocity_pred - md.inversion.vel_obs;

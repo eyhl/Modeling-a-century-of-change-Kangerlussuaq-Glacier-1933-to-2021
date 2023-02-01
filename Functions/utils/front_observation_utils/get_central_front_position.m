@@ -1,4 +1,4 @@
-function [distance, x, y] = get_central_front_position(md, flowline, validate)
+function [distance_obs, distance_interp, gradient_interp, gradient_sign, time_interp] = get_central_front_position(md, flowline, validate)
     %%
     if nargin < 3
         validate = false;
@@ -60,5 +60,23 @@ function [distance, x, y] = get_central_front_position(md, flowline, validate)
         y(i) = yi;
 
     end
-    distance = distance - distance(1); % first front as reference 0 distance
+    distance_obs = distance - distance(1); % first front as reference 0 distance
+
+    t_front_obs = md.levelset.spclevelset(end, :);
+    time_interp = [md.results.TransientSolution(:).time];
+    distance_interp = interp1(t_front_obs, -distance, time_interp); % distance linear interpolated for all available times
+    gradient_interp = gradient(distance_interp, time_interp);
+
+    % remove NaNs, which occur if time 0 spc does not align with time 0 in model.
+    nan_index = isnan(gradient_interp);
+    if ~isempty(nan_index)
+        time_interp = time_interp(~nan_index);
+        distance_interp = distance_interp(~nan_index);
+        gradient_interp = gradient_interp(~nan_index);
+    end
+    gradient_sign = gradient_interp;
+
+    % reduce gradient to a sign function for positive and negative gradient
+    gradient_sign(gradient_sign<0) = max([-1, gradient_sign(gradient_sign<0)]);
+    gradient_sign(gradient_sign>0) = min([1, gradient_sign(gradient_sign>0)]);    
 end

@@ -1,12 +1,32 @@
-function [shape_data] = load_historic_KG(file_path)
+function [shape_data] = load_historic_KG(file_path, load_vermassen)
+    if nargin<2
+        load_vermassen = false;
+    end
     %% LOAD_HISTORIC_KG() loads historical front observations for Kangerlussuaq (KG)
     % glacier. Data format requires some hardcoding.
     shape_data = shaperead(file_path);
+    
+    % if Vermassen front is added
+    if load_vermassen
+        disp('uo')
+        vermassen_shape = shaperead("/data/eigil/work/lia_kq/Data/shape/kauq/vermassen_front.shp");
+
+        shape_data(end+1) = struct('Geometry', {'Line'}, 'BoundingBox', {NaN}, ...
+                                    'X', {vermassen_shape.X}, 'Y', {vermassen_shape.Y}, ...
+                                    'GM_LAYER', {NaN}, 'GM_TYPE', {NaN}, 'NAME', {NaN}, 'LAYER', {NaN}, ...
+                                    'LENGTH', {NaN}, 'BEARING', {NaN}, 'Id', {NaN}, 'date', {datetime(1932, 7, 31)}, ...
+                                    'fid', {NaN}, 'Area', {NaN}, 'path', {NaN});
+    end
+
+
     shape_data = struct2table(shape_data); % converts to table format like autoterm
     save_index = zeros(height(shape_data), 1);
 
     % the 1900 date has to be handled seperately
     shape_data.date{21} = datetime('01-01-1900', 'InputFormat', 'dd-MM-yyyy');
+    shape_data.date{1} = datetime('31-07-1933', 'InputFormat', 'dd-MM-yyyy');
+    
+
     j = 0;
     for i = 1:height(shape_data)
         j = j + 1;
@@ -34,7 +54,7 @@ function [shape_data] = load_historic_KG(file_path)
 
     % fix Date variable type
     shape_data.Date = string(shape_data.Date);
-
+    
     % sort by date
     [~, ind] = sort(datetime(shape_data.Date(:)));
     shape_data = shape_data(ind, :);

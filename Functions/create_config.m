@@ -57,7 +57,7 @@ function [config_file_name] = create_config(id)
 
     % save table
     config_file_name = append(id, '-config', '.csv');
-    config_folder = append('Configs/', config_file_name);
+    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
 
     writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
 end

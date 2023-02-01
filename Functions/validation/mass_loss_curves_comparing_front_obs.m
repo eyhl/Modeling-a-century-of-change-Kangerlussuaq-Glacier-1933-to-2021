@@ -1,18 +1,29 @@
 function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_list, md_control_list, md_names, folder, validate, retreat_advance) %md1, md2, md3, md_control, folder)
+    isfield(md_list(1), 'mesh')
+    if isfield(md_list(1), 'mesh') % the alternative is structs only holding relevant data, not the full model
+        model_struct = true;
+    else
+        model_struct = false;
+    end
+
     if nargin < 5
         validate = true;
     end
     save_path = folder;
     plot_smb = false;
+    historic = false;
     N = length(md_list);
-    CM = parula(2*N);
-    if N > 1
-        CM = CM(2:4, :);
-    end
+    % CM = copper(N);
+    CM = colorcube(2*N);
+    % if N > 1
+    %     CM = CM(1:2:end, :);
+    % end
+    CM(1, :) = [0, 0, 0];
+
     % dt = 1/12;
     % start_time = md_list(1).smb.mass_balance(end, 1);
     % final_time = md_list(1).smb.mass_balance(end, end);
-    marker_control = {':', '--', '-.'};
+    % marker_control = {':', '--', '-.'};
     % if nargin > 4
     %     present_thickness needs to be defined
     %     final_mass_loss = integrate_field_spatially(md_list(1), md_list(1).geometry.thickness - present_thickness) / (1e9) * 0.9167
@@ -25,14 +36,69 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     mass_balance_curve_struct.mouginot_mb = {};
     mass_balance_curve_struct.mouginot_eps = {};
     mass_balance_curve_struct.mouginot_offset = {};
-    figure(111)
+    mass_balance_curve_struct.patches = {};
     set(gcf,'Position',[100 100 1500 1500])
+
+    if retreat_advance
+        % plot a retreat advance background
+        flowline = load("/data/eigil/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat");
+        flowline = flowline.flowlineList{:};
+        try 
+            distance_analysis = load("/data/eigil/work/lia_kq/Data/validation/flowline_positions/distance_analysis.mat", 'distance_analysis');
+            distance_analysis = distance_analysis.distance_analysis;
+            gradient_sign = distance_analysis.gradient_sign;
+            gradient_interp = distance_analysis.gradient_interp;
+            time_interp = distance_analysis.time_interp;
+        catch
+            [distance, distance_interp, gradient_interp, gradient_sign, time_interp] = get_central_front_position(md_list(1), flowline); % distance is measured from most extended front
+            distance_analysis.distance = distance;
+            distance_analysis.distance_interp = distance_interp;
+            distance_analysis.gradient_interp = gradient_interp;
+            distance_analysis.gradient_sign = gradient_sign;
+            distance_analysis.time_interp = time_interp;
+            save("/data/eigil/work/lia_kq/Data/validation/flowline_positions/distance_analysis.mat", 'distance_analysis');
+        end 
+
+        [xx1, yy1, xx2, yy2, grad1, grad2] = plot_background(time_interp, gradient_sign, [-400, 200], gradient_interp);
+        grad1 = grad1(1:end-1);
+        cmin = min(abs(horzcat(grad1, grad2)));
+        cmax = max(abs(horzcat(grad1, grad2)));
+        c1 = (grad1 - cmin)/(cmax - cmin);
+        c2 = (grad2 - cmin)/(cmax - cmin);
+    
+        advance_N = size(grad1, 2);
+        green = [0, 1, 0];
+        light_green = [231, 255, 231]/255;
+        greens = flipud([linspace(green(1), light_green(1), advance_N)', linspace(green(2), light_green(2), advance_N)', linspace(green(3), light_green(3), advance_N)']);
+    
+        retreat_N = size(grad2, 2);
+        red = [1, 0, 0];
+        pink = [255, 231, 231]/255;
+        reds = ([linspace(red(1), pink(1), retreat_N)', linspace(red(2), pink(2), retreat_N)', linspace(red(3), pink(3), retreat_N)']);
+    
+        colormap([greens; reds])
+        c1 = c1 * advance_N;
+        c2 = c2 * retreat_N + advance_N + 1;
+    
+        p1 = patch(xx1, yy1, c1, 'FaceAlpha', 1, 'EdgeColor','none');
+        hold on 
+        p2 = patch(xx2, yy2, c2, 'FaceAlpha', 1, 'EdgeColor','none');
+
+        mass_balance_curve_struct.patches = {[xx1, yy1, xx2, yy2]};
+    end
+
+
     for i=1:N
         md = md_list(i);
     
         %% Volume plot 1
-        vol1 = cell2mat({md.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
-        vol_times1 = cell2mat({md.results.TransientSolution(:).time});
+        if model_struct
+            vol1 = cell2mat({md.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
+            vol_times1 = cell2mat({md.results.TransientSolution(:).time});
+        else
+            vol1 = md.mass_balance{1};
+            vol_times1 = md.time{1};
+        end
 
         p = plot(vol_times1, vol1 - vol1(1), 'color', CM(i,:), 'LineWidth', 2.0);
         hold on;
@@ -41,47 +107,41 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
         mass_balance_curve_struct.time{j} = vol_times1;
         if length(md_control_list) ~= 0
             j = j + 1;
+            md_control = md_control_list(i);
+            if model_struct
+                vol_c = cell2mat({md_control.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
+                vol_times_c = cell2mat({md_control.results.TransientSolution(:).time});
+                q_times = md_control.levelset.spclevelset(end, :);
+
+            else
+                vol_c = md.mass_balance{1};
+                vol_times_c = md_control.time{1};
+                q_times = [];
+                disp("spclevelset not saved in struct, load md instead")
+            end
             % scatter(vol_times_c, vol_c - vol_c(1), 'color', CM(i,:), 'Marker', marker_control{i});
             %% Volume plot CONTROL
-            md_control = md_control_list(i);
-            vol_c = cell2mat({md_control.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
-            vol_times_c = cell2mat({md_control.results.TransientSolution(:).time});
+
             % plot(vol_times_c, vol_c - vol_c(1), 'color', CM(i,:), 'LineWidth', 3.5, 'LineStyle', marker_control{i});
-
-            q_times = md_control.levelset.spclevelset(end, :);
-
-            if i == 1
-                q_times_historic = q_times(1:5);
-            else
-                q_times_historic = [q_times(1:4), q_times(6)];
-            end
-
-            vol_tmp = interp1(vol_times_c, vol_c - vol_c(1), q_times);
-            vol_tmp_historic = interp1(vol_times_c, vol_c - vol_c(1), q_times_historic);
             % CM(i,:)
+            vol_tmp = interp1(vol_times_c, vol_c - vol_c(1), q_times);
             plot(q_times, vol_tmp, 'color', CM(i,:) .* 0.7, 'marker', '+', 'LineStyle', 'none', 'MarkerSize', 7, 'LineWidth', 2);
-            plot(q_times_historic, vol_tmp_historic, 'color', 'magenta', 'marker', 'o', 'LineStyle', 'none', 'MarkerSize', 7, 'LineWidth', 1);
+
+
+            if historic
+                if i == 1
+                    q_times_historic = q_times(1:5);
+                else
+                    q_times_historic = [q_times(1:4), q_times(6)];
+                end
+                vol_tmp_historic = interp1(vol_times_c, vol_c - vol_c(1), q_times_historic);
+                plot(q_times_historic, vol_tmp_historic, 'color', 'magenta', 'marker', 'o', 'LineStyle', 'none', 'MarkerSize', 7, 'LineWidth', 1);
+            end
             mass_balance_curve_struct.mass_balance{j} = vol_c - vol_c(1);
             mass_balance_curve_struct.time{j} = vol_times_c;
         end
     end
 
-    if retreat_advance
-        % plot a retreat advance background
-        flowline = load("/data/eigil/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat");
-        flowline = flowline.flowlineList{:};
-        [distance, ~, ~] = get_central_front_position(md_list(1), flowline); % distance is measured from most extended front
-        t_front_obs = md_list(1).levelset.spclevelset(end, :);
-        t_query = md_list(1).results.TransientSolution(:).time;
-        distance_q = interp1(t_front_obs, -distance, t_query); % distance linear interpolated for all available times
-        gradient_q = gradient(distance_q);
-
-        % reduce gradient to a sign function for positive and negative gradient
-        gradient_q(gradient_q<0) = max([-1, gradient_q(gradient_q<0)]);
-        gradient_q(gradient_q>0) = min([1, gradient_q(gradient_q>0)]);     
-
-        [xx1, yy1, xx2, yy2] = plot_background(t_query, gradient_q, [-400, 50]);
-    end
 
     if validate
         % Assumes first model is the reference one
@@ -115,24 +175,28 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
         plot(smb_times, cumulative_smb, 'color', 'k', 'LineWidth', 1.5);  % dt=1/12
     end
 
-
     % scatter(vol_times_c(end), final_mass_loss, 'r');
     xlabel('Year')
     ylabel('Mass [Gt]')
-    xlim([1971, 2023])
-    set(gca,'fontsize', 18)
-    % grid;
-    % ylim([-400, 1000])
-    % if validate
-    %     legend([md_names, "Mouginot et al. (2019)"])
-    % else
-    %     legend(md_names)
-    % end
+    xlim([1899.9, 2021.1])
+    set(gca,'fontsize', 14)
+    Ax = gca;
+    Ax.YGrid = 'on';
+    Ax.XGrid = 'on';
+    Ax.Layer = 'top';
+    Ax.GridLineStyle = '--';
+    Ax.GridAlpha = 0.5;
 
-    patch(xx1, yy1, 'g', 'FaceAlpha', 0.5, 'EdgeColor', 'none');
-    patch(xx2, yy2, 'r', 'FaceAlpha', 0.5, 'EdgeColor', 'none');
+    all_names = md_names;
+    if validate
+        all_names = [all_names, "Mouginot et al. (2019)"];
+    end
+    if retreat_advance
+        all_names = ["Advancing", "Retreating", all_names];
+    end
+    legend([all_names], 'Location', 'NorthWest')
 
     if folder
-    exportgraphics(gcf, fullfile(save_path, 'mass_balance_time_series.png'), 'Resolution', 300)
+        exportgraphics(gcf, fullfile(save_path, 'mass_balance_time_series.png'), 'Resolution', 300)
     end
 end

@@ -1,4 +1,7 @@
 function [s1, s2, s3] = HELPER_make_all_stacks(fjord_path)
+    % 1933 COLLAPSE?
+    collapse = true;
+
     % get paths
     ice_path = "/data/eigil/work/lia_kq/Data/shape/icelevelset_domain/domain.shp";
     [autoterm_path, calfin_path, historic_path] = HELPER_get_file_paths_KG();
@@ -8,7 +11,7 @@ function [s1, s2, s3] = HELPER_make_all_stacks(fjord_path)
         fjord_shape = get_fjord_shape(fjord_path, 'load');
     end
     % get various stacks
-    historic_stack = get_historic_KG_stack(historic_path);
+    historic_stack = get_historic_KG_stack(historic_path, collapse);
     calfin_stack = get_calfin_stack(calfin_path);
     autoterm_stack = get_autoterm_stack(autoterm_path, fjord_shape);
 
@@ -20,16 +23,16 @@ function [s1, s2, s3] = HELPER_make_all_stacks(fjord_path)
     % autoterm historic
     stack_struct = {historic_stack, autoterm_stack};
     cond_struct = {cond_historic, cond_autoterm};
-    s1 = stack2master(stack_struct, cond_struct, 'autoterm_historic', fjord_shape, ice_path);
+    s1 = stack2master(stack_struct, cond_struct, 'tmp', fjord_shape, ice_path);
 
     % calfin historic
     stack_struct = {historic_stack, calfin_stack};
     cond_struct = {cond_historic, cond_calfin};
-    s2 = stack2master(stack_struct, cond_struct, 'calfin_historic', fjord_shape, ice_path);
+    s2 = stack2master(stack_struct, cond_struct, 'tmp', fjord_shape, ice_path);
 
     % all observations
     cond_historic = get_date_condition(historic_stack);
     stack_struct = {historic_stack, calfin_stack, autoterm_stack};
     cond_struct = {cond_historic, cond_calfin, cond_autoterm};
-    s3 = stack2master(stack_struct, cond_struct, 'all', fjord_shape, ice_path);
+    s3 = stack2master(stack_struct, cond_struct, 'vermassen', fjord_shape, ice_path);
 end

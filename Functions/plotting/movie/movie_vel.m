@@ -18,10 +18,19 @@ function [] = movie_vel(md, movieName)
     close all;
     figure()
     mov(1:nframes) = struct('cdata', [],'colormap', []);
+
+
+
     count = 1;
     for i = 1:nstep:Nt
+        if isfield(md.results.TransientSolution, 'MaskIceLevelset')
+            masked_values = md.results.TransientSolution(i).MaskIceLevelset;
+        else
+            masked_values = md.mask.ice_levelset;
+        end
+
         plotmodel(md,'data', md.results.TransientSolution(i).Vel,...
-            'levelset', md.results.TransientSolution(i).MaskIceLevelset, 'gridded', 1,...
+            'levelset', masked_values, 'gridded', 1,...
             'caxis', [0, 12e3], 'colorbar', 'on',...
             'xtick', [], 'ytick', [], ...
             'xlim', xl, 'ylim', yl);%, ...
