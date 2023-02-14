@@ -1,4 +1,13 @@
 function [xx1, yy1, xx2, yy2, grad1, grad2] = plot_background(x, y, yy, gradient_value)
+    % The patch function expects the corners of rectangles, so this function saves x positions and
+    % a height for the rectangle from yy, which should hold two values, a min and max coordinate
+    % of the yy variable. The ordering of when different values are saved is related to what
+    % the patch function expects
+    % x holds how many points on x-axis that should hold a specific value
+    % y informs whether the glacier is in reatreat or advance
+    % yy holds a height value for each x point. It is fixed as the rectangles should not change height
+    % gradient_value saves the gradient in the current rectangle. 
+
     still_retreating = 0;
     still_advancing = 0;
 
