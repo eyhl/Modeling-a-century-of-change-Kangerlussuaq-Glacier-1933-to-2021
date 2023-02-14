@@ -1,4 +1,4 @@
-function [xx1, yy1, xx2, yy2] = plot_background(x, y, yy)
+function [xx1, yy1, xx2, yy2, grad1, grad2] = plot_background(x, y, yy, gradient_value)
     still_retreating = 0;
     still_advancing = 0;
 
@@ -12,6 +12,9 @@ function [xx1, yy1, xx2, yy2] = plot_background(x, y, yy)
     advance_min_y = [];
     advance_max_y = [];
 
+    retreat_gradient = [];
+    advance_gradient = [];
+
     % to save correct amount of polygons
     j = 1;
     k = 1;
@@ -23,6 +26,7 @@ function [xx1, yy1, xx2, yy2] = plot_background(x, y, yy)
                 % save edge
                 retreat_min_x(j) = x(i);
                 retreat_min_y(j) = yy(1);
+                retreat_gradient(j) = gradient_value(i);
                 if i ~= 1
                     advance_max_x(j-1) = x(i);
                     advance_max_y(j-1) = yy(2);
@@ -43,6 +47,7 @@ function [xx1, yy1, xx2, yy2] = plot_background(x, y, yy)
                 if i ~= length(x)
                     advance_min_x(k) = x(i);
                     advance_min_y(k) = yy(1);
+                    advance_gradient(j) = gradient_value(i);
                 end
                 still_advancing = 1;
                 still_retreating = 0;
@@ -53,13 +58,14 @@ function [xx1, yy1, xx2, yy2] = plot_background(x, y, yy)
         end
 
     end
-
+    grad1 = advance_gradient;
     xx1 = [advance_min_x; advance_min_x; advance_max_x; advance_max_x];
     yy1 = [advance_min_y; advance_max_y; advance_max_y; advance_min_y];
     % patch(xx,yy,'g',...
     %             'FaceAlpha',0.5,...
     %             'EdgeColor','none');
     % hold on;
+    grad2 = retreat_gradient;
     xx2 = [retreat_min_x; retreat_min_x; retreat_max_x; retreat_max_x];
     yy2 = [retreat_min_y; retreat_max_y; retreat_max_y; retreat_min_y];
     % patch(xx,yy,'r', 'FaceAlpha', 0.5, 'EdgeColor','none');
