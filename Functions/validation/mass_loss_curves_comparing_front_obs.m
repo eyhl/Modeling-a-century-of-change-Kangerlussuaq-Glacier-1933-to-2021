@@ -5,11 +5,10 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     else
         model_struct = false;
     end
-
+    model_struct = true
     if nargin < 5
         validate = true;
     end
-    save_path = folder;
     plot_smb = false;
     historic = false;
     N = length(md_list);
@@ -59,6 +58,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
             save("/data/eigil/work/lia_kq/Data/validation/flowline_positions/distance_analysis.mat", 'distance_analysis');
         end 
 
+        % OBS OBS!! gradient interp is the gradient of the spatial retreat along flowline (should be in meters or kilometers)
         [xx1, yy1, xx2, yy2, grad1, grad2] = plot_background(time_interp, gradient_sign, [-400, 200], gradient_interp);
         grad1 = grad1(1:end-1);
         cmin = min(abs(horzcat(grad1, grad2)));
@@ -197,6 +197,6 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     legend([all_names], 'Location', 'NorthWest')
 
     if folder
-        exportgraphics(gcf, fullfile(save_path, 'mass_balance_time_series.png'), 'Resolution', 300)
+        exportgraphics(gcf, fullfile(folder, 'mass_balance_time_series.png'), 'Resolution', 300)
     end
 end

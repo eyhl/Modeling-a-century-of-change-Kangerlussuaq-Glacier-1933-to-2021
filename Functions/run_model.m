@@ -33,6 +33,7 @@ function [md] = run_model(config_name, plotting_flag)
     if strcmp(config.friction_law, 'budd')
         cs_min = 0.01; %config.cs_min;
         cs_max = 1e4; %config.cs_max;
+        velocity_exponent = config.velocity_exponent;
         budd_coeff = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3];
         display_coefs = num2str(budd_coeff);
     elseif strcmp(config.friction_law, 'regcoulomb')
@@ -149,31 +150,46 @@ function [md] = run_model(config_name, plotting_flag)
 
     %% 3 Forcings: Interpolate SMB
     if perform(org, 'smb')
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
 
-        if strcmp(config.smb_name, "box")
-            md = interpolate_box_smb(md, start_time, final_time, smb_file);
-        else
-            the_files = dir(fullfile(smb_file, '*.nc'));
-            %TODO: CANNOT HANDLE ONLY PRE 1958 SELECTION (cat() reconstruct_racmo should be tested for this)
-            % reconstruct racmo if year<1958
-            if start_time < 1958 || final_time < 1958
-                disp("post 1958 - interpolating racmo")
-                md = interpolate_racmo_smb(md, 1958, final_time, the_files); % -1 to run to end 2021
-                disp("pre 1958 - reconstructing racmo")
-                md = reconstruct_racmo(md, start_time, final_time, ref_smb_start_time, ref_smb_final_time);
-            else
-                disp("post 1958 - interpolating racmo")
-                md = interpolate_racmo_smb(md, start_time, final_time, the_files);
+         % ------ Load smb if already processed
+        if isfile(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat'])
+            disp("Loading SMB from previous processing...")
+            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
+            md_smb = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
+            if md.mesh.numberofelements ~= md_smb.mesh.numberofelements
+                disp("Error mesh is different size in the two models")
             end
-        end 
+            md.smb.mass_balance = md_smb.smb.mass_balance;
+
+        % ------ Compute smb
+        else
+            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
+            disp("SMB processing in progress...")
+
+            if strcmp(config.smb_name, "box")
+                md = interpolate_box_smb(md, start_time, final_time, smb_file);
+            else
+                the_files = dir(fullfile(smb_file, '*.nc'));
+                %TODO: CANNOT HANDLE ONLY PRE 1958 SELECTION (cat() reconstruct_racmo should be tested for this)
+                % reconstruct racmo if year<1958
+                if start_time < 1958 || final_time < 1958
+                    disp("post 1958 - interpolating racmo")
+                    md = interpolate_racmo_smb(md, 1958, final_time, the_files); % -1 to run to end 2021
+                    disp("pre 1958 - reconstructing racmo")
+                    md = reconstruct_racmo(md, start_time, final_time, ref_smb_start_time, ref_smb_final_time);
+                else
+                    disp("post 1958 - interpolating racmo")
+                    md = interpolate_racmo_smb(md, start_time, final_time, the_files);
+                end
+            end 
+        end
         savemodel(org, md);
     end
 
     %% 4 Friction law setup: Budd %TODO: add friction step with friction_law condition inside instead.
     if perform(org, 'budd')
         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
-        md = solve_stressbalance_budd(md, budd_coeff, cs_min, cs_max);
+        md = solve_stressbalance_budd(md, budd_coeff, cs_min, cs_max, velocity_exponent);
         savemodel(org, md);
 
         if plotting_flag
@@ -297,15 +313,19 @@ function [md] = run_model(config_name, plotting_flag)
 
             disp("Extrapolating friction coefficient correlated polynomially with bed topography")
             [extrapolated_friction, extrapolated_pos, ~] = friction_correlation_model(md, cs_min, M, config.friction_law, validate_flag);
+
         elseif strcmp(config.friction_extrapolation, 'exponential_correlation')
             [extrapolated_friction, extrapolated_pos, ~] = friction_exponential_model(md, cs_min, friction_law, validate_flag);
  
         elseif strcmp(config.friction_extrapolation, "constant")
             disp("Extrapolating friction coefficient using constant value")
             [extrapolated_friction, extrapolated_pos, ~] = friction_constant_model(md, cs_min, config.friction_law, validate_flag);
+
         elseif strcmp(config.friction_extrapolation, "pollard")
             disp("Extrapolating friction coefficient using pollard inversion")
-            md_pollard = loadmodel("/data/eigil/work/lia_kq/Models/PollardInversion.mat");
+            % md_pollard = loadmodel("/data/eigil/work/lia_kq/Models/PollardInversion.mat");
+            % md_pollard = loadmodel("/data/eigil/work/lia_kq/pollard_budd1to5_avg2_lim966.mat");
+            md_pollard = loadmodel("/data/eigil/work/lia_kq/pollard_newest.mat");
             md.friction.coefficient = md_pollard.friction.coefficient;
         else
             warning("Invalid extrapolation method from config file. Choose random_field, linear or constant")
@@ -318,15 +338,19 @@ function [md] = run_model(config_name, plotting_flag)
 
         % OFFSET CORRECT AND SAVE IN MD: 
         %TODO: MOVE THIS LOGIC INTO CREATE_CONFIG.M FUNCTION OR CREATE SEPERATE FUNCTION.
-        if strcmp(config.friction_law, 'budd')
+        if strcmp(config.friction_extrapolation, 'pollard')
+            disp('Pollard inversion, no offset correction')
+            friction_field = md.friction.coefficient;
+
+        elseif strcmp(config.friction_law, 'budd')
             if offset
                 disp('Offset correction')
                 if strcmp(config.friction_extrapolation, "bed_correlation")
                     % offset = median(md.friction.coefficient) / 5;
-                    offset = 2;
+                    offset = 2; % budd origninal
                     md.friction.coefficient(extrapolated_pos) = extrapolated_friction * offset;
                 elseif strcmp(config.friction_extrapolation, "constant")
-                    offset = 25;
+                    offset = 300;
                     md.friction.coefficient(extrapolated_pos) = offset;
                 end
             else
@@ -410,11 +434,15 @@ function [md] = run_model(config_name, plotting_flag)
             disp("Not using LIA initial conditions")
             md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'friction.mat']);
         end
-
-        md = fronts_init(md, output_frequency, start_time, final_time); % initialises fronts
-        % md = fronts_transient(md, front_shp_file); % loads front observations
-        md = stack2levelset(md, front_shp_file); % simpler version
-
+        
+        % if exist(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat'])
+            % md_front = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat']);
+            % md.levelset.spclevelset = md_front.levelset.spclevelset;
+        % else
+            md = fronts_init(md, output_frequency, start_time, final_time); % initialises fronts
+            % md = fronts_transient(md, front_shp_file); % loads front observations
+            md = stack2levelset(md, front_shp_file); % simpler version
+        % end
         savemodel(org, md);
     end
 
@@ -432,6 +460,12 @@ function [md] = run_model(config_name, plotting_flag)
         colormap('turbo'); 
         exportgraphics(gcf, "initial_state.png")
 
+        plotmodel(md, 'data', md.friction.coefficient, ...
+        'title', 'Initial state, Vel', 'caxis', [0 1000], ...
+        'xtick', [], 'ytick', [], 'xlim', xl, 'ylim', yl, 'figure', 64); 
+        set(gca,'fontsize',12);
+        colormap('turbo'); 
+        
         % meltingrate
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];
         md.frontalforcings.meltingrate=zeros(md.mesh.numberofvertices+1, numel(timestamps));

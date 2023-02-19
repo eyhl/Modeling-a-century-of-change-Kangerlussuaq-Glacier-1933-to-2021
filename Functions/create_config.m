@@ -13,7 +13,7 @@ function [config_file_name] = create_config(id)
     front_observation_path = "/data/eigil/work/lia_kq/all.shp";
 
     % Set parameters
-    steps = [2:4, 7:9]; % 4=budd, 5=schoof, 6=weertman
+    steps = [2:4]; % 4=budd, 5=schoof, 6=weertman
     start_time = 1900;
     final_time = 2021;
     ice_temp_offset = 0; % C
@@ -24,18 +24,22 @@ function [config_file_name] = create_config(id)
     if strcmp(friction_law, 'budd')
         % Inversion parameters
         cf_weights = [16000, 3.0,  1.7783e-06];
+        velocity_exponent = 5;
         cs_min = 0.01;
         cs_max = 1e4;
     elseif strcmp(friction_law, 'regcoulomb')
         cf_weights = [16000, 3.0,  1.7783e-06];
+        velocity_exponent = 1; % not implemented here
         cs_min = 0.01;
         cs_max = 1e4;
     elseif strcmp(friction_law, 'schoof')
         cf_weights = [2500, 16.0, 4.0e-08, 0.811428571428571];
+        velocity_exponent = 1; % not implemented here
         cs_min = 0.01;
         cs_max = 1e4;
     elseif strcmp(friction_law, 'weertman')
         cf_weights = [16000, 2.0,  7.5e-08];
+        velocity_exponent = 1; % not implemented here
         cs_min = 0.01;
         cs_max = 1e4;
     else
@@ -51,7 +55,7 @@ function [config_file_name] = create_config(id)
 
     % create table
     config = table(todays_date, steps, start_time, final_time, output_frequency, ...
-                   ice_temp_offset, cf_weights, cs_min, cs_max, smb_name, ...
+                   ice_temp_offset, cf_weights, cs_min, cs_max, velocity_exponent, smb_name, ...
                    friction_extrapolation, friction_law, polynomial_order, glacier_name, control_run, ...
                    front_observation_path);
 

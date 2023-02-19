@@ -2,41 +2,58 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
     % Inversion of friction coefficient based on Pollard and DeConto (2012) 
     % "A simple inverse method for the distribution of basal sliding
     % coefficients under ice sheets, applied to Antarctica"
+    axs = [0.4317, 0.5152, -2.3190, -2.2178] .* 1e6;
+
     cluster=generic('name', oshostname(), 'np', 30);
     md.toolkits.DefaultAnalysis=bcgslbjacobioptions();
 
     % parameters
     k = md.friction.coefficient; %Crude initial guess for basal friction
+    k_max = 1e4;
+    k_min = 0.01;
 
     % area to be updated
-    aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
+    % aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
+    aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/pollard_update_area.exp', 2));
+    % k(aoi) = 50;
 
     % adjust
-    Sinv		= 600;
+    Sinv		= 1000;
     timeadjust	= 25;
-    finaltime	= 4000;
-    maxerror	= 0.015; % relative
+    finaltime	= 1500;
+    maxerror	= 0.005; % relative
     nstep		= ceil(finaltime/timeadjust);
+
+    % set timestepping to fixed
+    md.timestepping = timestepping();
 
     % get Sobs (surface) and initial Smodel (surface) on 2D mesh
     Sobs			= md.geometry.surface;
+
+    % % fix smb forcing to be the average of 1900 for all steps:
+    smb_1900_index = md.smb.mass_balance(end, :) < 1901;
+
+    % % repeat for 50 years every month:
+    tmp = [repmat(mean(md.smb.mass_balance(1:end-1, smb_1900_index), 2), 1, 12*50); 0:1/12:(50-1/12)];
+    md.smb.mass_balance = [tmp, md.smb.mass_balance];
 
     vecmaxdS		= [];
     vecmindS		= [];
     vecmeandS	= [];
     tic
     for i=1:nstep
-        fprintf('CASE: %d.   STEP: %d. \n',1,i) 
-
+        fprintf('CASE: %d.   STEP: %d/%d. \n', 1, i, nstep) 
+        
         % set friction coefficient and rheology
         md.friction.coefficient = k;
 
         md.timestepping.start_time				= 0.;
         md.timestepping.final_time				= timeadjust;
-        % md.timestepping.time_step				= 0.5;
+        md.timestepping.time_step				= 0.04;
         md.settings.output_frequency			= timeadjust;
-        md.transient.requested_outputs		= {'IceVolume','TotalSmb','SmbMassBalance'};
-        md.verbose									= verbose('convergence',true,'solution',true);
+        md.transient.requested_outputs		    = {'IceVolume','TotalSmb','SmbMassBalance'};
+        md.transient.ismovingfront		        = 0;
+        md.verbose								= verbose('convergence',true,'solution',true);
 
         % meltingrate
         md.frontalforcings.meltingrate=zeros(md.mesh.numberofvertices, 1);
@@ -47,6 +64,11 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
 
         % ok, adjust friction according to ice surface error Smodel-Sobs
         md = transientrestart(md);
+
+        md = make_floating(md);
+        plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.coefficient, 'figure', 22, 'axis#all', axs);
+        % plotmodel(md, 'data', md.mask.ice_levelset<0, 'figure', 3);
+        % plotmodel(md, 'data', md.mask.ocean_levelset<0, 'figure', 4);
         Smodel	= md.geometry.surface;
 
         % adjust coefficient
@@ -54,6 +76,10 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         dZ			= dS/Sinv;	
         dZ(aoi)			= max(-1.5,min(1.5,dZ(aoi)));
         k(aoi)      = k(aoi).*sqrt(10.^dZ(aoi));
+
+        % % limit based on inversion results
+        k(k>k_max) = k_max;
+        k(k<k_min) = k_min;
 
         maxdS    = max(dS);
         mindS    = min(dS);
@@ -65,7 +91,7 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         vecmaxdS(i)		= maxdS;
         vecmindS(i)		= mindS;
         vecmeandS(i)	= meandS;
-
+        
         if i > 10 && abs((vecmeandS(i) - vecmeandS(i - 1)) / vecmeandS(i - 1)) < maxerror
             break
         end

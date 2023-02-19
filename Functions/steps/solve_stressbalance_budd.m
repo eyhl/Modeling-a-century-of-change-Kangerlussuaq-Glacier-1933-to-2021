@@ -1,4 +1,7 @@
-function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max)
+function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max, velocity_exponent)
+    if nargin < 5
+        velocity_exponent = 1;
+    end
     md = sethydrostaticmask(md);
 
     % Control general
@@ -20,6 +23,11 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max)
     pos = find(isnan(md.inversion.vel_obs) | md.inversion.vel_obs == 0);
     md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
+    % optional: weighed velocity
+    if velocity_exponent ~= 1
+        md.friction.p = velocity_exponent .* ones(md.mesh.numberofelements, 1);
+    end
+
     %Controls
     md.inversion.control_parameters={'FrictionCoefficient'};
     md.inversion.maxsteps = 200;
@@ -28,6 +36,7 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max)
     md.inversion.max_parameters = cb_max * ones(md.mesh.numberofvertices, 1);
     md.inversion.control_scaling_factors = 1;
     md.inversion.dxmin = 1e-20;
+    md.inversion.gttol = 1e-10;
 
     %Additional parameters
     md.stressbalance.restol = 0.01; % mechanical equilibrium residual convergence criterion
