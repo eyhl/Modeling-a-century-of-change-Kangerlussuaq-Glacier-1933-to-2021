@@ -11,9 +11,11 @@ function [md] = run_model(config_name, plotting_flag)
     % for plotting:
     xl = [4.578, 5.132]*1e5;
     yl = [-2.3239, -2.2563]*1e6;
+
+    base_path = '/data/eigil/work/lia_kq/';
     
     % read config file
-    config = readtable(append('Configs/', config_name), "TextType", "string");
+    config = readtable(fullfile(base_path, 'Configs/', config_name), "TextType", "string");
 
     %% 0 Set parameters
     try
@@ -28,12 +30,12 @@ function [md] = run_model(config_name, plotting_flag)
     ice_temp_offset = config.ice_temp_offset;
     friction_law = config.friction_law;
     output_frequency = config.output_frequency;
+    velocity_exponent = config.velocity_exponent;
 
     % Inversion parameters
     if strcmp(config.friction_law, 'budd')
-        cs_min = 0.01; %config.cs_min;
-        cs_max = 1e4; %config.cs_max;
-        velocity_exponent = config.velocity_exponent;
+        cs_min = config.cs_min;
+        cs_max = config.cs_max;
         budd_coeff = [config.cf_weights_1, config.cf_weights_2, config.cf_weights_3];
         display_coefs = num2str(budd_coeff);
     elseif strcmp(config.friction_law, 'regcoulomb')
@@ -81,13 +83,14 @@ function [md] = run_model(config_name, plotting_flag)
 
     % Organizer
     append(glacier_name, '_')
-    org = organizer('repository', ['./Models'], 'prefix', prefix, 'steps', steps); 
+    org = organizer('repository', fullfile(base_path, 'Models'), 'prefix', prefix, 'steps', steps); 
     
     fprintf("Running model from %d to %d, with:\n", start_time, final_time);
     fprintf(" - algorithm steps: [%s]\n", num2str(steps));
     fprintf(" - friction law: %s\n", config.friction_law);
     fprintf("   - inversion coefficients: %s\n", display_coefs);
     fprintf("   - [CS_min, CS_max] = [%.3g, %.3g]\n", cs_min, cs_max);
+    fprintf("   - Velocity exponent = %.3g\n", velocity_exponent);
 
     clear steps;
 
@@ -131,6 +134,20 @@ function [md] = run_model(config_name, plotting_flag)
         end
         md.materials.rheology_B = cuffey(md.miscellaneous.dummy.temperature_field) .* ones(md.mesh.numberofvertices, 1);  % temperature field is already in Kelvin, multiplying with ones in case of scalar temperature field
 
+        % add damage for shear margin
+		if config.add_damage == 1 % change enhancement factor by large shear stress area
+            disp(['Add damage to shear margin, Glen enhancement = 6']);
+			maxEffStrain = 1;
+			md=mechanicalproperties(md,md.inversion.vx_obs,md.inversion.vy_obs);
+			pos=md.mesh.elements(md.results.strainrate.effectivevalue>maxEffStrain);
+			damage=ones(md.mesh.numberofvertices,1);
+			damage(pos)=6; % from S. Cook 2021 https://doi.org/10.1017/jog.2021.109, who got it from somewhere else, which is a little more obscure.
+			md.materials.rheology_B=1./((damage).^(1/3)).*md.materials.rheology_B;
+		elseif (config.add_damage == 0)
+			disp([' No damage to shear margin']);
+		else
+			error('Unknown damage type');
+		end
 
         
         if plotting_flag
@@ -214,16 +231,16 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 5 Friction law setup: Weertman
-    if perform(org, 'weertman')
 
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
-        md = solve_stressbalance_weert(md, weertman_coeff, cs_min, cs_max);
+    %% 5 Friction law setup: Budd Plastic %TODO: add friction step with friction_law condition inside instead.
+    if perform(org, 'budd_plastic')
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
+        md = solve_stressbalance_budd(md, budd_coeff, cs_min, cs_max, velocity_exponent);
         savemodel(org, md);
 
         if plotting_flag
             figure(1);
-            plotmodel(md, 'data', md.friction.C, 'title', 'Budd Friction Law, Coefficient', ...
+            plotmodel(md, 'data', md.friction.coefficient, 'title', 'Budd Friction Law, Coefficient', ...
             'colorbar', 'off', 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 31); 
             set(gca,'fontsize',12);
             set(colorbar,'visible','off')
@@ -243,7 +260,36 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 6 Friction law setup: Schoof
+    %% 6 Friction law setup: Weertman
+    if perform(org, 'weertman')
+
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
+        md = solve_stressbalance_weert(md, weertman_coeff, cs_min, cs_max);
+        savemodel(org, md);
+
+        if plotting_flag
+            figure(1);
+            plotmodel(md, 'data', md.friction.C, 'title', 'Friction Law, Coefficient', ...
+            'colorbar', 'off', 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 31); 
+            set(gca,'fontsize',12);
+            set(colorbar,'visible','off')
+            h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+            colormap('turbo'); 
+            exportgraphics(gcf, "budd_friction.png")
+
+            figure(2);
+            plotmodel(md, 'data', md.results.StressbalanceSolution.Vel, 'title', 'Budd Friction Law, Velocity', ...
+            'colorbar', 'off', 'xtick', [], 'ytick', [], 'xlim#all', xl, 'ylim#all', yl, 'figure', 32); 
+            set(gca,'fontsize',12);
+            set(colorbar,'visible','off')
+            h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
+            colormap('turbo'); 
+            exportgraphics(gcf, "budd_sb_vel.png")
+        end
+        
+    end
+
+    %% 7 Friction law setup: Schoof
     if perform(org, 'schoof')
         friction_law = 'schoof';
         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
@@ -278,7 +324,7 @@ function [md] = run_model(config_name, plotting_flag)
         end
     end
 
-    %% 7 Parameterize LIA, extrapolate friction coefficient to LIA front
+    %% 8 Parameterize LIA, extrapolate friction coefficient to LIA front
     if perform(org, 'lia')
         offset = true;
         if strcmp(config.friction_law, 'schoof')
@@ -288,12 +334,17 @@ function [md] = run_model(config_name, plotting_flag)
             md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
             M = config.polynomial_order; % polynomial order
             % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
+        elseif strcmp(config.friction_law, 'budd_plastic')
+            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd_plastic.mat']);
+            M = config.polynomial_order; % polynomial order
+            % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
         elseif strcmp(config.friction_law, 'weertman')
             md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'weertman.mat']);
             M = config.polynomial_order; % polynomial order
         else
             warning("Friction law not implemented")
         end
+        extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
         % STATISTICS FOR BUDD LIA INIT
         % mean(mdb.results.StressbalanceSolution.Vel) = 715.5533
         % std(mdb.results.StressbalanceSolution.Vel) = 1.5335e+03
@@ -326,7 +377,12 @@ function [md] = run_model(config_name, plotting_flag)
             % md_pollard = loadmodel("/data/eigil/work/lia_kq/Models/PollardInversion.mat");
             % md_pollard = loadmodel("/data/eigil/work/lia_kq/pollard_budd1to5_avg2_lim966.mat");
             md_pollard = loadmodel("/data/eigil/work/lia_kq/pollard_newest.mat");
-            md.friction.coefficient = md_pollard.friction.coefficient;
+            fp = md_pollard.friction.coefficient;
+            % f = load("/data/eigil/work/lia_kq/budd_fric_extrap_temp_scaled.mat");
+            fp = f.fric;
+            % f0 = md.friction.coefficient;
+            % fp = rescale(fp, min(f0), max(f0));
+            md.friction.coefficient(extrapolated_pos) = fp(extrapolated_pos);
         else
             warning("Invalid extrapolation method from config file. Choose random_field, linear or constant")
         end
@@ -340,6 +396,8 @@ function [md] = run_model(config_name, plotting_flag)
         %TODO: MOVE THIS LOGIC INTO CREATE_CONFIG.M FUNCTION OR CREATE SEPERATE FUNCTION.
         if strcmp(config.friction_extrapolation, 'pollard')
             disp('Pollard inversion, no offset correction')
+            % offset = 4;
+            % md.friction.coefficient(extrapolated_pos) = md.friction.coefficient(extrapolated_pos) * offset;
             friction_field = md.friction.coefficient;
 
         elseif strcmp(config.friction_law, 'budd')
@@ -350,7 +408,7 @@ function [md] = run_model(config_name, plotting_flag)
                     offset = 2; % budd origninal
                     md.friction.coefficient(extrapolated_pos) = extrapolated_friction * offset;
                 elseif strcmp(config.friction_extrapolation, "constant")
-                    offset = 300;
+                    offset = 250;
                     md.friction.coefficient(extrapolated_pos) = offset;
                 end
             else
@@ -424,7 +482,7 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 8 Initialise: Setup and load calving fronts
+    %% 9 Initialise: Setup and load calving fronts
     if perform(org, 'fronts')
         if run_lia_parameterisation == 1
             disp("Using LIA initial conditoins")
@@ -446,7 +504,7 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 9 Transient: setup & run
+    %% 10 Transient: setup & run
     if perform(org, 'transient')
         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat']);
 
@@ -468,7 +526,9 @@ function [md] = run_model(config_name, plotting_flag)
         
         % meltingrate
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];
-        md.frontalforcings.meltingrate=zeros(md.mesh.numberofvertices+1, numel(timestamps));
+        % md.frontalforcings.meltingrate=zeros(md.mesh.numberofvertices+1, numel(timestamps));
+        md.frontalforcings.meltingrate = 20 .* ones(md.mesh.numberofvertices+1, numel(timestamps));
+
         md.frontalforcings.meltingrate(end, :) = timestamps;
 
         md.cluster = cluster;
@@ -479,7 +539,7 @@ function [md] = run_model(config_name, plotting_flag)
 
         % for testing
         % md.timestepping.start_time = 1900;
-        % md.timestepping.final_time = 1900.1;
+        % md.timestepping.final_time = 1901;
 
         % fix front, option
         if config.control_run

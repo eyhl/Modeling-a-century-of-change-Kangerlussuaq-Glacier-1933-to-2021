@@ -14,8 +14,8 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
 
     % area to be updated
     % aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
-    aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/pollard_update_area.exp', 2));
-    % k(aoi) = 50;
+    % aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/pollard_update_area.exp', 2));
+    % k(aoi) = 350;
 
     % adjust
     Sinv		= 1000;
@@ -49,7 +49,7 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
 
         md.timestepping.start_time				= 0.;
         md.timestepping.final_time				= timeadjust;
-        md.timestepping.time_step				= 0.04;
+        md.timestepping.time_step				= 0.01;
         md.settings.output_frequency			= timeadjust;
         md.transient.requested_outputs		    = {'IceVolume','TotalSmb','SmbMassBalance'};
         md.transient.ismovingfront		        = 0;
@@ -74,8 +74,10 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         % adjust coefficient
         dS			= Sobs-Smodel;
         dZ			= dS/Sinv;	
-        dZ(aoi)			= max(-1.5,min(1.5,dZ(aoi)));
-        k(aoi)      = k(aoi).*sqrt(10.^dZ(aoi));
+        % dZ(aoi)			= max(-1.5,min(1.5,dZ(aoi)));
+        % k(aoi)      = k(aoi).*sqrt(10.^dZ(aoi));
+        dZ			= max(-1.5,min(1.5,dZ));
+        k           = k .* sqrt(10.^dZ);
 
         % % limit based on inversion results
         k(k>k_max) = k_max;
@@ -92,9 +94,12 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         vecmindS(i)		= mindS;
         vecmeandS(i)	= meandS;
         
-        if i > 10 && abs((vecmeandS(i) - vecmeandS(i - 1)) / vecmeandS(i - 1)) < maxerror
+        if i > 7 && abs((vecmeandS(i) - vecmeandS(i - 1)) / vecmeandS(i - 1)) < maxerror
+            break
+        elseif i > 15
             break
         end
+
     end
     toc
 end

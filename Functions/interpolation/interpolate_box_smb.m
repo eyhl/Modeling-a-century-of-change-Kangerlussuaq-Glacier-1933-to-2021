@@ -44,7 +44,7 @@ function [md] = interpolate_box_smb(md, start_time, final_time, smb_file)
 
     % convert to ice equivalent per year, mmWE/month to mIE/yr
     % smb_mie = smb * 12/1000 * md.materials.rho_freshwater / md.materials.rho_ice;
-    smb_mie = smb * 12/1 * 1 / md.materials.rho_ice;
+    smb_mie = smb * 12/1 * 1 / md.materials.rho_ice; 
 
     % time in monthtly decimal numbers starting from middle of Jan.
     smb_times = [start_time + 1/24 : 1/12 : final_time + 1];

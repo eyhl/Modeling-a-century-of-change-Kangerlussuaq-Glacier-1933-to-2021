@@ -46,6 +46,7 @@ function [config_file_name] = create_config(id)
         disp('Friction law not implemented')
     end
     % Relevant data paths
+    add_damage = 1;
     smb_name = "racmo";
     friction_extrapolation = "bed_correlation"; % or semi-variogram
     polynomial_order = 4;
@@ -55,7 +56,7 @@ function [config_file_name] = create_config(id)
 
     % create table
     config = table(todays_date, steps, start_time, final_time, output_frequency, ...
-                   ice_temp_offset, cf_weights, cs_min, cs_max, velocity_exponent, smb_name, ...
+                   ice_temp_offset, cf_weights, cs_min, cs_max, velocity_exponent, add_damage, smb_name, ...
                    friction_extrapolation, friction_law, polynomial_order, glacier_name, control_run, ...
                    front_observation_path);
 
