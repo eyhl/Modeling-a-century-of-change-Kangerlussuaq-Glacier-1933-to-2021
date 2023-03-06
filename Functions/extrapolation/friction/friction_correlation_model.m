@@ -1,10 +1,12 @@
 function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_model(md, cs_min, M, friction_law, validate_flag)
 
-    if nargin < 3
+    if nargin < 5
         validate_flag = false;
     end
-
+    
     if strcmp(friction_law, 'budd')
+        friction_field = md.friction.coefficient; % budd
+    elseif strcmp(friction_law, 'budd_plastic')
         friction_field = md.friction.coefficient; % budd
     elseif strcmp(friction_law, 'schoof')
         friction_field = md.friction.C; % schoof
