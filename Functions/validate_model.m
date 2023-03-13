@@ -25,9 +25,14 @@ function [] = validate_model(results_folder_name, axes, md)
 
 
     %% ---------------------------------------------- SPATIAL MISFIT ----------------------------------------------
+    times = cell2mat({md.results.TransientSolution.time});
+    index_1995_2015 = 1995 < times & times < 2015;
+    
     %% Thickness
     disp('Plotting ice thickness...')
-    misfit_thickness = md.results.TransientSolution(end).Thickness - md.inversion.thickness_obs;
+    average_thickness = mean(cell2mat({md.results.TransientSolution(:, index_1995_2015).Thickness}),2);
+    % misfit_thickness = md.results.TransientSolution(end).Thickness - md.inversion.thickness_obs;
+    misfit_thickness = average_thickness - md.inversion.thickness_obs;
 
     % Misfit thickness caxis
     plotmodel(md, 'data', misfit_thickness, ...
@@ -52,8 +57,13 @@ function [] = validate_model(results_folder_name, axes, md)
 
     %% Velocity
     % Velocity full domain
-    disp('Plotting velocity...')
-    velocity_pred = cell2mat({md.results.TransientSolution(end).Vel});
+    disp('Plotting velocity...') 
+
+    % get average precidtion in 20 yr span to match how Measure vel is made.
+    velocity_pred = cell2mat({md.results.TransientSolution(:).Vel});
+    velocity_pred = velocity_pred(:, index_1995_2015);
+    velocity_pred = mean(velocity_pred, 2);
+
     plotmodel(md, 'data', velocity_pred, ...
                 'caxis#all', [0 1.2e4], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
@@ -71,7 +81,7 @@ function [] = validate_model(results_folder_name, axes, md)
     % Velocity misfit caxes
     misfit_velocity = velocity_pred - md.inversion.vel_obs;
     plotmodel(md, 'data', misfit_velocity, ...
-                'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
+                'caxis#all', [-5e2 5e2], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited.png'), 'Resolution', 300)
@@ -94,7 +104,8 @@ function [] = validate_model(results_folder_name, axes, md)
     %% ---------------------------------------------- TEMPORAL MISFIT ----------------------------------------------
     % Mass loss curve
     disp('Plotting mass balance...')
-    mass_balance_curve_struct = mass_loss_curves([md], [], [config.friction_law], results_folder_name);
+    % mass_balance_curve_struct = mass_loss_curves([md], [], [config.friction_law], results_folder_name);
+    [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs([md], [], [config.friction_law], results_folder_name, true, false);
     save(fullfile(results_folder_name, 'mass_balance_curve_struct.mat'), 'mass_balance_curve_struct');
 
     % TODO: Add mass loss from other studies
@@ -112,46 +123,35 @@ function [] = validate_model(results_folder_name, axes, md)
     T = table(Values, 'RowNames', Metric);
     writetable(T, fullfile(results_folder_name, 'metrics.dat'), 'WriteRowNames', true) 
 
+    % Compute present day misfit
+    quantify_field_difference(md, md.initialization.vel, md.inversion.vel_obs, [results_folder_name, '/present_misfit'], true, true, axes);
+
+    %% Compare to budd solution
+    md_budd = loadmodel('Models/KG_budd_lia.mat');
+    % Compute present day misfit
+    quantify_field_difference(md, md.initialization.vel, md_budd.initialization.vel, [results_folder_name, '/present_model_diff'], true, true, axes);
+
+    model_init_diff =  md.initialization.vel - md_budd.initialization.vel;
+    
+    plotmodel(md, 'data', model_init_diff, ...
+            'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
+            'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
+            'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+            exportgraphics(gcf, [results_folder_name, '/LIA_init_diff.png'], 'Resolution', 300)
+
+    % Compute LIA comparison Budd to other solutions
+    quantify_field_difference(md, md.results.StressbalanceSolution.Vel, md_budd.results.StressbalanceSolution.Vel, [results_folder_name, '/LIA_model_diff'], true, true, axes);
+
+    % Velocity misfit caxes
+    LIA_init_diff = md.results.StressbalanceSolution.Vel - md_budd.results.StressbalanceSolution.Vel;
+
+    plotmodel(md, 'data', LIA_init_diff, ...
+            'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
+            'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
+            'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+            exportgraphics(gcf, [results_folder_name, '/LIA_init_diff.png'], 'Resolution', 300)
 
     %% Video
     disp('Making video...')
     movie_vel(md, fullfile(results_folder_name, 'velocity_movie'))
-
-    % % load bedmachine mask and time steps
-    % mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
-    % times = [md.results.TransientSolution.time];
-    
-    % %% THICKNESS
-    % % interpolate 2021 surface
-    % surface = interp2021Surface(md, [md.mesh.x, md.mesh.y]);                             
-    % surface(isnan(surface)) = md.geometry.surface(isnan(surface)); % add 2007 surface to NaN in borders
-
-    % % compute 2021 thickness
-    % obs_thickness = surface - md.geometry.bed;
-
-    % % extract predicted thickness
-    % index_2021 = find(times > 2020 & times < 2022);
-    % pred_thickness = mean([md.results.TransientSolution(index_2021).Thickness], 2, 'omitnan');
-    % misfit_thickness = pred_thickness - obs_thickness;
-
-    % %% VELOCITY
-    % index_MEaSURE = find(times > 1995 & times < 2015);
-    % data_vx = '/data/eigil/work/lia_kq/Data/measure_multi_year_v1/greenland_vel_mosaic250_vx_v1.tif'; 
-    % data_vy = '/data/eigil/work/lia_kq/Data/measure_multi_year_v1/greenland_vel_mosaic250_vy_v1.tif';
-    % [obs_velocity, ~, ~] = interpVelocity(md, data_vx, data_vy);
-    % pred_velocity = mean([md.results.TransientSolution(index_MEaSURE).Vel], 2, 'omitnan');
-    % misfit_velocity = pred_velocity - obs_velocity;
-
-    % base rmse computation on relevant areas
-    % misfit_thickness(md.mask.ice_levelset == 1) = NaN; % ocean
-    % misfit_thickness(mask == 1) = NaN; % non-ice areas
-    % misfit_velocity(md.mask.ice_levelset == 1) = NaN;
-    % misfit_velocity(mask == 1) = NaN;
-
-    % rmse_thickness = sqrt(mean((misfit_thickness) .^ 2, 'omitnan'));
-    % rmse_velocity = sqrt(mean((misfit_velocity) .^ 2, 'omitnan'));
-
-    % % remove nans and replace with 0, i.e. no misfit
-    % misfit_thickness(isnan(misfit_thickness)) = 0;
-    % misfit_velocity(isnan(misfit_thickness)) = 0;
 end

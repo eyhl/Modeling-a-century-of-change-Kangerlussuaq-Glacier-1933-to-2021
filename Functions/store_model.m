@@ -1,4 +1,7 @@
 function [results_folder_name] = store_model(config_file_name)
+    if isempty(strfind(config_file_name, '.csv'))
+        config_file_name = [config_file_name, '.csv'];
+    end
     config_file_path = fullfile('Configs/', config_file_name);
     config = readtable(config_file_path, "TextType", "string");
 

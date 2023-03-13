@@ -10,7 +10,7 @@ function [config_file_name] = create_config(id)
     end
     % identifyer
     glacier_name = "KG";
-    front_observation_path = "/data/eigil/work/lia_kq/all.shp";
+    front_observation_path = "/data/eigil/work/lia_kq/Data/shape/fronts/processed/vermassen.shp";
 
     % Set parameters
     steps = [2:4]; % 4=budd, 5=schoof, 6=weertman
@@ -24,7 +24,7 @@ function [config_file_name] = create_config(id)
     if strcmp(friction_law, 'budd')
         % Inversion parameters
         cf_weights = [16000, 3.0,  1.7783e-06];
-        velocity_exponent = 5;
+        velocity_exponent = 1;
         cs_min = 0.01;
         cs_max = 1e4;
     elseif strcmp(friction_law, 'regcoulomb')

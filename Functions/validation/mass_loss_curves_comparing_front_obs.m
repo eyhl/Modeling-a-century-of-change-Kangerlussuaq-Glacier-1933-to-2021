@@ -13,7 +13,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     historic = false;
     N = length(md_list);
     % CM = copper(N);
-    CM = colorcube(2*N);
+    CM = jet(2*N);
     % if N > 1
     %     CM = CM(1:2:end, :);
     % end
@@ -178,7 +178,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     % scatter(vol_times_c(end), final_mass_loss, 'r');
     xlabel('Year')
     ylabel('Mass [Gt]')
-    xlim([1899.9, 2021.1])
+    xlim([1879.9, 2021.1])
     set(gca,'fontsize', 14)
     Ax = gca;
     Ax.YGrid = 'on';

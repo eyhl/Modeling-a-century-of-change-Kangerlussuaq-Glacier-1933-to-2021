@@ -14,13 +14,15 @@ disp('      reading LIA surface');
 md.geometry.surface = interpLiaSurface(md.mesh.x, md.mesh.y);
 
 % make sure that ther is not ice outside levelset
-pos = tmp_levelset(1:end-1) < 0;
-md.geometry.surface(pos) = 0;
+% pos = tmp_levelset(1:end-1) < 0;
+% md.geometry.surface(pos) = 0;
 % try to set exposed bedrock to 
 % mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
 
 disp('      construct LIA thickness')
 md.geometry.thickness = md.geometry.surface - md.geometry.base;
+
+% md = sethydrostaticmask(md);
 
 % floatation ratio TODO: REDUCE: 
 di = md.materials.rho_ice / md.materials.rho_water;
@@ -43,8 +45,8 @@ md.geometry.thickness(pos_thin) = 10;
 % pos_rocks = find(mask == 1 & md_inv.mask.ocean_levelset>0);
 % md.geometry.thickness(pos_rocks) = 10;
 md.geometry.surface = md.geometry.thickness + md.geometry.base;
-md.geometry.bed = md.geometry.base; 
-md.geometry.bed(pos) = md_inv.geometry.base(pos); % md_inv.base = equals bedmachine
+% md.geometry.bed = md.geometry.base; 
+% md.geometry.bed(pos) = md_inv.geometry.base(pos); % md_inv.base = equals bedmachine
 
 grounded_ice = -floating_ice; % -1 for ocean nodes
 grounded_ice(grounded_ice==0) = 1; % 1 for non-ocean notes

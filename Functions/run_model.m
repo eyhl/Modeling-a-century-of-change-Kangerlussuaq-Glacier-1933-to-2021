@@ -4,6 +4,10 @@ function [md] = run_model(config_name, plotting_flag)
     %     % third parameter does not exist, so default it to something
     %      md = md;
     % end
+    if isempty(strfind(config_name, '.csv'))
+        config_name = [config_name, '.csv'];
+    end
+    
     if nargin < 2
         plotting_flag = false;
     end
@@ -106,7 +110,7 @@ function [md] = run_model(config_name, plotting_flag)
     if perform(org, 'mesh')
         % domain of interest
         % domain = ['Exp/domain/' 'Kangerlussuaq_new' '.exp'];
-        domain = ['Exp/domain/' 'Kangerlussuaq_full_basin_no_sides' '.exp'];
+        domain = ['Exp/domain/' 'Kangerlussuaq_full_basin_no_sides_copy' '.exp'];
 
         % Creates, refines and saves mesh in md
         check_mesh = false;
@@ -363,6 +367,26 @@ function [md] = run_model(config_name, plotting_flag)
                 % set values under cs min to cs min
                 extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
             end
+            
+            if offset
+                disp('Offset correction')
+                if strcmp(config.friction_extrapolation, "bed_correlation")
+                    % offset = median(md.friction.coefficient) / 5;
+                    offset = 3.0; % budd origninal
+                    md.friction.coefficient(extrapolated_pos) = extrapolated_friction * offset;
+                elseif strcmp(config.friction_extrapolation, "constant")
+                    offset = 250;
+                    md.friction.coefficient(extrapolated_pos) = offset;
+                end
+            else
+                md.friction.coefficient(extrapolated_pos) = extrapolated_friction;
+            end
+            % md.friction.coefficient(pos_rocks) = cs_max;
+            % md.friction.coefficient(md.mask.ocean_levelset<0) = cs_min; 
+
+            
+            friction_field = md.friction.coefficient;
+
         
         elseif strcmp(config.friction_law, 'budd_plastic')
             md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd_plastic.mat']);
@@ -391,7 +415,7 @@ function [md] = run_model(config_name, plotting_flag)
                 disp('Offset correction')
                 if strcmp(config.friction_extrapolation, "bed_correlation")
                     % offset = median(md.friction.coefficient) / 5;
-                    offset = 1.75; % budd origninal
+                    offset = 1.75;
                     md.friction.coefficient(extrapolated_pos) = extrapolated_friction * offset;
                 elseif strcmp(config.friction_extrapolation, "constant")
                     offset = 250;
@@ -601,6 +625,7 @@ function [md] = run_model(config_name, plotting_flag)
         
         if exist(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat'])
             md_front = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat']);
+            md = fronts_init(md, output_frequency, start_time, final_time); % initialises fronts
             md.levelset.spclevelset = md_front.levelset.spclevelset;
         else
             md = fronts_init(md, output_frequency, start_time, final_time); % initialises fronts
@@ -633,7 +658,7 @@ function [md] = run_model(config_name, plotting_flag)
         % meltingrate
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];
         % md.frontalforcings.meltingrate=zeros(md.mesh.numberofvertices+1, numel(timestamps));
-        md.frontalforcings.meltingrate = 20 .* ones(md.mesh.numberofvertices+1, numel(timestamps));
+        md.frontalforcings.meltingrate = 0 .* ones(md.mesh.numberofvertices+1, numel(timestamps));
 
         md.frontalforcings.meltingrate(end, :) = timestamps;
 
@@ -646,6 +671,7 @@ function [md] = run_model(config_name, plotting_flag)
         % for testing
         % md.timestepping.start_time = 1900;
         % md.timestepping.final_time = 1901;
+        % md.levelset.spclevelset(end, 1) = 1880;
 
         % fix front, option
         if config.control_run

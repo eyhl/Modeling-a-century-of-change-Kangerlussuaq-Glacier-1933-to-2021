@@ -89,7 +89,9 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
                     LIA_misfit = 1 / 2 * (LIA_misfit_vx + LIA_misfit_vy);
                     LIA_misfit = integrateOverDomain(md_main, LIA_misfit, ~masked_values);
 
-                    LIA_log_misfit = log_misfit(md_main, md_budd_lia);
+                    a = md_main.results.StressbalanceSolution.Vel;
+                    b = md_budd_lia.results.StressbalanceSolution.Vel;
+                    LIA_log_misfit = log_misfit(a, b, md1.mask.ice_levelset>0);
                     LIA_log_misfit = integrateOverDomain(md_main, LIA_log_misfit, ~masked_values);
 
                     mae_list(counter) = md_tmp.results.StressbalanceSolution.J(end, end); %mean(abs(misfit_velocity), 'omitnan');
