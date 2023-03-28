@@ -14,6 +14,8 @@ function [x, y, temporal_avg_field, accumulated_field] = flowline_traceback(md, 
     % load("/data/eigil/work/lia_kq/Results/flowlines/KG_flowlines.mat");
 
     % get model times
+    md.results
+    md.results.TransientSolution
     times = [md.results.TransientSolution.time];
     
     % flip time vector to start from 2020ish

@@ -1,5 +1,5 @@
-function [config_file_name] = create_config(id)
-
+function [config_file_name] = create_config(id, friction_law)
+    friction_law = string(friction_law);
     todays_date = datetime('now');
     todays_date = string(dateshift(todays_date, 'start', 'day'));
 
@@ -13,20 +13,25 @@ function [config_file_name] = create_config(id)
     front_observation_path = "/data/eigil/work/lia_kq/Data/shape/fronts/processed/vermassen.shp";
 
     % Set parameters
-    steps = [2:4]; % 4=budd, 5=schoof, 6=weertman
-    start_time = 1900;
+    steps = [8]; % 4=budd, 5=schoof, 6=weertman
+    start_time = 1880;
     final_time = 2021;
     ice_temp_offset = 0; % C
-    output_frequency = 1; % output frequency for transient run
-
-    friction_law = "budd";
+    lia_friction_offset = 4.5;
+    output_frequency = 4; % output frequency for transient run
 
     if strcmp(friction_law, 'budd')
         % Inversion parameters
-        cf_weights = [16000, 3.0,  1.7783e-06];
+        cf_weights = [14000,3,2.5783e-06]; % [16000, 3.0,  1.7783e-06];
         velocity_exponent = 1;
         cs_min = 0.01;
         cs_max = 1e4;
+    elseif strcmp(friction_law, 'budd_plastic')
+        % Inversion parameters
+        cf_weights = [300, .16, 1.30e-5];
+        velocity_exponent = 5;
+        cs_min = 1e-10;
+        cs_max = 200;
     elseif strcmp(friction_law, 'regcoulomb')
         cf_weights = [16000, 3.0,  1.7783e-06];
         velocity_exponent = 1; % not implemented here
@@ -56,7 +61,7 @@ function [config_file_name] = create_config(id)
 
     % create table
     config = table(todays_date, steps, start_time, final_time, output_frequency, ...
-                   ice_temp_offset, cf_weights, cs_min, cs_max, velocity_exponent, add_damage, smb_name, ...
+                   ice_temp_offset, lia_friction_offset, cf_weights, cs_min, cs_max, velocity_exponent, add_damage, smb_name, ...
                    friction_extrapolation, friction_law, polynomial_order, glacier_name, control_run, ...
                    front_observation_path);
 

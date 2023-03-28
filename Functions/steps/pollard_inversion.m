@@ -13,14 +13,14 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
     k_min = 0.01;
 
     % area to be updated
-    % aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
+    aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
     % aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/pollard_update_area.exp', 2));
     % k(aoi) = 350;
 
     % adjust
     Sinv		= 1000;
-    timeadjust	= 25;
-    finaltime	= 1500;
+    timeadjust	= 20;
+    finaltime	= 1900;
     maxerror	= 0.005; % relative
     nstep		= ceil(finaltime/timeadjust);
 
@@ -30,12 +30,15 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
     % get Sobs (surface) and initial Smodel (surface) on 2D mesh
     Sobs			= md.geometry.surface;
 
-    % % fix smb forcing to be the average of 1900 for all steps:
-    smb_1900_index = md.smb.mass_balance(end, :) < 1901;
+    % % % fix smb forcing to be the average of 1900 for all steps:
+    % smb_1900_index = md.smb.mass_balance(end, :) < 1901;
 
-    % % repeat for 50 years every month:
-    tmp = [repmat(mean(md.smb.mass_balance(1:end-1, smb_1900_index), 2), 1, 12*50); 0:1/12:(50-1/12)];
-    md.smb.mass_balance = [tmp, md.smb.mass_balance];
+    % % % repeat for 50 years every month:
+    % tmp = [repmat(mean(md.smb.mass_balance(1:end-1, smb_1900_index), 2), 1, 12*50); 0:1/12:(50-1/12)];
+    % md.smb.mass_balance = [tmp, md.smb.mass_balance];
+    if ~round(md.smb.mass_balance(end,1) - 1880) == 0
+        error('No 1880 SMB available')
+    end
 
     vecmaxdS		= [];
     vecmindS		= [];
@@ -47,11 +50,11 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         % set friction coefficient and rheology
         md.friction.coefficient = k;
 
-        md.timestepping.start_time				= 0.;
-        md.timestepping.final_time				= timeadjust;
+        md.timestepping.start_time				= 1880.;
+        md.timestepping.final_time				= 1880 + timeadjust;
         md.timestepping.time_step				= 0.01;
         md.settings.output_frequency			= timeadjust;
-        md.transient.requested_outputs		    = {'IceVolume','TotalSmb','SmbMassBalance'};
+        md.transient.requested_outputs		    = {'default', 'IceVolume','TotalSmb','SmbMassBalance', 'MaskIceLevelset', 'MaskOceanLevelset'};
         md.transient.ismovingfront		        = 0;
         md.verbose								= verbose('convergence',true,'solution',true);
 
@@ -60,11 +63,10 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
 
         % run forward in time
         md.cluster= cluster;
-        md=solve(md,'Transient');
-
+        md_tmp=solve(md,'Transient');
         % ok, adjust friction according to ice surface error Smodel-Sobs
-        md = transientrestart(md);
-
+        md = transientrestart(md_tmp);
+        md = sethydrostaticmask(md);
         md = make_floating(md);
         plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.coefficient, 'figure', 22, 'axis#all', axs);
         % plotmodel(md, 'data', md.mask.ice_levelset<0, 'figure', 3);
@@ -73,15 +75,20 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
 
         % adjust coefficient
         dS			= Sobs-Smodel;
-        dZ			= dS/Sinv;	
+        [~, ~, dS, ~] = flowline_traceback(md_tmp, dS, false);
+        md.geometry.surface =  md.geometry.surface - dS/Sinv;
+        md = sethydrostaticmask(md);
+        md = make_floating(md);
+        
+        % dZ			= dS/Sinv;	
         % dZ(aoi)			= max(-1.5,min(1.5,dZ(aoi)));
         % k(aoi)      = k(aoi).*sqrt(10.^dZ(aoi));
-        dZ			= max(-1.5,min(1.5,dZ));
-        k           = k .* sqrt(10.^dZ);
+        % % dZ			= max(-1.5,min(1.5,dZ));
+        % % k           = k .* sqrt(10.^dZ);
 
-        % % limit based on inversion results
-        k(k>k_max) = k_max;
-        k(k<k_min) = k_min;
+        % % % limit based on inversion results
+        % k(k>k_max) = k_max;
+        % k(k<k_min) = k_min;
 
         maxdS    = max(dS);
         mindS    = min(dS);
@@ -102,4 +109,6 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
 
     end
     toc
+    save('steady_state_lia_budd.mat', 'md');
+    save('steady_state_lia_convergence.mat', 'vecmeandS', 'vecmaxdS', 'vecmindS');
 end

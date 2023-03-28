@@ -6,7 +6,7 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
     
     % Compute the basal velocity
     ub = (md.results.StressbalanceSolution.Vx.^2+md.results.StressbalanceSolution.Vy.^2).^(0.5)./md.constants.yts;
-    ub(md.mask.ice_levelset>0) = nan; % remove no ice region
+    % ub(md.mask.ice_levelset>0) = nan; % remove no ice region
     % exponents in Budd's lawDZ6b7#rG
     
     r = 1;
@@ -36,14 +36,14 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
 
     % For the area violate Iken's bound, extrapolate or interpolate from
     % surrongdings.
-    flags = (taub>=Cmax.*Neff);
-    pos1  = find(flags);
-    pos2  = find(~flags);
-    %= griddata(md.mesh.x(pos2),md.mesh.y(pos2),md.friction.coefficient(pos2),md.mesh.x(pos1),md.mesh.y(pos1));
+    % flags = (taub>=Cmax.*Neff);
+    % pos1  = find(flags);
+    % pos2  = find(~flags);
+    % %= griddata(md.mesh.x(pos2),md.mesh.y(pos2),md.friction.coefficient(pos2),md.mesh.x(pos1),md.mesh.y(pos1));
     CS = CS.^0.5;
-    CS(pos1) = CS_max;
+    % CS(pos1) = CS_max;
 
-    % No ice
+    % % No ice
     pos = find(isnan(CS));
     CS(pos)  = CS_max;
 
@@ -82,12 +82,12 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
 
     %Controls
     md.inversion.control_parameters={'FrictionC'};
-    md.inversion.maxsteps=200;
-    md.inversion.maxiter =200;
+    md.inversion.maxsteps=500;
+    md.inversion.maxiter =500;
     md.inversion.min_parameters=CS_min*ones(md.mesh.numberofvertices,1);
     md.inversion.max_parameters=CS_max*ones(md.mesh.numberofvertices,1);
     md.inversion.control_scaling_factors=1;
-    md.inversion.gttol = 1e-3;
+    md.inversion.gttol = 1e-10;
     md.inversion.dxmin = 1e-20;
     %Additional parameters
     md.stressbalance.restol=0.01;

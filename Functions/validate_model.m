@@ -124,12 +124,12 @@ function [] = validate_model(results_folder_name, axes, md)
     writetable(T, fullfile(results_folder_name, 'metrics.dat'), 'WriteRowNames', true) 
 
     % Compute present day misfit
-    quantify_field_difference(md, md.initialization.vel, md.inversion.vel_obs, [results_folder_name, '/present_misfit'], true, true, axes);
+    quantify_field_difference(md, md.initialization.vel, md.inversion.vel_obs, append(results_folder_name, '/present_misfit'), true, true, axes);
 
     %% Compare to budd solution
     md_budd = loadmodel('Models/KG_budd_lia.mat');
     % Compute present day misfit
-    quantify_field_difference(md, md.initialization.vel, md_budd.initialization.vel, [results_folder_name, '/present_model_diff'], true, true, axes);
+    quantify_field_difference(md, md.initialization.vel, md_budd.initialization.vel, append(results_folder_name, '/present_model_diff'), true, true, axes);
 
     model_init_diff =  md.initialization.vel - md_budd.initialization.vel;
     
@@ -137,10 +137,10 @@ function [] = validate_model(results_folder_name, axes, md)
             'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
             'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
             'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
-            exportgraphics(gcf, [results_folder_name, '/LIA_init_diff.png'], 'Resolution', 300)
+            exportgraphics(gcf, append(results_folder_name, '/LIA_init_diff.png'), 'Resolution', 300)
 
     % Compute LIA comparison Budd to other solutions
-    quantify_field_difference(md, md.results.StressbalanceSolution.Vel, md_budd.results.StressbalanceSolution.Vel, [results_folder_name, '/LIA_model_diff'], true, true, axes);
+    quantify_field_difference(md, md.results.StressbalanceSolution.Vel, md_budd.results.StressbalanceSolution.Vel, append(results_folder_name, '/LIA_model_diff'), true, true, axes);
 
     % Velocity misfit caxes
     LIA_init_diff = md.results.StressbalanceSolution.Vel - md_budd.results.StressbalanceSolution.Vel;
@@ -149,9 +149,11 @@ function [] = validate_model(results_folder_name, axes, md)
             'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
             'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
             'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
-            exportgraphics(gcf, [results_folder_name, '/LIA_init_diff.png'], 'Resolution', 300)
+            exportgraphics(gcf, append(results_folder_name, '/LIA_init_diff.png'), 'Resolution', 300)
 
     %% Video
     disp('Making video...')
     movie_vel(md, fullfile(results_folder_name, 'velocity_movie'))
+    movie_thk(md, fullfile(results_folder_name, 'thinning_movie'))
+    movie_dH_accu(md, fullfile(results_folder_name, 'dH_accumulated'))
 end

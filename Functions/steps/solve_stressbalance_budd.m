@@ -47,8 +47,8 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max, velocity_exp
         % N = max(0, N);
         % md.friction = friction();
 
-        % md.friction.p = velocity_exponent .* ones(md.mesh.numberofelements, 1);
-        % md.friction.q = velocity_exponent .* ones(md.mesh.numberofelements, 1); % N^(p/q) so to only scale v, q=p
+        md.friction.p = velocity_exponent .* ones(md.mesh.numberofelements, 1);
+        md.friction.q = velocity_exponent .* ones(md.mesh.numberofelements, 1); % N^(p/q) so to only scale v, q=p
 
         % md.friction.coefficient = sqrt(tau_b./(N .* vel.^(1/velocity_exponent)));
         % md.friction.coefficient = min(md.friction.coefficient, 10);
@@ -61,8 +61,8 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max, velocity_exp
         % C_plastic = C * v_b ^(2/5)
         md.friction.coefficient = md.results.StressbalanceSolution.FrictionCoefficient .* (md.results.StressbalanceSolution.Vel./md.constants.yts).^(2./5);
         md.friction.coefficient = min(md.friction.coefficient, cb_max);
-        pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/ignore_tip_of_domain.exp', 2));
-        md.friction.coefficient(pos) = cb_max;
+        % pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/ignore_tip_of_domain.exp', 2));
+        % md.friction.coefficient(pos) = cb_max;
         % md.friction.coefficient = averaging(md, md.friction.coefficient, 1);
         % md.friction.coefficient = rescale(md.friction.coefficient, 0.01, 100);
     end
@@ -74,7 +74,7 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max, velocity_exp
     md.inversion.min_parameters = cb_min * ones(md.mesh.numberofvertices, 1);
     md.inversion.max_parameters = cb_max * ones(md.mesh.numberofvertices, 1);
     md.inversion.control_scaling_factors = 1;
-    md.inversion.dxmin = 1e-20;
+    md.inversion.dxmin = 1e-30;
     md.inversion.gttol = 1e-20;
 
     %Additional parameters

@@ -1,17 +1,16 @@
 function T = quantify_field_difference(md, field_A, field_B, save_as, log_comparison, plotting, axs)
     N = 2; % if log is not used
-
+    if log_comparison
+        N = 3;
+    end
     % Fast flowing / lower part of domain definition
     if nargin < 7
         axs = 1.0e+06 * [0.4533, 0.5123, -2.3140, -2.2425]; % xmin, xmax, ymin, ymax
-        if nargin < 6
+        if nargin<6
             plotting = false;
-            if nargin < 5
-                log_comparison = false;
-                N = 3;
-            end
         end
     end
+    
     RMSE = NaN(1, N);
     MEDIAN = NaN(1, N);
     SD = NaN(1, N);
@@ -132,7 +131,7 @@ function T = quantify_field_difference(md, field_A, field_B, save_as, log_compar
     disp("Statistics");
     disp(T);
     % writetable(T, filename);
-    writetable(T, [save_as, '_visual_quantification.dat'], 'WriteRowNames', true)
+    writetable(T, append(save_as, '_visual_quantification.dat'), 'WriteRowNames', true)
 
     if plotting
         figure()
@@ -144,7 +143,7 @@ function T = quantify_field_difference(md, field_A, field_B, save_as, log_compar
             title(["SSIM ", ID(i)])
         end
         set(gcf,'Position',[100 100 1500 500])
-        exportgraphics(gcf, [save_as, '_SSIM_maps.png'], 'Resolution', 300)
+        exportgraphics(gcf, append(save_as, '_SSIM_maps.png'), 'Resolution', 300)
 
         figure()
         subplot(1,2,1)
@@ -159,7 +158,7 @@ function T = quantify_field_difference(md, field_A, field_B, save_as, log_compar
         legend(ID{1}, ID{end})
         xlim([-1000, 1000])
         set(gcf,'Position',[100 100 1500 500])
-        exportgraphics(gcf, [save_as, '_Residual_histograms.png'], 'Resolution', 300)
+        exportgraphics(gcf, append(save_as, '_Residual_histograms.png'), 'Resolution', 300)
 
     end
 end

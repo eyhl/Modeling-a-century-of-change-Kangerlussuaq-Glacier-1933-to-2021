@@ -9,6 +9,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     if nargin < 5
         validate = true;
     end
+
     plot_smb = false;
     historic = false;
     N = length(md_list);
@@ -196,7 +197,10 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     end
     legend([all_names], 'Location', 'NorthWest')
 
-    if folder
+
+    folder = string(folder);
+    if exist(folder, 'dir') == 7 % checks if folder is a folder, returns 7 if it is a folder
         exportgraphics(gcf, fullfile(folder, 'mass_balance_time_series.png'), 'Resolution', 300)
     end
+
 end
