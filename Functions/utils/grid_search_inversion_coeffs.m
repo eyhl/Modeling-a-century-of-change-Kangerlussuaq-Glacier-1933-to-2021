@@ -18,13 +18,13 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
         coefficient_3 = linspace(1e-12, 1e-1, 10);
     elseif strcmp(friction_law, 'regcoulomb')
         md = loadmodel('/data/eigil/work/lia_kq/Models/KG_budd.mat');
-        cs_min = 0.01;
-        cs_max = 5e4;
-        coefficient_0 = round(linspace(1e2, 2e3, 6), -2); %
-        coefficient_1 = [200, 2000, 20000]; %måske ned
-        coefficient_2 = [200, 100, 20, 10, 2, 1, 2e-1, 1e-2]; % måske op linspace(1, 7, 6);
+        cs_min = 1e4;
+        cs_max = 8e4;
+        coefficient_0 = [580, 590, 600, 610, 1350, 1200, 1250]; %
+        coefficient_1 = [300]; %måske ned
+        coefficient_2 = logspace(-5, -3, 5); % måske op linspace(1, 7, 6);
         % coefficient_3 = [logspace(-11, -9, 3), 5e-9, linspace(1e-8, 1e-7, 10), 2e-7, 3e-7, 4e-7, 5e-7,logspace(-6, -1, 6)]; %logspace(-15, -1, 40); 
-        coefficient_3 = logspace(-11, -7, 5);
+        coefficient_3 = logspace(-9, -8, 5);
     else
         warning("Friction law not implemented")
     end
@@ -46,7 +46,7 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
     fid = fopen(['coef_settings_', friction_law, '.txt'],'w');
 
     % load budd model LIA
-    md_budd_lia = loadmodel('Models/KG_lia.mat');
+    md_budd_lia = loadmodel('Models/KG_budd_lia.mat');
 
     tStart = tic;
     for i=1:length(coefficient_0)
@@ -70,6 +70,8 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
                     else
                         warning("Friction law not implemented")
                     end
+                    plotmodel(md_tmp, 'data', md_tmp.friction.C, 'data', md_tmp.results.StressbalanceSolution.Vel, 'caxis#2', [0, 10e3], 'figure', 982)
+                    exportgraphics(gcf, sprintf('GRID_REG_COULOMB/figures1/md%d_%.2f_%d_%d_%.2g.png', counter, coefs(4), coefs(1), coefs(2), coefs(3)), 'Resolution', 150);
 
                     % Measure LIA misfit wrt to Budd solution
                     md_main = parameterize(md_tmp, 'ParameterFiles/transient_lia.par');
@@ -91,7 +93,7 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
 
                     a = md_main.results.StressbalanceSolution.Vel;
                     b = md_budd_lia.results.StressbalanceSolution.Vel;
-                    LIA_log_misfit = log_misfit(a, b, md1.mask.ice_levelset>0);
+                    LIA_log_misfit = log_misfit(a, b, md.mask.ice_levelset>0);
                     LIA_log_misfit = integrateOverDomain(md_main, LIA_log_misfit, ~masked_values);
 
                     mae_list(counter) = md_tmp.results.StressbalanceSolution.J(end, end); %mean(abs(misfit_velocity), 'omitnan');
@@ -101,11 +103,12 @@ function [mae_list] = grid_search_inversion_coeffs(friction_law)
                                                                         LIA_misfit, LIA_log_misfit, num2str(md_tmp.results.StressbalanceSolution.J(end, :)));
                     
                     coef_setting(counter, :) = coefs;
-                    figure(983);
-                    set(gcf,'Position',[100 100 1500 1500]);
-                    plotmodel(md_main, 'data', md_main.friction.C, 'caxis', [0, 1e5], 'data', md_main.results.StressbalanceSolution.Vel, 'caxis#2', [0, 12e3])
+                    plotmodel(md_main, 'data', md_main.friction.C, 'data', md_main.results.StressbalanceSolution.Vel, 'caxis#2', [0, 10e3], 'figure', 983)
                     exportgraphics(gcf, sprintf('GRID_REG_COULOMB/figures/md%d_%.2f_%d_%d_%.2g.png', counter, coefs(4), coefs(1), coefs(2), coefs(3)), 'Resolution', 150);
                     save(sprintf('GRID_REG_COULOMB/models/md%d_%.2f_%d_%d_%.2g.mat', counter, coefs(4), coefs(1), coefs(2), coefs(3)), 'md_main');
+                    quantify_field_difference(md, md.initialization.vel, md.inversion.vel_obs, ...
+                                              sprintf('GRID_REG_COULOMB/visual_sim/md%d_%.2f_%d_%d_%.2g', counter, coefs(4), coefs(1), coefs(2), coefs(3)), ...
+                                              true, true, 1.0e+06 * [0.4533, 0.5123, -2.3140, -2.2425]);
                     counter = counter + 1;
                 end
             end

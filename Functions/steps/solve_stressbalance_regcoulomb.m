@@ -1,73 +1,67 @@
-function [md] = solve_stressbalance_regcoulomb(md, coeffs, cr_min, cr_max)
-    % md = loadmodel("/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat");
-
-    % Budd's Friction coefficient from inversion
-    CB = md.friction.coefficient;
-    
-    % Compute the basal velocity
-    ub = (md.results.StressbalanceSolution.Vx.^2+md.results.StressbalanceSolution.Vy.^2).^(0.5)./md.constants.yts;
-    ub(md.mask.ice_levelset>0) = nan; % remove no ice region
-
-    % To compute the effective pressure
-    p_ice   = md.constants.g*md.materials.rho_ice*md.geometry.thickness;
-    p_water = md.materials.rho_water*md.constants.g*(0-md.geometry.base);
-    % water pressure can not be positive
-    p_water(p_water<0) = 0;
-    % effective pressure
-    Neff = p_ice - p_water;
-    Neff(Neff<md.friction.effective_pressure_limit) = md.friction.effective_pressure_limit;
-    
-    r = 1;
-    s = 1;
-    CR_min = cr_min;
-    CR_max = cr_max;
-
-    % basal shear stress from Budd's law
-    taub = CB.^2.*Neff.^r.*ub.^s;
-
+function [md] = solve_stressbalance_regcoulomb(md, coeffs, cr_min, cr_max, initial_guess)
     % Regularised Coulomb law
-    % n = 3.0;  % from Glen's flow law
     m = 3.0;
     u0 = coeffs(4)/md.constants.yts; % Iken's bound, scalar in this case for simplicity
 
-    % Compute the squared friction coefficient of regularised coulombs law
-    CR = taub .* (ub + u0).^(1/m) ./ (ub.^(1/m) .* u0.^(1/m));
-    % plotmodel(md, 'data', CR, 'figure', 891, 'title', 'initial guess')
+    if nargin < 5
+        % Compute the basal velocity
+        ub = (md.results.StressbalanceSolution.Vx.^2+md.results.StressbalanceSolution.Vy.^2).^(0.5)./md.constants.yts;
+        % ub(md.mask.ice_levelset>0) = nan; % remove no ice region
 
-    % CR = taub .* (ub).^(-1/m) .* ((ub + u0) ./ u0).^(1/m);
-    % plotmodel(md, 'data', CR, 'figure', 892, 'title', 'initial guess')
+        % To compute the effective pressure
+        p_ice   = md.constants.g*md.materials.rho_ice*md.geometry.thickness;
+        p_water = md.materials.rho_water*md.constants.g*(0-md.geometry.base);
+        % water pressure can not be positive
+        p_water(p_water<0) = 0;
+        % effective pressure
+        Neff = p_ice - p_water;
+        Neff(Neff<md.friction.effective_pressure_limit) = md.friction.effective_pressure_limit;
+        
+        r = 1;
+        s = 1;
 
-    % For the area violate Iken's bound, extrapolate or interpolate from
-    % surrongdings.
-    % flags = (taub>=u0);
-    % pos1  = find(flags);
-    % pos2  = find(~flags);
-    %= griddata(md.mesh.x(pos2),md.mesh.y(pos2),md.friction.coefficient(pos2),md.mesh.x(pos1),md.mesh.y(pos1));
-    CR = CR.^0.5;
-    % CR(pos1) = CR_max;
-    % plotmodel(md, 'data', CR, 'figure', 891, 'title', 'initial guess')
+        %% BUDD INITIAL GUESS
+        % % Budd's Friction coefficient from inversion
+        % CB = md.friction.coefficient;
 
-    % % No ice
-    pos = find(isnan(CR));
-    CR(pos)  = CR_max;
-    % plotmodel(md, 'data', CR, 'figure', 892, 'title', 'initial guess', 'caxis', [0, 2e4])
+        % % basal shear stress from Budd's law
+        % taub = CB.^2.*Neff.^r.*ub.^s;
 
-    % plotmodel(md, 'data', CR, 'figure', 892, 'title', 'initial guess')
+        % % Compute the squared friction coefficient of regularised coulombs law
+        % CR = CB .* sqrt(Neff) .* ub .^ ((m - 1) / (2 * m)) .* (abs(ub) ./ u0 + 1) .^ (1 / (2 * m));  % similar to sqrt(taub * (ub / (ub/u0 + 1)) ^ (-1/m))
+        % CR = min(CR, cr_max);
 
-    % ub_is_zero = find(ub == 0);
-    % CR(ub_is_zero) = CR_max;
+        % % % No ice
+        % pos = find(isnan(CR));
+        % CR(pos)  = cr_max;
 
-    % % too_large = find(CR > CR_max);
-    % % CR(too_large) = CR_max;
-    % plotmodel(md, 'data', CR, 'figure', 893, 'title', 'initial guess')
+        %% SCHOOF INITAL GUESS
+        % Schoof's Friction coefficient from inversion
+        Cmax = 0.8114;
+        CS = md.friction.C;
 
-    % set to Schoof's law
+        taub = CS.^2 .* ub.^(1/m - 1) ./ (1 + (CS.^2 ./ (Cmax * Neff)).^(m) .* ub).^(1/m);
+
+        % Compute the squared friction coefficient of regularised coulombs law
+        CR = sqrt(taub .* (ub ./ (ub / u0 + 1)).^(-1/m));  % similar to sqrt(taub * (ub / (ub/u0 + 1)) ^ (-1/m))
+        % CR = min(CR, cr_max);
+
+        % % No ice
+        pos = find(isnan(CR));
+        CR(pos)  = cr_max;
+
+        pos = find(isinf(CR));
+        CR(pos)  = cr_max;
+    else
+        CR = initial_guess;
+    end
+
+    % set to Regularized Coulomb law
     md.friction = frictionregcoulomb();
-    md.friction.C = CR;  % Schoof's law has been changed with C^2 as the coefficient
+    md.friction.C = CR;  
     md.friction.u0 = u0;
     md.friction.m = m*ones(md.mesh.numberofelements,1);
-
-
+ 
     %Control general
     md.inversion=m1qn3inversion(md.inversion);
     md.inversion.iscontrol=1;
@@ -90,13 +84,13 @@ function [md] = solve_stressbalance_regcoulomb(md, coeffs, cr_min, cr_max)
 
     %Controls
     md.inversion.control_parameters={'FrictionC'};
-    md.inversion.maxsteps=100;
-    md.inversion.maxiter =100;
-    md.inversion.min_parameters=CR_min*ones(md.mesh.numberofvertices,1);
-    md.inversion.max_parameters=CR_max*ones(md.mesh.numberofvertices,1);
+    md.inversion.maxsteps=400;
+    md.inversion.maxiter =400;
+    md.inversion.min_parameters=cr_min*ones(md.mesh.numberofvertices,1);
+    md.inversion.max_parameters=cr_max*ones(md.mesh.numberofvertices,1);
     md.inversion.control_scaling_factors=1;
-    md.inversion.gttol = 1e-10;
-    md.inversion.dxmin = 1e-20;
+    md.inversion.gttol = 1e-20;
+    md.inversion.dxmin = 1e-30;
     %Additional parameters
     md.stressbalance.restol=0.01;
     md.stressbalance.reltol=0.1;

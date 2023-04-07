@@ -13,17 +13,17 @@ function [config_file_name] = create_config(id, friction_law)
     front_observation_path = "/data/eigil/work/lia_kq/Data/shape/fronts/processed/vermassen.shp";
 
     % Set parameters
-    steps = [8]; % 4=budd, 5=schoof, 6=weertman
-    start_time = 1880;
+    steps = [8, 9, 10]; % 4=budd, 5=schoof, 6=weertman
+    start_time = 1900;
     final_time = 2021;
     ice_temp_offset = 0; % C
-    lia_friction_offset = 4.5;
+    lia_friction_offset = 0;
     output_frequency = 4; % output frequency for transient run
+    velocity_exponent = 1;
 
     if strcmp(friction_law, 'budd')
         % Inversion parameters
         cf_weights = [14000,3,2.5783e-06]; % [16000, 3.0,  1.7783e-06];
-        velocity_exponent = 1;
         cs_min = 0.01;
         cs_max = 1e4;
     elseif strcmp(friction_law, 'budd_plastic')
@@ -34,17 +34,16 @@ function [config_file_name] = create_config(id, friction_law)
         cs_max = 200;
     elseif strcmp(friction_law, 'regcoulomb')
         cf_weights = [16000, 3.0,  1.7783e-06];
-        velocity_exponent = 1; % not implemented here
         cs_min = 0.01;
         cs_max = 1e4;
     elseif strcmp(friction_law, 'schoof')
-        cf_weights = [2500, 16.0, 4.0e-08, 0.811428571428571];
-        velocity_exponent = 1; % not implemented here
-        cs_min = 0.01;
-        cs_max = 1e4;
+        % cf_weights = [2500, 16.0, 4.0e-08, 0.811428571428571]; % from before damage was added.
+        % cf_weights = [300, 0.8, 1.3e-10, 0.8114]; % before 5 april
+        cf_weights = [300, 1.0, 1.1e-10, 0.7115]; % % after april 6
+        cs_min = 5; % 0.01;
+        cs_max = 5800; % 1e4;
     elseif strcmp(friction_law, 'weertman')
         cf_weights = [16000, 2.0,  7.5e-08];
-        velocity_exponent = 1; % not implemented here
         cs_min = 0.01;
         cs_max = 1e4;
     else

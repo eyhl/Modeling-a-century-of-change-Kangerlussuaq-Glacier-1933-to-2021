@@ -69,8 +69,8 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max, velocity_exp
 
     %Controls
     md.inversion.control_parameters={'FrictionCoefficient'};
-    md.inversion.maxsteps = 200;
-    md.inversion.maxiter = 200;
+    md.inversion.maxsteps = 300;
+    md.inversion.maxiter = 300;
     md.inversion.min_parameters = cb_min * ones(md.mesh.numberofvertices, 1);
     md.inversion.max_parameters = cb_max * ones(md.mesh.numberofvertices, 1);
     md.inversion.control_scaling_factors = 1;

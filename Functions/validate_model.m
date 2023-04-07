@@ -124,12 +124,12 @@ function [] = validate_model(results_folder_name, axes, md)
     writetable(T, fullfile(results_folder_name, 'metrics.dat'), 'WriteRowNames', true) 
 
     % Compute present day misfit
-    quantify_field_difference(md, md.initialization.vel, md.inversion.vel_obs, append(results_folder_name, '/present_misfit'), true, true, axes);
+    quantify_field_difference(md, md.initialization.vel, md.inversion.vel_obs, append(results_folder_name, '/present_VEL_misfit'), true, true, axes);
 
     %% Compare to budd solution
     md_budd = loadmodel('Models/KG_budd_lia.mat');
     % Compute present day misfit
-    quantify_field_difference(md, md.initialization.vel, md_budd.initialization.vel, append(results_folder_name, '/present_model_diff'), true, true, axes);
+    quantify_field_difference(md, md.initialization.vel, md_budd.initialization.vel, append(results_folder_name, '/present_INIT_VEL_diff'), true, true, axes);
 
     model_init_diff =  md.initialization.vel - md_budd.initialization.vel;
     
@@ -140,7 +140,7 @@ function [] = validate_model(results_folder_name, axes, md)
             exportgraphics(gcf, append(results_folder_name, '/LIA_init_diff.png'), 'Resolution', 300)
 
     % Compute LIA comparison Budd to other solutions
-    quantify_field_difference(md, md.results.StressbalanceSolution.Vel, md_budd.results.StressbalanceSolution.Vel, append(results_folder_name, '/LIA_model_diff'), true, true, axes);
+    quantify_field_difference(md, md.results.StressbalanceSolution.Vel, md_budd.results.StressbalanceSolution.Vel, append(results_folder_name, '/LIA_VEL_diff'), true, true, axes);
 
     % Velocity misfit caxes
     LIA_init_diff = md.results.StressbalanceSolution.Vel - md_budd.results.StressbalanceSolution.Vel;

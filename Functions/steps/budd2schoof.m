@@ -1,52 +1,58 @@
 function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
     % md = loadmodel("/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat");
-
+    budd_init = true;
     % Budd's Friction coefficient from inversion
-    CB = md.friction.coefficient;
-    
-    % Compute the basal velocity
-    ub = (md.results.StressbalanceSolution.Vx.^2+md.results.StressbalanceSolution.Vy.^2).^(0.5)./md.constants.yts;
-    % ub(md.mask.ice_levelset>0) = nan; % remove no ice region
-    % exponents in Budd's lawDZ6b7#rG
-    
-    r = 1;
-    s = 1;
-    CS_min = cs_min;
-    CS_max = cs_max;
+    try
+        CB = md.friction.coefficient;
+    catch
+        CB = md.friction.C;
+        budd_init = false;
+    end
 
-    % To compute the effective pressure
-    p_ice   = md.constants.g*md.materials.rho_ice*md.geometry.thickness;
-    p_water = md.materials.rho_water*md.constants.g*(0-md.geometry.base);
-    % water pressure can not be positive
-    p_water(p_water<0) = 0;
-    % effective pressure
-    Neff = p_ice - p_water;
-    Neff(Neff<md.friction.effective_pressure_limit) = md.friction.effective_pressure_limit;
-
-    % basal shear stress from Budd's law
-    taub = CB.^2.*Neff.^r.*ub.^s;
-
+    Cmax = coeffs(4); % Iken's bound, scalar in this case for simplicity
     % Schoof's law
     n = 3.0;  % from Glen's flow law
     m = 1.0/n;
-    Cmax = coeffs(4); % Iken's bound, scalar in this case for simplicity
 
-    % Compute the friction coefficient of Schoof's law
-    CS = (1./(ub./(taub.^n)-ub./((Cmax.*Neff)).^n) ).^(1/n);
+    if budd_init
+        % Compute the basal velocity
+        ub = (md.results.StressbalanceSolution.Vx.^2+md.results.StressbalanceSolution.Vy.^2).^(0.5)./md.constants.yts;
+        % ub(md.mask.ice_levelset>0) = nan; % remove no ice region
+        % exponents in Budd's lawDZ6b7#rG
+        
+        r = 1;
+        s = 1;
 
-    % For the area violate Iken's bound, extrapolate or interpolate from
-    % surrongdings.
-    % flags = (taub>=Cmax.*Neff);
-    % pos1  = find(flags);
-    % pos2  = find(~flags);
-    % %= griddata(md.mesh.x(pos2),md.mesh.y(pos2),md.friction.coefficient(pos2),md.mesh.x(pos1),md.mesh.y(pos1));
-    CS = CS.^0.5;
-    % CS(pos1) = CS_max;
+        % To compute the effective pressure
+        p_ice   = md.constants.g*md.materials.rho_ice*md.geometry.thickness;
+        p_water = md.materials.rho_water*md.constants.g*(0-md.geometry.base);
+        % water pressure can not be positive
+        p_water(p_water<0) = 0;
+        % effective pressure
+        Neff = p_ice - p_water;
+        Neff(Neff<md.friction.effective_pressure_limit) = md.friction.effective_pressure_limit;
 
-    % % No ice
-    pos = find(isnan(CS));
-    CS(pos)  = CS_max;
+        % basal shear stress from Budd's law
+        taub = CB.^2.*Neff.^r.*ub.^s;
 
+        % Compute the friction coefficient of Schoof's law
+        CS = (1./(ub./(taub.^n)-ub./((Cmax.*Neff)).^n) ).^(1/n);
+
+        % For the area violate Iken's bound, extrapolate or interpolate from
+        % surrongdings.
+        % flags = (taub>=Cmax.*Neff);
+        % pos1  = find(flags);
+        % pos2  = find(~flags);
+        % %= griddata(md.mesh.x(pos2),md.mesh.y(pos2),md.friction.coefficient(pos2),md.mesh.x(pos1),md.mesh.y(pos1));
+        CS = CS.^0.5;
+        % CS(pos1) = CS_max;
+
+        % % No ice
+        pos = find(isnan(CS));
+        CS(pos)  = cs_max;
+    else
+        CS = md.friction.C;
+    end
     % set to Schoof's law
     md.friction = frictionschoof();
     md.friction.C = CS;  % Schoof's law has been changed with C^2 as the coefficient
@@ -61,7 +67,6 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
     % md.friction.C(find(flags))=100;
 
     %Control general
-    md.inversion=m1qn3inversion(md.inversion);
     md.inversion.iscontrol=1;
     md.verbose=verbose('solution',false,'control',true);
     md.transient.amr_frequency = 0;
@@ -84,8 +89,8 @@ function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
     md.inversion.control_parameters={'FrictionC'};
     md.inversion.maxsteps=500;
     md.inversion.maxiter =500;
-    md.inversion.min_parameters=CS_min*ones(md.mesh.numberofvertices,1);
-    md.inversion.max_parameters=CS_max*ones(md.mesh.numberofvertices,1);
+    md.inversion.min_parameters=cs_min*ones(md.mesh.numberofvertices,1);
+    md.inversion.max_parameters=cs_max*ones(md.mesh.numberofvertices,1);
     md.inversion.control_scaling_factors=1;
     md.inversion.gttol = 1e-10;
     md.inversion.dxmin = 1e-20;

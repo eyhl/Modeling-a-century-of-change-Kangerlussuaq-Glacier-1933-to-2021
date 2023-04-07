@@ -134,7 +134,7 @@ function T = quantify_field_difference(md, field_A, field_B, save_as, log_compar
     writetable(T, append(save_as, '_visual_quantification.dat'), 'WriteRowNames', true)
 
     if plotting
-        figure()
+        figure(1234)
         for i = 1:N
             subplot(1, N, i);
             imshow(flipud(ssimmap_list{i}))
@@ -145,7 +145,7 @@ function T = quantify_field_difference(md, field_A, field_B, save_as, log_compar
         set(gcf,'Position',[100 100 1500 500])
         exportgraphics(gcf, append(save_as, '_SSIM_maps.png'), 'Resolution', 300)
 
-        figure()
+        figure(1233)
         subplot(1,2,1)
         histogram(error_list{1}, 100);
         hold on

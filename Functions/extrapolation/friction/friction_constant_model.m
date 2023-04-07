@@ -2,7 +2,7 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_constant_mode
     %--
     % Extrapolates friction data based on the average value, i.e. constant extrapolation
     %--
-    if nargin < 3
+    if nargin < 4
         validate_flag = false;
     end
 
