@@ -25,13 +25,13 @@ function [] = validate_model(results_folder_name, axes, md)
 
 
     %% ---------------------------------------------- SPATIAL MISFIT ----------------------------------------------
+    %% ------------------------------------------------- THICKNESS ------------------------------------------------
     times = cell2mat({md.results.TransientSolution.time});
     index_1995_2015 = 1995 < times & times < 2015;
     
     %% Thickness
     disp('Plotting ice thickness...')
     average_thickness = mean(cell2mat({md.results.TransientSolution(:, index_1995_2015).Thickness}),2);
-    % misfit_thickness = md.results.TransientSolution(end).Thickness - md.inversion.thickness_obs;
     misfit_thickness = average_thickness - md.inversion.thickness_obs;
 
     % Misfit thickness caxis
@@ -54,9 +54,35 @@ function [] = validate_model(results_folder_name, axes, md)
     set(gcf,'Position',[100 100 1500 1500])
     exportgraphics(gcf, fullfile(results_folder_name, 'thickess_misfit_hist.png'), 'Resolution', 300)
 
+    icesat_surface = interp2021Surface(md, [md.mesh.x, md.mesh.y]);
+    index_2019 = 2019 < times & times <= 2021;
+    final_surface = mean(cell2mat({md.results.TransientSolution(:, index_1995_2015).Surface}), 2);
+    icesat_misfit_surface = final_surface - icesat_surface;
+    icesat_mask = ~isnan(icesat_misfit_surface) & masked_values;
 
-    %% Velocity
-    % Velocity full domain
+    % Misfit thickness caxis
+    plotmodel(md, 'data', icesat_misfit_surface, ...
+                'caxis#all', [-3e2 3e2], 'mask#all', masked_values, ...
+                'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
+                'axis#all', axes, 'figure', 89); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); exportgraphics(gcf, fullfile(results_folder_name, 'S_misfit_limited_icesat.png'), 'Resolution', 300)
+
+    % Misfit thickness
+    plotmodel(md, 'data', icesat_misfit_surface, ...
+                'caxis#all', [-3e2 3e2], ...
+                'mask#all', masked_values, ...
+                'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
+                'figure', 90); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); exportgraphics(gcf, fullfile(results_folder_name, 'S_misfit_icesat.png'), 'Resolution', 300)
+
+    figure(91);
+    histogram(icesat_misfit_surface(masked_values), 200, 'Normalization','pdf')
+    title('Thickness misfit distribution')
+    ylabel('Normalised pdf estimate')
+    xlabel('Error [m]')
+    set(gcf,'Position',[100 100 1500 1500])
+    exportgraphics(gcf, fullfile(results_folder_name, 'surface_misfit_hist_icesat.png'), 'Resolution', 300)
+
+    %% ---------------------------------------------- VELOCITY ----------------------------------------------
+    % Mean velocity full domain
     disp('Plotting velocity...') 
 
     % get average precidtion in 20 yr span to match how Measure vel is made.
@@ -81,18 +107,27 @@ function [] = validate_model(results_folder_name, axes, md)
     % Velocity misfit caxes
     misfit_velocity = velocity_pred - md.inversion.vel_obs;
     plotmodel(md, 'data', misfit_velocity, ...
-                'caxis#all', [-5e2 5e2], 'mask#all', masked_values, ...
+                'caxis#all', [-1e3 1e3], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited.png'), 'Resolution', 300)
 
     % Velocity misfit
     plotmodel(md, 'data', misfit_velocity, ...
+                'caxis#all', [-1e3 1e3], ...
                 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'figure', 95); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit.png'), 'Resolution', 300)
-    
+
+    plotmodel(md, 'data', abs(misfit_velocity), ...
+                'caxis#all', [1 1e3], ...
+                'log', 10, ...
+                'mask#all', masked_values, ...
+                'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
+                'figure', 951); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_log.png'), 'Resolution', 300)
+
     figure(96);
     histogram(misfit_velocity(masked_values), 200, 'Normalization','pdf')
     title('Velocity misfit distribution')
@@ -100,6 +135,34 @@ function [] = validate_model(results_folder_name, axes, md)
     xlabel('Error [m/yr]'); 
     set(gcf,'Position',[100 100 1500 1500]);
     exportgraphics(gcf, fullfile(results_folder_name, 'vel_misfit_hist.png'), 'Resolution', 300)
+
+    % Final velocity misfit full domain
+    % get average precidtion in 20 yr span to match how Measure vel is made.
+    velocity_pred = cell2mat({md.results.TransientSolution(:).Vel});
+    velocity_pred = velocity_pred(:, end);
+
+    % Velocity misfit caxes
+    misfit_velocity_final = velocity_pred - md.inversion.vel_obs;
+    plotmodel(md, 'data', misfit_velocity_final, ...
+                'caxis#all', [-5e2 5e2], 'mask#all', masked_values, ...
+                'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
+                'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited_final.png'), 'Resolution', 300)
+
+    % Velocity misfit
+    plotmodel(md, 'data', misfit_velocity_final, ...
+                'mask#all', masked_values, ...
+                'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
+                'figure', 95); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_final.png'), 'Resolution', 300)
+
+    figure(961);
+    histogram(misfit_velocity_final(masked_values), 200, 'Normalization','pdf')
+    title('Velocity misfit distribution')
+    ylabel('Normalised pdf estimate')
+    xlabel('Error [m/yr]'); 
+    set(gcf,'Position',[100 100 1500 1500]);
+    exportgraphics(gcf, fullfile(results_folder_name, 'vel_misfit_hist_final.png'), 'Resolution', 300)
 
     %% ---------------------------------------------- TEMPORAL MISFIT ----------------------------------------------
     % Mass loss curve
@@ -114,11 +177,13 @@ function [] = validate_model(results_folder_name, axes, md)
     %% ---------------------------------------------- Metrics ----------------------------------------------
     disp('Computing metrics...')
     [~, mean_misfit_thickness, ~] = integrateOverDomain(md, misfit_thickness, ~masked_values); % avg misfit per area [m]
+    [~, icesat_misfit_surface, ~] = integrateOverDomain(md, icesat_misfit_surface, ~icesat_mask); % avg misfit per area [m]
     [~, mean_misfit_velocity, ~] = integrateOverDomain(md, misfit_velocity, ~masked_values); % avg misfit per area [m/yr]
+    [~, final_misfit_velocity, ~] = integrateOverDomain(md, misfit_velocity_final, ~masked_values); % avg misfit per area [m/yr]
 
     % Write to table
-    Metric = {'Domain avg. H error';'Domain avg. vel error'};
-    Values = [mean_misfit_thickness; mean_misfit_velocity];
+    Metric = {'Domain avg. H error (1995-2015)'; 'Domain final H error (2021)'; 'Domain avg. vel error (1995-2015)'; 'Domain final vel error (2021)'};
+    Values = [mean_misfit_thickness; icesat_misfit_surface; mean_misfit_velocity; final_misfit_velocity];
 
     T = table(Values, 'RowNames', Metric);
     writetable(T, fullfile(results_folder_name, 'metrics.dat'), 'WriteRowNames', true) 
@@ -126,10 +191,15 @@ function [] = validate_model(results_folder_name, axes, md)
     % Compute present day misfit
     quantify_field_difference(md, md.initialization.vel, md.inversion.vel_obs, append(results_folder_name, '/present_VEL_misfit'), true, true, axes);
 
+    % final_surface_tmp = final_surface;
+    % icesat_surface_tmp = icesat_surface;
+    % final_surface_tmp(isnan(icesat_surface)) = NaN;
+    % quantify_field_difference(md, final_surface, icesat_surface, append(results_folder_name, '/present_SURFACE_misfit'), true, true, axes);
+
     %% Compare to budd solution
     md_budd = loadmodel('Models/KG_budd_lia.mat');
     % Compute present day misfit
-    quantify_field_difference(md, md.initialization.vel, md_budd.initialization.vel, append(results_folder_name, '/present_INIT_VEL_diff'), true, true, axes);
+    quantify_field_difference(md, md.initialization.vel, md_budd.initialization.vel, append(results_folder_name, '/present_INIT_VEL_diff'), false, true, axes);
 
     model_init_diff =  md.initialization.vel - md_budd.initialization.vel;
     
@@ -146,7 +216,7 @@ function [] = validate_model(results_folder_name, axes, md)
     LIA_init_diff = md.results.StressbalanceSolution.Vel - md_budd.results.StressbalanceSolution.Vel;
 
     plotmodel(md, 'data', LIA_init_diff, ...
-            'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
+            'caxis#all', [-2e2 2e2], ...
             'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
             'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
             exportgraphics(gcf, append(results_folder_name, '/LIA_init_diff.png'), 'Resolution', 300)

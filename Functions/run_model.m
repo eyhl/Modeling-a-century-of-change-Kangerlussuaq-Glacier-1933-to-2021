@@ -681,7 +681,7 @@ function [md] = run_model(config_name, plotting_flag)
         % meltingrate
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];
         % md.frontalforcings.meltingrate=zeros(md.mesh.numberofvertices+1, numel(timestamps));
-        md.frontalforcings.meltingrate = 0 .* ones(md.mesh.numberofvertices+1, numel(timestamps));
+        md.frontalforcings.meltingrate = 20 .* ones(md.mesh.numberofvertices+1, numel(timestamps));
 
         md.frontalforcings.meltingrate(end, :) = timestamps;
 

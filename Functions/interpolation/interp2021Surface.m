@@ -15,7 +15,7 @@ function [surface_interpolated] = interp2021Surface(md, mesh)
     y_lin = linspace(min(y), max(y), 1000);
 
     % extrapolation is necessary in some of the boundary areas very close to the edges. jj
-    F = scatteredInterpolant(x, y, topo, 'natural', 'nearest');
+    F = scatteredInterpolant(x, y, topo, 'natural', 'none');
 
     surface_interpolated = F(mesh_x, mesh_y);
 

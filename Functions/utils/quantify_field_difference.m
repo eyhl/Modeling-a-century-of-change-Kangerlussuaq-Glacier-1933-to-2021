@@ -159,6 +159,7 @@ function T = quantify_field_difference(md, field_A, field_B, save_as, log_compar
         xlim([-1000, 1000])
         set(gcf,'Position',[100 100 1500 500])
         exportgraphics(gcf, append(save_as, '_Residual_histograms.png'), 'Resolution', 300)
-
+        hold off
+        clf;
     end
 end

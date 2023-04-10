@@ -136,6 +136,7 @@ dmypy.json
 /Models
 /Results
 /Movies
+/TmpRunBin
 
 # etc
 /Functions/texturesynth-master/examples
