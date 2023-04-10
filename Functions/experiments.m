@@ -1,22 +1,25 @@
 function [] = experiments()
-    % Budd default (dmg, vermassen collapse, bed correlation)
-    % id4 = "default";
+    % Budd w.o. initial friction tuning, large extr domain, 0 melting still:
+    % id4 = "budd_mr20";
     % disp(id4)
     % config_file_name = create_config(id4, "budd");
     % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
     % config.steps = num2str([8, 9, 10]);
+    % config.lia_friction_offset = 1.8;
+
     % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
     % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % recipe('default-14-Mar-2023-config');   
+    % recipe(config_file_name);   
 
-    % Budd plastic (dmg, vermassen collapse, bed correlation):
-    id5 = "budd_plastic";
+    % Schoof w.o. initial friction tuning, large extr domain, 0 melting still:
+    id5 = "schoof_1880_lia_surf";
     disp(id5)
-    config_file_name = create_config(id5, "budd_plastic");
+    config_file_name = create_config(id5, "schoof");
     config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    config.steps = num2str([9, 10]);
-    config.velocity_exponent = 5;
-    config.friction_law = "budd_plastic";
+    config.steps = num2str([8, 9, 10]);
+    config.lia_friction_offset = 0;
+    config.start_time = 1880;
+    config.friction_extrapolation = "bed_correlation";
 
     config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
     writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
