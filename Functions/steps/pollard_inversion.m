@@ -59,36 +59,38 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         md.verbose								= verbose('convergence',true,'solution',true);
 
         % meltingrate
-        md.frontalforcings.meltingrate=zeros(md.mesh.numberofvertices, 1);
+        md.frontalforcings.meltingrate=20*ones(md.mesh.numberofvertices, 1);
 
         % run forward in time
         md.cluster= cluster;
         md_tmp=solve(md,'Transient');
         % ok, adjust friction according to ice surface error Smodel-Sobs
         md = transientrestart(md_tmp);
-        md = sethydrostaticmask(md);
-        md = make_floating(md);
-        plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.C, 'figure', 22, 'axis#all', axs);
-        % plotmodel(md, 'data', md.mask.ice_levelset<0, 'figure', 3);
+        %md = sethydrostaticmask(md);
+        % md = make_floating(md);
+  
         % plotmodel(md, 'data', md.mask.ocean_levelset<0, 'figure', 4);
         Smodel	= md.geometry.surface;
 
         % adjust coefficient
         dS			= Sobs-Smodel;
-        % [~, ~, dS, ~] = flowline_traceback(md_tmp, dS, false);
-        % md.geometry.surface =  md.geometry.surface - dS/Sinv;
-        md = sethydrostaticmask(md);
+        [~, ~, dS, ~] = flowline_traceback(md_tmp, dS, false);
+        md.geometry.surface =  md.geometry.surface - dS/Sinv;
+        % md = sethydrostaticmask(md);
         md = make_floating(md);
+        plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.C, 'figure', 22, 'axis#all', axs);
+        % plotmodel(md, 'data', md.mask.ice_levelset<0, 'figure', 3, 'mask', md.mask.ocean_levelset<0);
+        % plotmodel(md, 'data', md.geometry.bed, 'caxis#all', [-1000, 0], 'data', md.geometry.base)
         
-        dZ			= dS/Sinv;	
-        dZ(aoi)			= max(-1.5,min(1.5,dZ(aoi)));
-        k(aoi)      = k(aoi).*sqrt(10.^dZ(aoi));
+        % dZ			= dS/Sinv;	
+        % dZ(aoi)			= max(-1.5,min(1.5,dZ(aoi)));
+        % k(aoi)      = k(aoi).*sqrt(10.^dZ(aoi));
         % dZ			= max(-1.5,min(1.5,dZ));
         % k           = k .* sqrt(10.^dZ);
 
         % % limit based on inversion results
-        k(k>k_max) = k_max;
-        k(k<k_min) = k_min;
+        % k(k>k_max) = k_max;
+        % k(k<k_min) = k_min;
 
         maxdS    = max(dS);
         mindS    = min(dS);
@@ -103,12 +105,12 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         
         if i > 7 && abs((vecmeandS(i) - vecmeandS(i - 1)) / vecmeandS(i - 1)) < maxerror
             break
-        elseif i > 20
+        elseif i > 30
             break
         end
 
     end
     toc
-    save('steady_state_lia_budd.mat', 'md');
-    save('steady_state_lia_convergence.mat', 'vecmeandS', 'vecmaxdS', 'vecmindS');
+    save('steady_state_lia_budd.mat', 'md', '-v7.3');
+    save('steady_state_lia_convergence.mat', 'vecmeandS', 'vecmaxdS', 'vecmindS', '-v7.3');
 end

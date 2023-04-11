@@ -25,6 +25,11 @@ function [md, friction_field] = extrapolate_friction(md, config)
         fc = loadmodel('/data/eigil/work/lia_kq/schoof_pollard_fc.mat');
         % extrapolated_friction = md_pollard.friction.C(extrapolated_pos);
         extrapolated_friction = fc(extrapolated_pos);
+    elseif strcmp(config.friction_extrapolation, "from_budd")
+        disp("... using POLLARD inversion")
+        md_pollard = loadmodel('/data/eigil/work/lia_kq/pollard_budd.mat');
+        % extrapolated_friction = md_pollard.friction.C(extrapolated_pos);
+        extrapolated_friction = fc(extrapolated_pos);
     end
 
     extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
