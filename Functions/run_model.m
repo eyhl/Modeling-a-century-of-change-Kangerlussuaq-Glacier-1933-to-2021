@@ -682,8 +682,10 @@ function [md] = run_model(config_name, plotting_flag)
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];
         % md.frontalforcings.meltingrate=zeros(md.mesh.numberofvertices+1, numel(timestamps));
         md.frontalforcings.meltingrate = 20 .* ones(md.mesh.numberofvertices+1, numel(timestamps));
-
         md.frontalforcings.meltingrate(end, :) = timestamps;
+
+        md.basalforcings.floatingice_melting_rate = config.melting_rate .* ones(md.mesh.numberofvertices, 1);
+        fprintf("Melting rate = %d\n", md.basalforcings.floatingice_melting_rate(1,1))
 
         md.cluster = cluster;
         md.verbose.solution = 1;

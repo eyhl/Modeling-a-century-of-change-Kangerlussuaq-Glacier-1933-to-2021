@@ -20,6 +20,7 @@ function [config_file_name] = create_config(id, friction_law)
     lia_friction_offset = 0;
     output_frequency = 4; % output frequency for transient run
     velocity_exponent = 1;
+    melting_rate = 20;
 
     if strcmp(friction_law, 'budd')
         % Inversion parameters
@@ -60,7 +61,8 @@ function [config_file_name] = create_config(id, friction_law)
 
     % create table
     config = table(todays_date, steps, start_time, final_time, output_frequency, ...
-                   ice_temp_offset, lia_friction_offset, cf_weights, cs_min, cs_max, velocity_exponent, add_damage, smb_name, ...
+                   ice_temp_offset, lia_friction_offset, cf_weights, cs_min, cs_max, ...
+                   velocity_exponent, add_damage, melting_rate, smb_name, ...
                    friction_extrapolation, friction_law, polynomial_order, glacier_name, control_run, ...
                    front_observation_path);
 
