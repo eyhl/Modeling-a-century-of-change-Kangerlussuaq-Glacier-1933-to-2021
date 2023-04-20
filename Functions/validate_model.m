@@ -56,7 +56,7 @@ function [] = validate_model(results_folder_name, axes, md)
 
     icesat_surface = interp2021Surface(md, [md.mesh.x, md.mesh.y]);
     index_2019 = 2019 < times & times <= 2021;
-    final_surface = mean(cell2mat({md.results.TransientSolution(:, index_1995_2015).Surface}), 2);
+    final_surface = mean(cell2mat({md.results.TransientSolution(:, index_2019).Surface}), 2);
     icesat_misfit_surface = final_surface - icesat_surface;
     icesat_mask = ~isnan(icesat_misfit_surface) & masked_values;
 

@@ -1,6 +1,6 @@
-function [] = gradient_distributions()
+function [] = gradient_distributions(mb_struct_path)
     % load mass balance curve
-    mass_balance_curve_struct = load("/data/eigil/work/lia_kq/Results/0Paper/front_retreat_advance/mass_balance_analysis.mat", 'mass_balance_curve_struct');
+    mass_balance_curve_struct = load(mb_struct_path, 'mass_balance_curve_struct');
     mass_balance_curve_struct = mass_balance_curve_struct.mass_balance_curve_struct;
     mb = mass_balance_curve_struct.mass_balance{1};
     mb_time = mass_balance_curve_struct.time{1};
@@ -59,8 +59,21 @@ function [] = gradient_distributions()
     title('Distribution for full time span')
     set(gca,'FontSize',18) % Creates an axes and sets its FontSize to 18
 
+    time_after_1985 = mb_time > 1990 & mb_time <= 2000;
+    mb_1985 = mb_gradient(time_after_1985);
+    gradient_sign_1985 = gradient_sign(time_after_1985); 
 
-    time_after_1985 = mb_time > 1985;
+    subplot(1, 3, 2)
+    histogram(mb_1985(gradient_sign_1985<0), 100, 'FaceColor', 'red', 'FaceAlpha', 0.3, 'EdgeColor','none'); % retreat
+    hold on                                                                              
+    histogram(mb_1985(gradient_sign_1985>0), 100, 'FaceColor', 'green', 'FaceAlpha', 0.3, 'EdgeColor','none'); % advance
+    legend([sprintf("$\\mathrm{Retreat}, \\mu=%.2f$", mean(mb_1985(gradient_sign_1985<0))), sprintf("$\\mathrm{Advance}, \\mu=%.2f$", mean(mb_1985(gradient_sign_1985>0)))], 'Interpreter', 'latex', 'Location', 'NorthWest')
+    ylabel('Count')
+    xlabel('Mass balance gradient [Gt/yr]')
+    title('Distribution after 1985')
+    set(gca,'FontSize',18) % Creates an axes and sets its FontSize to 18
+
+    time_after_1985 = mb_time > 2000 & mb_time <= 2010;
     mb_1985 = mb_gradient(time_after_1985);
     gradient_sign_1985 = gradient_sign(time_after_1985); 
 
@@ -75,7 +88,7 @@ function [] = gradient_distributions()
     set(gca,'FontSize',18) % Creates an axes and sets its FontSize to 18
 
 
-    time_after_2015 = mb_time > 2015;
+    time_after_2015 = mb_time > 2010;
     mb_2015 = mb_gradient(time_after_2015);
     gradient_sign_2015 = gradient_sign(time_after_2015);
 
@@ -86,6 +99,6 @@ function [] = gradient_distributions()
     legend([sprintf("$\\mathrm{Retreat}, \\mu=%.2f$", mean(mb_2015(gradient_sign_2015<0))), sprintf("$\\mathrm{Advance}, \\mu=%.2f$", mean(mb_2015(gradient_sign_2015>0)))], 'Interpreter', 'latex', 'Location', 'NorthWest')
     ylabel('Count')
     xlabel('Mass balance gradient [Gt/yr]')
-    title('Distribution after 2015')
+    title('Distribution after 2010')
     set(gca,'FontSize',18) % Creates an axes and sets its FontSize to 18
 end

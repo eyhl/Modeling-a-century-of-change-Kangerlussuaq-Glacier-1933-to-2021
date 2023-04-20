@@ -14,7 +14,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     historic = false;
     N = length(md_list);
     % CM = copper(N);
-    CM = jet(2*N);
+    CM = turbo(N);
     % if N > 1
     %     CM = CM(1:2:end, :);
     % end
@@ -145,24 +145,26 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
 
 
     if validate
-        % Assumes first model is the reference one
-        mb0 = cell2mat({md_list(1).results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
-        model_times = cell2mat({md_list(1).results.TransientSolution(:).time});
-        model_times_prior_1972_indeces = find(model_times < 1972);
-        offset_prior_1972 = mb0(model_times_prior_1972_indeces(end)) - mb0(model_times_prior_1972_indeces(1));
+        for i=1:N
+            % Assumes first model is the reference one
+            mb0 = cell2mat({md_list(i).results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
+            model_times = cell2mat({md_list(i).results.TransientSolution(:).time});
+            model_times_prior_1972_indeces = find(model_times < 1972);
+            offset_prior_1972 = mb0(model_times_prior_1972_indeces(end)) - mb0(model_times_prior_1972_indeces(1));
 
-        [cum_mb_1972_2018, cum_mb_errors] = get_mouginot2019_mb('cumulativeMassBalance');
-        mouginot_time_span = linspace(1972, 2018, length(cum_mb_1972_2018));
-        plot(mouginot_time_span, cum_mb_1972_2018 + offset_prior_1972, '-', 'color', 'red', 'LineWidth', 1.5);
-        h = errorbar(mouginot_time_span, cum_mb_1972_2018 + offset_prior_1972, cum_mb_errors, '--', 'color', 'red', 'LineWidth', 1.0);
-        mass_balance_curve_struct.mouginot_t{1} = mouginot_time_span;
-        mass_balance_curve_struct.mouginot_mb{1} = cum_mb_1972_2018;
-        mass_balance_curve_struct.mouginot_eps{1} = cum_mb_errors;
-        mass_balance_curve_struct.mouginot_offset{1} = offset_prior_1972;
-        % Set transparency level (0:1)
-        alpha = 0.65;   
-        % Set transparency (undocumented)
-        set([h.Bar, h.Line], 'ColorType', 'truecoloralpha', 'ColorData', [h.Line.ColorData(1:3); 255*alpha]);
+            [cum_mb_1972_2018, cum_mb_errors] = get_mouginot2019_mb('cumulativeMassBalance');
+            mouginot_time_span = linspace(1972, 2018, length(cum_mb_1972_2018));
+            plot(mouginot_time_span, cum_mb_1972_2018 + offset_prior_1972, '-', 'color', 'red', 'LineWidth', 1.5);
+            h = errorbar(mouginot_time_span, cum_mb_1972_2018 + offset_prior_1972, cum_mb_errors, '--', 'color', 'red', 'LineWidth', 1.0);
+            mass_balance_curve_struct.mouginot_t{1} = mouginot_time_span;
+            mass_balance_curve_struct.mouginot_mb{1} = cum_mb_1972_2018;
+            mass_balance_curve_struct.mouginot_eps{1} = cum_mb_errors;
+            mass_balance_curve_struct.mouginot_offset{1} = offset_prior_1972;
+            % Set transparency level (0:1)
+            alpha = 0.65;   
+            % Set transparency (undocumented)
+            set([h.Bar, h.Line], 'ColorType', 'truecoloralpha', 'ColorData', [h.Line.ColorData(1:3); 255*alpha]);
+        end
     end
     if plot_smb
         %% Volume plot CONTROL
@@ -179,7 +181,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     % scatter(vol_times_c(end), final_mass_loss, 'r');
     xlabel('Year')
     ylabel('Mass [Gt]')
-    xlim([1879.9, 2021.1])
+    xlim([1899.9, 2021.1])
     set(gca,'fontsize', 14)
     Ax = gca;
     Ax.YGrid = 'on';
@@ -195,7 +197,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     if retreat_advance
         all_names = ["Advancing", "Retreating", all_names];
     end
-    legend([all_names], 'Location', 'NorthWest')
+    legend([all_names], 'Location', 'SouthWest')
 
 
     folder = string(folder);
