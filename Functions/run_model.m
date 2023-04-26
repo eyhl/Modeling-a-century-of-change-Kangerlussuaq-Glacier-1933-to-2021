@@ -86,8 +86,12 @@ function [md] = run_model(config_name, plotting_flag)
 
     if strcmp(config.smb_name, "box")
         smb_file = 'Data/smb/box_smb/Box_Greenland_SMB_monthly_1840-2012_5km_cal_ver20141007.nc';
-    else
+    elseif strcmp(config.smb_name, "racmo")
         smb_file = 'Data/smb/racmo/';
+    elseif strcmp(config.smb_name, "mar")
+        smb_file = 'Data/smb/mar3.12/';
+    else
+        warning("SMB not known, choose: box, racmo or mar");
     end
 
     % Surface velocity data
@@ -189,47 +193,9 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 3 Forcings: Interpolate SMB
-    if perform(org, 'smb')
-
-         % ------ Load smb if already processed
-        if isfile(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat'])
-            disp("Loading SMB from previous processing...")
-            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
-            md_smb = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
-            if md.mesh.numberofelements ~= md_smb.mesh.numberofelements
-                disp("Error mesh is different size in the two models")
-            end
-            md.smb.mass_balance = md_smb.smb.mass_balance;
-
-        % ------ Compute smb
-        else
-            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
-            disp("SMB processing in progress...")
-
-            if strcmp(config.smb_name, "box")
-                md = interpolate_box_smb(md, start_time, final_time, smb_file);
-            else
-                the_files = dir(fullfile(smb_file, '*.nc'));
-                %TODO: CANNOT HANDLE ONLY PRE 1958 SELECTION (cat() reconstruct_racmo should be tested for this)
-                % reconstruct racmo if year<1958
-                if start_time < 1958 || final_time < 1958
-                    disp("post 1958 - interpolating racmo")
-                    md = interpolate_racmo_smb(md, 1958, final_time, the_files); % -1 to run to end 2021
-                    disp("pre 1958 - reconstructing racmo")
-                    md = reconstruct_racmo(md, start_time, final_time, ref_smb_start_time, ref_smb_final_time);
-                else
-                    disp("post 1958 - interpolating racmo")
-                    md = interpolate_racmo_smb(md, start_time, final_time, the_files);
-                end
-            end 
-        end
-        savemodel(org, md);
-    end
-
-    %% 4 Friction law setup: Budd %TODO: add friction step with friction_law condition inside instead.
+    %% 3 Friction law setup: Budd %TODO: add friction step with friction_law condition inside instead.
     if perform(org, 'budd')
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
         % pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/ice_at_fjord_sides.exp', 2));
         % md.mask.ice_levelset(pos) = 1;
         md = solve_stressbalance_budd(md, budd_coeff, cs_min, cs_max, velocity_exponent);
@@ -257,9 +223,9 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 5 Friction law setup: Budd Plastic %TODO: add friction step with friction_law condition inside instead.
+    %% 4 Friction law setup: Budd Plastic %TODO: add friction step with friction_law condition inside instead.
     if perform(org, 'budd_plastic')
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd_plastic copy 5.mat']);
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
         %md.friction.coefficient = rescale(md.friction.coefficient, 0.05, 2);
         md = solve_stressbalance_budd(md, budd_plastic_coeff, cs_min, cs_max, velocity_exponent);
         savemodel(org, md);
@@ -286,10 +252,10 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 6 Friction law setup: Weertman
+    %% 5 Friction law setup: Weertman
     if perform(org, 'weertman')
 
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
         md = solve_stressbalance_weert(md, weertman_coeff, cs_min, cs_max);
         savemodel(org, md);
 
@@ -315,7 +281,7 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 7 Friction law setup: Schoof
+    %% 6 Friction law setup: Schoof
     if perform(org, 'schoof')
         friction_law = 'schoof';
         % md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
@@ -353,7 +319,7 @@ function [md] = run_model(config_name, plotting_flag)
         end
     end
     
-    %% 8 Parameterize LIA initial conditions
+    %% 7 Parameterize LIA initial conditions
     if perform(org, 'lia')
         % offset = logical(lia_friction_offset);
         % if strcmp(config.friction_law, 'budd')
@@ -651,11 +617,58 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
+    %% 8 Forcings: Interpolate SMB
+    if perform(org, 'smb')
+    % ------ Load smb if already processed
+    if isfile(append('/data/eigil/work/lia_kq/Models/', prefix, 'smb_', config.smb_name, '.mat'))
+        disp("Loading SMB from previous processing...")
+        md = loadmodel(append('/data/eigil/work/lia_kq/Models/', prefix, 'lia.mat'));
+        md_smb = loadmodel(append('/data/eigil/work/lia_kq/Models/', prefix, 'smb_', config.smb_name, '.mat'));
+        if md.mesh.numberofelements ~= md_smb.mesh.numberofelements
+            disp("Error mesh is different size in the two models")
+        end
+        md.smb.mass_balance = md_smb.smb.mass_balance;
+
+    % ------ Compute smb
+    else
+        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'lia.mat']);
+        disp("SMB processing in progress...")
+        the_files = dir(fullfile(smb_file, '*.nc'));
+
+        if strcmp(config.smb_name, "box")
+            md = interpolate_box_smb(md, start_time, final_time, smb_file);
+        elseif strcmp(config.smb_name, "racmo")
+            %TODO: CANNOT HANDLE ONLY PRE 1958 SELECTION (cat() reconstruct_racmo should be tested for this)
+            % reconstruct racmo if year<1958
+            if start_time < 1958 || final_time < 1958
+                disp("post 1958 - interpolating racmo")
+                md = interpolate_racmo_smb(md, 1958, final_time, the_files); % -1 to run to end 2021
+                disp("pre 1958 - reconstructing racmo")
+                md = reconstruct_racmo(md, start_time, final_time, ref_smb_start_time, ref_smb_final_time, the_files);
+            else
+                disp("post 1958 - interpolating racmo")
+                md = interpolate_racmo_smb(md, start_time, final_time, the_files);
+            end
+        elseif strcmp(config.smb_name, "mar")
+            if start_time < 1950 || final_time < 1950
+                disp("post 1950 - interpolating mar")
+                md = interpolate_mar_smb(md, 1950, final_time, the_files); % -1 to run to end 2021
+                disp("pre 1950 - reconstructing mar")
+                md = reconstruct_mar(md, start_time, final_time, ref_smb_start_time, ref_smb_final_time, the_files);
+            else
+                disp("post 1950 - interpolating mar")
+                md = interpolate_mar_smb(md, start_time, final_time, the_files);
+            end
+        end 
+    end
+    savemodel(org, md);
+    end
+
     %% 9 Initialise: Setup and load calving fronts
     if perform(org, 'fronts')
         if run_lia_parameterisation == 1
             disp("Using LIA initial conditoins")
-            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'lia.mat']);
+            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
 
         else
             disp("Not using LIA initial conditions")

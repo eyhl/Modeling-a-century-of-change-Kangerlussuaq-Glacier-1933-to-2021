@@ -12,8 +12,9 @@ md.mask.ice_levelset(pos) = -1;
 
 disp('      reading LIA surface');
 % md.geometry.surface = interpLiaSurface(md.mesh.x, md.mesh.y);
-md_lia_steady = loadmodel('/data/eigil/work/lia_kq/Models/steady_state_lia/steady_state_lia_budd.mat');
-% md_lia_steady = loadmodel('/data/eigil/work/lia_kq/steady_state_lia_budd_schoof_pt3.mat');
+% md_lia_steady = loadmodel('/data/eigil/work/lia_kq/Models/steady_state_lia/steady_state_lia_budd.mat');
+% md_lia_steady = loadmodel('/data/eigil/work/lia_kq/steady_state_budd_2_interpLessThan5m_26april.mat');
+md_lia_steady = loadmodel('/data/eigil/work/lia_kq/steady_state_schoof_1_24april.mat');
 md.geometry.surface = md_lia_steady.geometry.surface;
 
 % make sure that ther is not ice outside levelset

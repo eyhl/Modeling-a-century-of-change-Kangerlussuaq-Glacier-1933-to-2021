@@ -8,7 +8,8 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
     md.toolkits.DefaultAnalysis=bcgslbjacobioptions();
 
     % parameters
-    k = md.friction.C; %Crude initial guess for basal friction
+    % k = md.friction.C; %Crude initial guess for basal friction
+    k = md.friction.coefficient; %Crude initial guess for basal friction
     k_min = md.inversion.min_parameters(1,1);
     k_max = md.inversion.max_parameters(1,1);
 
@@ -46,9 +47,11 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
     tic
     for i=1:nstep
         fprintf('CASE: %d.   STEP: %d/%d. \n', 1, i, nstep) 
-        
+        Sobs			= md.geometry.surface;
+
         % set friction coefficient and rheology
-        md.friction.C = k;
+        % md.friction.C = k;
+        md.friction.coefficient = k;
 
         md.timestepping.start_time				= 1880.;
         md.timestepping.final_time				= 1880 + timeadjust;
@@ -78,7 +81,8 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         md.geometry.surface =  md.geometry.surface - dS/Sinv;
         % md = sethydrostaticmask(md);
         md = make_floating(md);
-        plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.C, 'figure', 22, 'axis#all', axs);
+        % plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.C, 'figure', 22, 'axis#all', axs);
+        plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.coefficient, 'figure', 22, 'axis#all', axs);
         % plotmodel(md, 'data', md.mask.ice_levelset<0, 'figure', 3, 'mask', md.mask.ocean_levelset<0);
         % plotmodel(md, 'data', md.geometry.bed, 'caxis#all', [-1000, 0], 'data', md.geometry.base)
         

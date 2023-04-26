@@ -1,11 +1,9 @@
-function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, ref_end_time)
+function [md] = reconstruct_racmo(md, start_time, final_time, ref_start_time, ref_end_time, the_files)
     ref_time_length = ref_end_time - ref_start_time;
     smb_total = md.smb.mass_balance(1:end - 1, :);
 
     % reference racmo smb
     md_racmo = md;
-    racmo_file_name = 'Data/smb/racmo/';
-    the_files = dir(fullfile(racmo_file_name, '*.nc'));
     md_racmo = interpolate_racmo_smb(md_racmo, ref_start_time, ref_end_time, the_files);
     time_vector = md_racmo.smb.mass_balance(end, :) - ref_start_time;
     smb_racmo_data = md_racmo.smb.mass_balance(1:end - 1, :);
