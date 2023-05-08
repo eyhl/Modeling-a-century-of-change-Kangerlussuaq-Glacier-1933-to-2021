@@ -140,6 +140,7 @@ dmypy.json
 
 # etc
 /Functions/texturesynth-master/examples
+/Functions/utils/
 Movies/box_log_vel.avi
 Movies/log_vel_racmo_recon.avi
 Movies/log_vel_racmo.avi

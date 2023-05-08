@@ -5,7 +5,7 @@ function [results_folder_name] = store_model(config_file_name)
     config_file_path = fullfile('Configs/', config_file_name);
     config = readtable(config_file_path, "TextType", "string");
 
-    string_split = split(config_file_name, '.');
+    string_split = split(config_file_name, '.csv');
     id = string_split(1);
     string_split = split(id, '-');
     id = strjoin(string_split(1:end-1), '-');

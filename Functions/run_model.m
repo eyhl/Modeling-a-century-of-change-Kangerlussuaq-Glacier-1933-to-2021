@@ -117,7 +117,7 @@ function [md] = run_model(config_name, plotting_flag)
     cluster=generic('name', oshostname(), 'np', 30);
     waitonlock = Inf;
 
-    %% 1 Mesh: setup and refine
+%% 1 Mesh: setup and refine
     if perform(org, 'mesh')
         % domain of interest
         % domain = ['Exp/domain/' 'Kangerlussuaq_new' '.exp'];
@@ -132,7 +132,7 @@ function [md] = run_model(config_name, plotting_flag)
         end
     end
 
-    %% 2 Parameterisation: Default setup with .par file
+%% 2 Parameterisation: Default setup with .par file
     if perform(org, 'param')
         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'mesh.mat']);
 
@@ -193,7 +193,7 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 3 Friction law setup: Budd %TODO: add friction step with friction_law condition inside instead.
+%% 3 Friction law setup: Budd %TODO: add friction step with friction_law condition inside instead.
     if perform(org, 'budd')
         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
         % pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/ice_at_fjord_sides.exp', 2));
@@ -223,7 +223,7 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 4 Friction law setup: Budd Plastic %TODO: add friction step with friction_law condition inside instead.
+%% 4 Friction law setup: Budd Plastic %TODO: add friction step with friction_law condition inside instead.
     if perform(org, 'budd_plastic')
         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
         %md.friction.coefficient = rescale(md.friction.coefficient, 0.05, 2);
@@ -252,7 +252,7 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 5 Friction law setup: Weertman
+%% 5 Friction law setup: Weertman
     if perform(org, 'weertman')
 
         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
@@ -281,7 +281,7 @@ function [md] = run_model(config_name, plotting_flag)
         
     end
 
-    %% 6 Friction law setup: Schoof
+%% 6 Friction law setup: Schoof
     if perform(org, 'schoof')
         friction_law = 'schoof';
         % md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
@@ -319,7 +319,7 @@ function [md] = run_model(config_name, plotting_flag)
         end
     end
     
-    %% 7 Parameterize LIA initial conditions
+%% 7 Parameterize LIA initial conditions
     if perform(org, 'lia')
         % offset = logical(lia_friction_offset);
         % if strcmp(config.friction_law, 'budd')
@@ -617,7 +617,7 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 8 Forcings: Interpolate SMB
+%% 8 Forcings: Interpolate SMB
     if perform(org, 'smb')
     % ------ Load smb if already processed
     if isfile(append('/data/eigil/work/lia_kq/Models/', prefix, 'smb_', config.smb_name, '.mat'))
@@ -693,8 +693,8 @@ function [md] = run_model(config_name, plotting_flag)
 
         % meltingrate
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];
-        % md.frontalforcings.meltingrate=zeros(md.mesh.numberofvertices+1, numel(timestamps));
-        md.frontalforcings.meltingrate = 20 .* ones(md.mesh.numberofvertices+1, numel(timestamps));
+        md.frontalforcings.meltingrate=zeros(md.mesh.numberofvertices+1, numel(timestamps));
+        % md.frontalforcings.meltingrate = 20 .* ones(md.mesh.numberofvertices+1, numel(timestamps));
         md.frontalforcings.meltingrate(end, :) = timestamps;
 
         md.basalforcings.floatingice_melting_rate = config.melting_rate .* ones(md.mesh.numberofvertices, 1);

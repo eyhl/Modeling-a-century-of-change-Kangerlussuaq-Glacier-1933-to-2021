@@ -1,4 +1,4 @@
-function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
+function [md, vecmaxdS, vecmindS, vecmeandS, dS] = steady_state_correction(md, id, burn_in)
     % Inversion of friction coefficient based on Pollard and DeConto (2012) 
     % "A simple inverse method for the distribution of basal sliding
     % coefficients under ice sheets, applied to Antarctica"
@@ -8,21 +8,26 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
     md.toolkits.DefaultAnalysis=bcgslbjacobioptions();
 
     % parameters
-    k = md.friction.C; %Crude initial guess for basal friction
-    % k = md.friction.coefficient; %Crude initial guess for basal friction
+    try
+        k = md.friction.coefficient; %Crude initial guess for basal friction
+    catch
+        k = md.friction.C; %Crude initial guess for basal friction
+    end
+
     k_min = md.inversion.min_parameters(1,1);
     k_max = md.inversion.max_parameters(1,1);
 
     % area to be updated
+    aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_large.exp', 2));
     % aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_large.exp', 2));
-    aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/pollard_update_area.exp', 2));
+    % aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/pollard_update_area.exp', 2));
     % k(aoi) = 350;
 
     % adjust
-    Sinv		= 700;
+    Sinv		= 650;
     timeadjust	= 20;
     finaltime	= 1900;
-    maxerror	= 0.01; % relative
+    maxerror	= 0.1; % relative
     nstep		= ceil(finaltime/timeadjust);
 
     % set timestepping to fixed
@@ -47,15 +52,15 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
     tic
     for i=1:nstep
         fprintf('CASE: %d.   STEP: %d/%d. \n', 1, i, nstep) 
+        Sobs			= md.geometry.surface;
+
         % set friction coefficient and rheology
-        md.friction.C = k;
-        % md.friction.coefficient = k;
 
         md.timestepping.start_time				= 1880.;
         md.timestepping.final_time				= 1880 + timeadjust;
         md.timestepping.time_step				= 0.01;
         md.settings.output_frequency			= timeadjust;
-        md.transient.requested_outputs		    = {'default', 'IceVolume','MaskIceLevelset', 'MaskOceanLevelset'};
+        md.transient.requested_outputs		    = {'default', 'IceVolume','TotalSmb','SmbMassBalance', 'MaskIceLevelset', 'MaskOceanLevelset'};
         md.transient.ismovingfront		        = 0;
         md.verbose								= verbose('convergence',true,'solution',true);
 
@@ -67,29 +72,36 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         md_tmp=solve(md,'Transient');
         % ok, adjust friction according to ice surface error Smodel-Sobs
         md = transientrestart(md_tmp);
-        md = make_floating(md);
+        %md = sethydrostaticmask(md);
+        % md = make_floating(md);
   
         % plotmodel(md, 'data', md.mask.ocean_levelset<0, 'figure', 4);
         Smodel	= md.geometry.surface;
+        plotmodel(md, 'data', md.geometry.base<md.geometry.bed, 'figure', 89)
 
         % adjust coefficient
         dS			= Sobs-Smodel;
-        plotmodel(md, 'data', dS, 'figure', 20, 'axis#all', axs, 'title', 'dS befre flowline');
-        [~, ~, dS, ~] = flowline_traceback(md_tmp, dS, true);
-        plotmodel(md, 'data', dS, 'figure', 21, 'axis#all', axs, 'title', 'dS after flowline');
-        plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.C, 'figure', 22, 'axis#all', axs, ...
-                 'expdisp#2', '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_large.exp');
-        % plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.coefficient, 'figure', 22, 'axis#all', axs);
+        [~, ~, dS, ~] = flowline_traceback2(md_tmp, dS, true);
+        md.geometry.surface =  md.geometry.surface - dS/Sinv;
+        % md = sethydrostaticmask(md);
+        md = make_floating(md);
+        pos = md.geometry.base<md.geometry.bed;
+
+        % plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.C, 'figure', 22, 'axis#all', axs);
+        plotmodel(md, 'data', md.initialization.vel, 'data', k, 'figure', 22, 'axis#all', axs);
+        plotmodel(md, 'data', dS/Sinv, 'figure', 33);
+        plotmodel(md, 'data', md.geometry.bed, 'caxis#all', [-1000, 0], 'data', md.geometry.base, 'figure', 90)
+        plotmodel(md, 'data', md.geometry.base<md.geometry.bed, 'figure', 91)
         
-        dZ			= dS/Sinv;	
-        dZ(aoi)			= max(-1.5,min(1.5,dZ(aoi)));
-        k(aoi)      = k(aoi).*sqrt(10.^dZ(aoi));
+        % dZ			= dS/Sinv;	
+        % dZ(aoi)			= max(-1.5,min(1.5,dZ(aoi)));
+        % k(aoi)      = k(aoi).*sqrt(10.^dZ(aoi));
         % dZ			= max(-1.5,min(1.5,dZ));
         % k           = k .* sqrt(10.^dZ);
 
         % % limit based on inversion results
-        k(k>k_max) = k_max;
-        k(k<k_min) = k_min;
+        % k(k>k_max) = k_max;
+        % k(k<k_min) = k_min;
 
         maxdS    = max(dS);
         mindS    = min(dS);
@@ -101,17 +113,19 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         vecmaxdS(i)		= maxdS;
         vecmindS(i)		= mindS;
         vecmeandS(i)	= meandS;
-        figure(989); plot(vecmeandS)
-        figure(999); plot(vecmeandS, 'k'); hold on; plot(vecmaxdS, 'r.'); plot(vecmindS, 'r.'); hold off;
+        figure(77); plot(vecmeandS);
 
-        if i > 7 && abs((vecmeandS(i) - vecmeandS(i - 1)) / vecmeandS(i - 1)) < maxerror
+        if i > 6 && abs((vecmeandS(i) - vecmeandS(i - 1)) / vecmeandS(i - 1)) < maxerror
             break
-        elseif i > 35
+        elseif i > 20
             break
+        elseif burn_in
+            if i == 4
+                break
+            end
         end
-
+        save(append(id,'.mat'), 'md', '-v7.3');
+        save(append(id, '_convergence.mat'), 'vecmeandS', 'vecmaxdS', 'vecmindS', '-v7.3');
     end
     toc
-    save('pollard_schoof_ssSurface.mat', 'md', '-v7.3');
-    save('pollard_schoof_ssSurface_convergence.mat', 'vecmeandS', 'vecmaxdS', 'vecmindS', '-v7.3');
 end
