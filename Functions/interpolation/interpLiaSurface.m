@@ -10,15 +10,15 @@ function [surface_interpolated] = interpLiaSurface(mesh_x, mesh_y)
     surface_interpolated = F(mesh_x, mesh_y);
 
     % % Find low surface elevation everywhere but the front area, 10 meters is a buffer.
-    known_surface = surface_interpolated > 75;
-    pos1 = find(known_surface);
-    missing_surface = surface_interpolated <= 75;
-    % missing_surface = isnan(surface_interpolated);
-    pos2 = find(missing_surface);
+    % known_surface = surface_interpolated > 60;
+    % pos1 = find(known_surface);
+    % missing_surface = surface_interpolated <= 60;
+    % % missing_surface = isnan(surface_interpolated);
+    % pos2 = find(missing_surface);
 
-    % % interpolate
-    F = scatteredInterpolant(mesh_x(pos1), mesh_y(pos1), surface_interpolated(pos1), 'linear', 'nearest');
-    surface_interpolated(pos2) = F(mesh_x(pos2), mesh_y(pos2));
+    % % % interpolate
+    % F = scatteredInterpolant(mesh_x(pos1), mesh_y(pos1), surface_interpolated(pos1), 'linear', 'nearest');
+    % surface_interpolated(pos2) = F(mesh_x(pos2), mesh_y(pos2));
     
 
     % % x_lin = linspace(min(x), max(x), 600);  % I think i chose 600 is arbitrarily, but sufficient
