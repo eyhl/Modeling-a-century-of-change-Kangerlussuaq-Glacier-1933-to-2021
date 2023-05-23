@@ -121,7 +121,7 @@ function [md] = run_model(config_name, plotting_flag)
     if perform(org, 'mesh')
         % domain of interest
         % domain = ['Exp/domain/' 'Kangerlussuaq_new' '.exp'];
-        domain = ['Exp/domain/' 'Kangerlussuaq_full_basin_no_sides_copy' '.exp'];
+        domain = ['Exp/domain/' 'Kangerlussuaq_full_basin_no_sides' '.exp'];
 
         % Creates, refines and saves mesh in md
         check_mesh = false;
@@ -285,9 +285,9 @@ function [md] = run_model(config_name, plotting_flag)
     if perform(org, 'schoof')
         friction_law = 'schoof';
         % md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
-        % md = loadmodel('Models/accepted_models/Model_kangerlussuaq_budd.mat');
-        % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'schoof0.mat']);
+        md = loadmodel('Models/KG_schoof.mat');
+        % md = loadmodel('/data/eigil/work/lia_kq/Models/KG_schoof_may16.mat');
+        % md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'schoof0.mat']);
         % mds = loadmodel('Results/schoof-04-Apr-2023/KG_transient.mat');
         % md.friction.C = mds.miscellaneous.dummy.FrictionC;
 
@@ -707,8 +707,8 @@ function [md] = run_model(config_name, plotting_flag)
         md.toolkits.DefaultAnalysis=bcgslbjacobioptions();
 
         % for testing
-        % md.timestepping.start_time = 1900;
-        % md.timestepping.final_time = 1901;
+        % md.timestepping.start_time = 1933.58;
+        % md.timestepping.final_time = 1934;
         % md.levelset.spclevelset(end, 1) = 1880;
         % fix front, option
         if config.control_run

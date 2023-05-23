@@ -38,13 +38,19 @@ function [] = validate_model(results_folder_name, axes, md)
     plotmodel(md, 'data', misfit_thickness, ...
                 'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'axis#all', axes, 'figure', 89); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); exportgraphics(gcf, fullfile(results_folder_name, 'H_misfit_limited.png'), 'Resolution', 300)
+                'axis#all', axes, 'figure', 89); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                h = colorbar();
+                title(h, '[m]'); 
+    exportgraphics(gcf, fullfile(results_folder_name, 'H_misfit_limited.png'), 'Resolution', 300)
 
     % Misfit thickness
     plotmodel(md, 'data', misfit_thickness, ...
                 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'figure', 90); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); exportgraphics(gcf, fullfile(results_folder_name, 'H_misfit.png'), 'Resolution', 300)
+                'figure', 90); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                h = colorbar();
+                title(h, '[m]') 
+    exportgraphics(gcf, fullfile(results_folder_name, 'H_misfit.png'), 'Resolution', 300)
 
     figure(91);
     histogram(misfit_thickness(masked_values), 200, 'Normalization','pdf')
@@ -62,16 +68,22 @@ function [] = validate_model(results_folder_name, axes, md)
 
     % Misfit thickness caxis
     plotmodel(md, 'data', icesat_misfit_surface, ...
-                'caxis#all', [-3e2 3e2], 'mask#all', masked_values, ...
+                'caxis#all', [-1.5e2 1.5e2], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'axis#all', axes, 'figure', 89); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); exportgraphics(gcf, fullfile(results_folder_name, 'S_misfit_limited_icesat.png'), 'Resolution', 300)
+                'axis#all', axes, 'figure', 89); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); 
+                h = colorbar();
+                title(h, '[m]') 
+                exportgraphics(gcf, fullfile(results_folder_name, 'S_misfit_limited_icesat.png'), 'Resolution', 300)
 
     % Misfit thickness
     plotmodel(md, 'data', icesat_misfit_surface, ...
-                'caxis#all', [-3e2 3e2], ...
+                'caxis#all', [-1.5e2 1.5e2], ...
                 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'figure', 90); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); exportgraphics(gcf, fullfile(results_folder_name, 'S_misfit_icesat.png'), 'Resolution', 300)
+                'figure', 90); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); 
+                h = colorbar();
+                title(h, '[m]') 
+                exportgraphics(gcf, fullfile(results_folder_name, 'S_misfit_icesat.png'), 'Resolution', 300)
 
     figure(91);
     histogram(icesat_misfit_surface(masked_values), 200, 'Normalization','pdf')
@@ -94,6 +106,8 @@ function [] = validate_model(results_folder_name, axes, md)
                 'caxis#all', [0 1.2e4], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'figure', 92); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                h = colorbar();
+                title(h, '[m/yr]') 
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited.png'), 'Resolution', 300)
 
     % Velocity axes domain, log scale
@@ -102,6 +116,8 @@ function [] = validate_model(results_folder_name, axes, md)
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'log', 10, ...
                 'axis#all', axes, 'figure', 93); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                h = colorbar();
+                title(h, '[m/yr]') 
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited_log.png'), 'Resolution', 300)
 
     % Velocity misfit caxes
@@ -110,6 +126,8 @@ function [] = validate_model(results_folder_name, axes, md)
                 'caxis#all', [-1e3 1e3], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                h = colorbar();
+                title(h, '[m/yr]') 
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited.png'), 'Resolution', 300)
 
     % Velocity misfit
@@ -118,6 +136,8 @@ function [] = validate_model(results_folder_name, axes, md)
                 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'figure', 95); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                h = colorbar();
+                title(h, '[m/yr]') 
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit.png'), 'Resolution', 300)
 
     plotmodel(md, 'data', abs(misfit_velocity), ...
@@ -126,6 +146,8 @@ function [] = validate_model(results_folder_name, axes, md)
                 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'figure', 951); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                h = colorbar();
+                title(h, '[m/yr]') 
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_log.png'), 'Resolution', 300)
 
     figure(96);

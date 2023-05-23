@@ -6,9 +6,12 @@ md.transient.ismovingfront = 1;
 disp('   Interpolating mask');
 
 %% set ice levelset corresponding to lia
-tmp_levelset = ExpToLevelSet(md.mesh.x, md.mesh.y, 'Exp/first_front/first_front.exp');
-pos = tmp_levelset(1:end-1) > 0;  % positive distances
-md.mask.ice_levelset(pos) = -1;
+% tmp_levelset = ExpToLevelSet(md.mesh.x, md.mesh.y, 'Exp/first_front/first_front.exp');
+% pos = tmp_levelset(1:end-1) > 0;  % positive distances
+% md.mask.ice_levelset(pos) = -1;
+front_1933 = load('/data/eigil/work/lia_kq/Data/shape/fronts/processed/1933.mat');
+front_1933 = front_1933.front1933;
+md.mask.ice_levelset= front_1933;
 
 disp('      reading LIA surface');
 md.geometry.surface = interpLiaSurface(md.mesh.x, md.mesh.y);
@@ -82,4 +85,4 @@ md.mask.ice_levelset(pos) = 1;
 md.masstransport.spcthickness = NaN(md.mesh.numberofvertices + 1, 2); 
 pos = find(md.mesh.vertexonboundary);
 md.masstransport.spcthickness(pos, :) = [md.geometry.thickness(pos), md_inv.geometry.thickness(pos)];
-md.masstransport.spcthickness(end, :) = [1900, 2007];
+md.masstransport.spcthickness(end, :) = [1933, 2007];
