@@ -1,4 +1,4 @@
-function [extrapolated_friction, extrapolated_pos, mae] = friction_constant_model(md, cs_min, friction_law, validate_flag)
+function [extrapolated_friction, extrapolated_pos, mae] = friction_constant_model(md, cs_min, friction_law, validate_flag, extrapolation_domain)
     %--
     % Extrapolates friction data based on the average value, i.e. constant extrapolation
     %--
@@ -19,7 +19,7 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_constant_mode
     %% LOAD DATA AND CREATE RELEVANT VARIABLES
     friction_data_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_utils/friction_data.exp', 2));
     friction_validation = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_utils/friction_validation.exp', 2));
-    extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
+    extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, extrapolation_domain, 2));
 
     % preprocess model data
     friction_data = friction_field(friction_data_pos);

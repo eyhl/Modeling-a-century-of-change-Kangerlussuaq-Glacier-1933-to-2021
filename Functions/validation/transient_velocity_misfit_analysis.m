@@ -137,16 +137,21 @@ function [transient_errors, interp_data, indeces_start] = transient_velocity_mis
     interp_data = zeros(length(x_flowline), length(years));
     % yearly_error_vector = [];
     % grouping_vector = [];
-    find_years = round(t_model);
+    find_years = floor(t_model);
     yearly_avg_vector = zeros(1, length(years));
     yearly_med_vector = zeros(1, length(years));
     yearly_std_vector = zeros(1, length(years));
 
     for i=1:length(years)
-        interp_data(:, i) = interpToFlowline(md.mesh.x, md.mesh.y, transient_errors(:, i), x_flowline, y_flowline);
         error = transient_errors(:, i);
-        ice_mask_for_year = logical(sum(ice_levelset(:, find_years==i)>0,2, 'omitnan'));
+        ice_levelset_for_year = ice_levelset(:, find_years==i);
+        ice_nodes = sum(ice_levelset(:, find_years==i)>0, 1);
+        [~, most_retreated_index] = min(ice_nodes);
+        ice_mask_for_year = logical(ice_levelset_for_year(:, most_retreated_index)>0);
+
         error(ice_mask_for_year) = nan;
+        interp_data(:, i) = interpToFlowline(md.mesh.x, md.mesh.y, error, x_flowline, y_flowline);
+
         yearly_avg_vector(i) = mean(error, 'omitnan');
         yearly_med_vector(i) = median(error, 'omitnan');
         yearly_std_vector(i) = std(error, 'omitnan');
@@ -353,7 +358,7 @@ end
     interp_data = zeros(length(x_flowline), length(years));
     % yearly_error_vector = [];
     % grouping_vector = [];
-    find_years = round(t_model);
+    find_years = floor(t_model);
     yearly_avg_vector = zeros(1, length(years));
     yearly_med_vector = zeros(1, length(years));
     yearly_std_vector = zeros(1, length(years));

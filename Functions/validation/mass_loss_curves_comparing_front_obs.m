@@ -145,7 +145,8 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
 
 
     if validate
-        for i=1:N
+        M=1;
+        for i=1:M
             % Assumes first model is the reference one
             mb0 = cell2mat({md_list(i).results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
             model_times = cell2mat({md_list(i).results.TransientSolution(:).time});
@@ -181,7 +182,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     % scatter(vol_times_c(end), final_mass_loss, 'r');
     xlabel('Year')
     ylabel('Mass [Gt]')
-    xlim([1899.9, 2021.1])
+    xlim([1933.0, 2021.1])
     set(gca,'fontsize', 14)
     Ax = gca;
     Ax.YGrid = 'on';

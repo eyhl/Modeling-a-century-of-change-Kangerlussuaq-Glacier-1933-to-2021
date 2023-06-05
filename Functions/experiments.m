@@ -149,37 +149,37 @@ function [] = experiments()
     % recipe(config_file_name);   
 
 % % ---------------------------------------------------- SEASONALITY -------------------------------------------------
-    id3 = append(friction_law, "_fix1900_2021");
-    disp(id3)
-    config_file_name = create_config(id3, friction_law);
-    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    config.steps = num2str([9, 10]);
-    config.lia_friction_offset = friction_ext_offset; %% CHANGE???
-    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % edit front observations, if KG_fronts.mat exist run_model will load front from that.
-    md_front = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts_all.mat']);
-    md_lia.levelset.spclevelset =  md_front.levelset.spclevelset(:, [3, length(md_front.levelset.spclevelset(end, :))]);  % first and last element
-    save('Models/KG_fronts.mat', 'md_lia', '-v7.3');
-    recipe(config_file_name);   
+    % id3 = append(friction_law, "_fix1900_2021");
+    % disp(id3)
+    % config_file_name = create_config(id3, friction_law);
+    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    % config.steps = num2str([9, 10]);
+    % config.lia_friction_offset = friction_ext_offset; %% CHANGE???
+    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % % edit front observations, if KG_fronts.mat exist run_model will load front from that.
+    % md_front = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts_all.mat']);
+    % md_lia.levelset.spclevelset =  md_front.levelset.spclevelset(:, [3, length(md_front.levelset.spclevelset(end, :))]);  % first and last element
+    % save('Models/KG_fronts.mat', 'md_lia', '-v7.3');
+    % recipe(config_file_name);   
 
-    id3 = append(friction_law, "_fix1900_1966_2021");
-    disp(id3)
-    config_file_name = create_config(id3, friction_law);
-    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    config.steps = num2str([9, 10]);
-    config.lia_friction_offset = friction_ext_offset; %% CHANGE???
-    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % edit front observations, if KG_fronts.mat exist run_model will load front from that.
-    md_front = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts_all.mat']);
-    select_years = find(md_front.levelset.spclevelset(end, :) > 1965 & md_front.levelset.spclevelset(end, :) < 1967); % find 1966
-    select_years = [3, select_years, length(md_front.levelset.spclevelset(end, :))]; % select 1900, 1966, 2021
-    disp(md_front.levelset.spclevelset(end, select_years))
-    md_lia.levelset.spclevelset =  md_front.levelset.spclevelset(:, select_years);  % first and last element
-    save('Models/KG_fronts.mat', 'md_lia', '-v7.3');
-    recipe(config_file_name);
-    copyfile('/data/eigil/work/lia_kq/Models/KG_fronts_all.mat', '/data/eigil/work/lia_kq/Models/KG_fronts.mat');
+    % id3 = append(friction_law, "_fix1900_1966_2021");
+    % disp(id3)
+    % config_file_name = create_config(id3, friction_law);
+    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    % config.steps = num2str([9, 10]);
+    % config.lia_friction_offset = friction_ext_offset; %% CHANGE???
+    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % % edit front observations, if KG_fronts.mat exist run_model will load front from that.
+    % md_front = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts_all.mat']);
+    % select_years = find(md_front.levelset.spclevelset(end, :) > 1965 & md_front.levelset.spclevelset(end, :) < 1967); % find 1966
+    % select_years = [3, select_years, length(md_front.levelset.spclevelset(end, :))]; % select 1900, 1966, 2021
+    % disp(md_front.levelset.spclevelset(end, select_years))
+    % md_lia.levelset.spclevelset =  md_front.levelset.spclevelset(:, select_years);  % first and last element
+    % save('Models/KG_fronts.mat', 'md_lia', '-v7.3');
+    % recipe(config_file_name);
+    % copyfile('/data/eigil/work/lia_kq/Models/KG_fronts_all.mat', '/data/eigil/work/lia_kq/Models/KG_fronts.mat');
 
 
     % % ---------------------------------------------------- FRICTION EXTRAPOLATION METHOD -------------------------------------------------
@@ -220,60 +220,60 @@ function [] = experiments()
     % recipe(config_file_name);  
 
     % % ------------------------------------------------- FRICTION EXTRAPOLATION TUNING FACTOR ----------------------------------------------
-    % id3 = append(friction_law, "_fc_extrap_tf1.20");
-    % disp(id3)
-    % config_file_name = create_config(id3, friction_law);
-    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    % config.steps = num2str([7, 8, 9, 10]);
-    % config.lia_friction_offset = 1.20;
-    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % % edit front observations, if KG_fronts.mat exist run_model will load front from that.
-    % recipe(config_file_name);   
+    id3 = append(friction_law, "_fc_extrap_tf3.20");
+    disp(id3)
+    config_file_name = create_config(id3, friction_law);
+    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    config.steps = num2str([7, 8, 9, 10]);
+    config.lia_friction_offset = 3.20;
+    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % edit front observations, if KG_fronts.mat exist run_model will load front from that.
+    recipe(config_file_name);   
 
-    % id4 = append(friction_law, "_fc_extrap_tf1.60");
-    % disp(id4)
-    % config_file_name = create_config(id4, friction_law);
-    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    % config.steps = num2str([7, 8, 9, 10]);
-    % config.lia_friction_offset = 1.30;
-    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % % edit front observations, if KG_fronts.mat exist run_model will load front from that.
-    % recipe(config_file_name);   
+    id4 = append(friction_law, "_fc_extrap_tf3.00");
+    disp(id4)
+    config_file_name = create_config(id4, friction_law);
+    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    config.steps = num2str([7, 8, 9, 10]);
+    config.lia_friction_offset = 3.00;
+    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % edit front observations, if KG_fronts.mat exist run_model will load front from that.
+    recipe(config_file_name);   
 
-    % id5 = append(friction_law, "_fc_extrap_tf1.70");
-    % disp(id5)
-    % config_file_name = create_config(id5, friction_law);
-    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    % config.steps = num2str([7, 8, 9, 10]);
-    % config.lia_friction_offset = 1.40;
-    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % % edit front observations, if KG_fronts.mat exist run_model will load front from that.
-    % recipe(config_file_name);  
+    id5 = append(friction_law, "_fc_extrap_tf2.80");
+    disp(id5)
+    config_file_name = create_config(id5, friction_law);
+    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    config.steps = num2str([7, 8, 9, 10]);
+    config.lia_friction_offset = 2.80;
+    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % edit front observations, if KG_fronts.mat exist run_model will load front from that.
+    recipe(config_file_name);  
 
-    % id6 = append(friction_law, "_fc_extrap_tf1.80");
-    % disp(id6)
-    % config_file_name = create_config(id6, friction_law);
-    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    % config.steps = num2str([7, 8, 9, 10]);
-    % config.lia_friction_offset = 1.60;
-    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % % edit front observations, if KG_fronts.mat exist run_model will load front from that.
-    % recipe(config_file_name);  
+    id6 = append(friction_law, "_fc_extrap_tf2.60");
+    disp(id6)
+    config_file_name = create_config(id6, friction_law);
+    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    config.steps = num2str([7, 8, 9, 10]);
+    config.lia_friction_offset = 2.60;
+    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % edit front observations, if KG_fronts.mat exist run_model will load front from that.
+    recipe(config_file_name);  
 
-    % id7 = append(friction_law, "_fc_extrap_tf2.00");
-    % disp(id7)
-    % config_file_name = create_config(id7, friction_law);
-    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    % config.steps = num2str([7, 8, 9, 10]);
-    % config.lia_friction_offset = 1.70;
-    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % % edit front observations, if KG_fronts.mat exist run_model will load front from that.
-    % recipe(config_file_name);
+    id7 = append(friction_law, "_fc_extrap_tf2.20");
+    disp(id7)
+    config_file_name = create_config(id7, friction_law);
+    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    config.steps = num2str([7, 8, 9, 10]);
+    config.lia_friction_offset = 2.20;
+    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % edit front observations, if KG_fronts.mat exist run_model will load front from that.
+    recipe(config_file_name);
 
     % id7 = append(friction_law, "_fc_extrap_tf2.10");
     % disp(id7)
@@ -287,25 +287,25 @@ function [] = experiments()
     % recipe(config_file_name);
 
     % ---------------------------------------------------- SMB -------------------------------------------------
-    id8 = append(friction_law, "_smb_mar");
-    disp(id8)
-    config_file_name = create_config(id8, friction_law);
-    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    config.steps = num2str([7, 8, 9, 10]);
-    config.lia_friction_offset = friction_ext_offset;
-    config.smb_name = "mar";
-    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    recipe(config_file_name);
+    % id8 = append(friction_law, "_smb_mar");
+    % disp(id8)
+    % config_file_name = create_config(id8, friction_law);
+    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    % config.steps = num2str([7, 8, 9, 10]);
+    % config.lia_friction_offset = friction_ext_offset;
+    % config.smb_name = "mar";
+    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % recipe(config_file_name);
 
-    id8 = append(friction_law, "_smb_box");
-    disp(id8)
-    config_file_name = create_config(id8, friction_law);
-    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    config.steps = num2str([8, 9, 10]);
-    config.lia_friction_offset = friction_ext_offset;
-    config.smb_name = "box";
-    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    recipe(config_file_name);
+    % id8 = append(friction_law, "_smb_box");
+    % disp(id8)
+    % config_file_name = create_config(id8, friction_law);
+    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    % config.steps = num2str([8, 9, 10]);
+    % config.lia_friction_offset = friction_ext_offset;
+    % config.smb_name = "box";
+    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % recipe(config_file_name);
 end

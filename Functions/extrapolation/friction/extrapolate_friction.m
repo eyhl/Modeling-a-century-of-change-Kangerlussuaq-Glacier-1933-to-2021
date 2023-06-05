@@ -19,7 +19,7 @@ function [md, friction_field] = extrapolate_friction(md, config)
 
     elseif strcmp(config.friction_extrapolation, "constant")
         disp("... using CONSTANT value")
-        [extrapolated_friction, ~, ~] = friction_constant_model(md, cs_min, config.friction_law, extrapolation_domain);
+        [extrapolated_friction, ~, ~] = friction_constant_model(md, cs_min, config.friction_law, true, extrapolation_domain);
     elseif strcmp(config.friction_extrapolation, "exponential")
         [extrapolated_friction, extrapolated_pos, ~] = friction_exponential_model(md, cs_min, config.friction_law, true, extrapolation_domain);
     elseif strcmp(config.friction_extrapolation, "pollard")
@@ -38,8 +38,9 @@ function [md, friction_field] = extrapolate_friction(md, config)
 
     if offset
         disp('Offset correction')
-        if strcmp(config.friction_extrapolation, "bed_correlation")
-            extrapolated_friction = extrapolated_friction * config.lia_friction_offset;
+        if strcmp(config.friction_extrapolation, "bed_correlation")  % tilføj offset for polynomial degree 1 skal være noget der bliver lagt til ikke ganget på.
+            % extrapolated_friction = extrapolated_friction * config.lia_friction_offset;
+            extrapolated_friction = extrapolated_friction + config.lia_friction_offset;
         elseif strcmp(config.friction_extrapolation, "constant")
             extrapolated_friction = config.lia_friction_offset;
         end

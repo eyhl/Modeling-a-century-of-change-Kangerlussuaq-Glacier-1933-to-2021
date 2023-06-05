@@ -1,5 +1,13 @@
-% mdb = loadmodel("/data/eigil/work/lia_kq/Results/budd_default-14-Apr-2023/KG_transient.mat");
+% mdb = loadmodel("/data/eigil/work/lia_kq/Results/budd_default-22-May-2023/KG_transient.mat");
 % mds = loadmodel("/data/eigil/work/lia_kq/Results/schoof_default-ss1-1-medDomain-06-May-2023/KG_transient.mat");
+
+% md_mar = loadmodel("/data/eigil/work/lia_kq/Results/budd_smb_mar-22-May-2023/KG_transient.mat");
+% md_box = loadmodel("/data/eigil/work/lia_kq/Results/budd_smb_box-22-May-2023/KG_transient.mat");
+
+% md1900 = loadmodel("/data/eigil/work/lia_kq/Results/budd_fix1900-22-May-2023/KG_transient.mat");
+% md1989 = loadmodel("/data/eigil/work/lia_kq/Results/schoof_fix1989-07-May-2023/KG_transient.mat");
+% md1900_2021 = loadmodel("/data/eigil/work/lia_kq/Results/budd_fix1900_2021-22-May-2023/KG_transient.mat");
+% md1900_1966_2021 = loadmodel("/data/eigil/work/lia_kq/Results/budd_fix1900_1966_2021-22-May-2023/KG_transient.mat");
 % figure(445)
 % subplot(2,2,1)
 % % [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs([mdb, mds], [], ["Schoof friction law", "Budd friction law"], false, true, false); %md1, md2, md3, md_control, folder)
@@ -7,10 +15,7 @@
 % % xlabel([])
 % % xticklabels([])
 
-% md1900 = loadmodel("/data/eigil/work/lia_kq/Results/schoof_fix1900-07-May-2023/KG_transient.mat");
-% md1989 = loadmodel("/data/eigil/work/lia_kq/Results/schoof_fix1989-07-May-2023/KG_transient.mat");
-% md1900_2021 = loadmodel("/data/eigil/work/lia_kq/Results/schoof_fix1900_2021-07-May-2023/KG_transient.mat");
-% md1900_1966_2021 = loadmodel("/data/eigil/work/lia_kq/Results/schoof_fix1900_1966_2021-07-May-2023/KG_transient.mat");
+
 % subplot(2,2,2)
 % [mass_balance_curve_struct2] = mass_loss_curves_comparing_front_obs([mds, md1900, md1989, md1900_2021, md1900_1966_2021], ...
 %                                                                     [], ...
@@ -36,13 +41,11 @@
 % clear md40 md60 md80 md100 md120 md160 md180 md200;
 
 %% SMB
-md_box = loadmodel("/data/eigil/work/lia_kq/Results/schoof_smb_box-08-May-2023/KG_transient.mat");
-md_mar = loadmodel("/data/eigil/work/lia_kq/Results/schoof_smb_mar-08-May-2023/KG_transient.mat");
-subplot(2,2,3)
-[mass_balance_curve_struct3] = mass_loss_curves_comparing_front_obs([mds, md_mar, md_box], ...
-                                                                    [], ...
-                                                                    ["RACMO", "MAR", "Box"], ...
-                                                                    false, false, false);
+% subplot(2,2,3)
+% [mass_balance_curve_struct3] = mass_loss_curves_comparing_front_obs([mdb, md_mar, md_box, md1900, md1900_2021, md1900_1966_2021], ...
+%                                                                     [], ...
+%                                                                     ["Reference: RACMO", "MAR", "Box", "Control: 1933", "Front observations: 1933, 2021", "Front observations: 1933, 1966, 2021"], ...
+%                                                                     false, false, false);
 
 % md1_20 = loadmodel("/data/eigil/work/lia_kq/Results/schoof_fc_extrap_tf1.20-07-May-2023/KG_transient.mat");
 % md1_30 = loadmodel("/data/eigil/work/lia_kq/Results/schoof_fc_extrap_tf1.30-07-May-2023/KG_transient.mat");
@@ -59,8 +62,17 @@ subplot(2,2,3)
 
 % clear md1_20 md1_30 md1_40 md1_60 md1_70 md1_80;
 
+% md220 = loadmodel('Results/budd_fc_extrap_tf2.20-25-May-2023/KG_transient.mat');
+% md260 = loadmodel('Results/budd_fc_extrap_tf2.60-25-May-2023/KG_transient.mat');
+% md280 = loadmodel('Results/budd_fc_extrap_tf2.80-25-May-2023/KG_transient.mat');
+% md300 = loadmodel('Results/budd_fc_extrap_tf3.00-25-May-2023/KG_transient.mat');
+% md320 = loadmodel('Results/budd_fc_extrap_tf3.20-25-May-2023/KG_transient.mat');
 
-
+% figure2_plot(md220, 3)
+% figure2_plot(md260, 3)
+figure2_plot(md280, 3)
+% figure2_plot(md300, 3)
+% figure2_plot(md320, 3)
 
 
 
