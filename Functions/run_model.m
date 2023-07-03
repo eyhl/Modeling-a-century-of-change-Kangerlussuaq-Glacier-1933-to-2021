@@ -111,6 +111,7 @@ function [md] = run_model(config_name, plotting_flag)
     fprintf("   - [CS_min, CS_max] = [%.3g, %.3g]\n", cs_min, cs_max);
     fprintf("   - Velocity exponent = %.3g\n", velocity_exponent);
     fprintf("   - LIA friction factor = %.3g\n", lia_friction_offset);
+    fprintf("   - Glen enhancement factor = %.3g\n", config.add_damage);
 
     clear steps;
 
@@ -155,8 +156,8 @@ function [md] = run_model(config_name, plotting_flag)
         md.materials.rheology_B = cuffey(md.miscellaneous.dummy.temperature_field) .* ones(md.mesh.numberofvertices, 1);  % temperature field is already in Kelvin, multiplying with ones in case of scalar temperature field
 
         % add damage for shear margin
-		if config.add_damage == 1 % change enhancement factor by large shear stress area
-            disp(['Add damage to shear margin, Glen enhancement = 6']);
+		if config.add_damage ~= 0 % change enhancement factor by large shear stress area
+            fprintf('Add damage to shear margin, Glen enhancement = %d\n', config.add_damage);
             md_ss = loadmodel('/data/eigil/work/lia_kq/Models/KG_budd_steady_state_50yr.mat');
 			minEffStrain = 1;
 			maxEffStrain = 3;
@@ -167,7 +168,7 @@ function [md] = run_model(config_name, plotting_flag)
             margins_pos=md.mesh.elements(margin1 | margin2);
 
 			damage = ones(md.mesh.numberofvertices,1);
-			damage(margins_pos) = 6; % from S. Cook 2021 https://doi.org/10.1017/jog.2021.109, who got it from somewhere else, which is a little more obscure.
+			damage(margins_pos) = config.add_damage; % from S. Cook 2021 https://doi.org/10.1017/jog.2021.109, who got it from somewhere else, which is a little more obscure.
             %disp(size(damage))
             %disp(size(md.materials.rheology_B))
 			md.materials.rheology_B = 1 ./ ((damage).^(1/3)) .* md.materials.rheology_B;
@@ -664,7 +665,7 @@ function [md] = run_model(config_name, plotting_flag)
     savemodel(org, md);
     end
 
-    %% 9 Initialise: Setup and load calving fronts
+%% 9 Initialise: Setup and load calving fronts
     if perform(org, 'fronts')
         if run_lia_parameterisation == 1
             disp("Using LIA initial conditoins")
@@ -687,7 +688,7 @@ function [md] = run_model(config_name, plotting_flag)
         savemodel(org, md);
     end
 
-    %% 10 Transient: setup & run
+%% 10 Transient: setup & run
     if perform(org, 'transient')
         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat']);
 

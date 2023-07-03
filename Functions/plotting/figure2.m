@@ -83,8 +83,8 @@ if save_figures
 end 
 
 % filter nans
-k = 1
-first_data_row = zeros(1, length(years));
+k = 1;
+first_data_row = zeros(1, length(years)); 
 last_data_row = zeros(1, length(years));
 buffer = 0; 
 

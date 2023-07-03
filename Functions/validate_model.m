@@ -1,6 +1,6 @@
-function [] = validate_model(results_folder_name, axes, md)
+function [] = validate_model(results_folder_name, axs, md)
     if nargin < 2
-        axes = 1.0e+06 .* [0.4167    0.4923   -2.2961   -2.2039];
+        axs = 1.0e+06 .* [0.4167    0.4923   -2.2961   -2.2039];
         if nargin < 3
             model_file = dir(fullfile(results_folder_name, '*transient.mat'));
             model_file = fullfile(model_file.folder, model_file.name);
@@ -38,7 +38,7 @@ function [] = validate_model(results_folder_name, axes, md)
     plotmodel(md, 'data', misfit_thickness, ...
                 'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'axis#all', axes, 'figure', 89); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                'axis#all', axs, 'figure', 89); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 h = colorbar();
                 title(h, '[m]'); 
     exportgraphics(gcf, fullfile(results_folder_name, 'H_misfit_limited.png'), 'Resolution', 300)
@@ -70,7 +70,7 @@ function [] = validate_model(results_folder_name, axes, md)
     plotmodel(md, 'data', icesat_misfit_surface, ...
                 'caxis#all', [-1.5e2 1.5e2], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'axis#all', axes, 'figure', 89); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); 
+                'axis#all', axs, 'figure', 89); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]); 
                 h = colorbar();
                 title(h, '[m]') 
                 exportgraphics(gcf, fullfile(results_folder_name, 'S_misfit_limited_icesat.png'), 'Resolution', 300)
@@ -110,22 +110,22 @@ function [] = validate_model(results_folder_name, axes, md)
                 title(h, '[m/yr]') 
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited.png'), 'Resolution', 300)
 
-    % Velocity axes domain, log scale
+    % Velocity axs domain, log scale
     plotmodel(md, 'data', velocity_pred, ...
                 'caxis#all', [1 1.2e4], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
                 'log', 10, ...
-                'axis#all', axes, 'figure', 93); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                'axis#all', axs, 'figure', 93); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 h = colorbar();
                 title(h, '[m/yr]') 
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited_log.png'), 'Resolution', 300)
 
-    % Velocity misfit caxes
+    % Velocity misfit caxs
     misfit_velocity = velocity_pred - md.inversion.vel_obs;
     plotmodel(md, 'data', misfit_velocity, ...
                 'caxis#all', [-1e3 1e3], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                'axis#all', axs, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 h = colorbar();
                 title(h, '[m/yr]') 
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited.png'), 'Resolution', 300)
@@ -163,12 +163,12 @@ function [] = validate_model(results_folder_name, axes, md)
     velocity_pred = cell2mat({md.results.TransientSolution(:).Vel});
     velocity_pred = velocity_pred(:, end);
 
-    % Velocity misfit caxes
+    % Velocity misfit caxs
     misfit_velocity_final = velocity_pred - md.inversion.vel_obs;
     plotmodel(md, 'data', misfit_velocity_final, ...
                 'caxis#all', [-5e2 5e2], 'mask#all', masked_values, ...
                 'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-                'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+                'axis#all', axs, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
                 exportgraphics(gcf, fullfile(results_folder_name, 'Vel_misfit_limited_final.png'), 'Resolution', 300)
 
     % Velocity misfit
@@ -210,38 +210,43 @@ function [] = validate_model(results_folder_name, axes, md)
     T = table(Values, 'RowNames', Metric);
     writetable(T, fullfile(results_folder_name, 'metrics.dat'), 'WriteRowNames', true) 
 
-    % Compute present day misfit
-    quantify_field_difference(md, md.initialization.vel, md.inversion.vel_obs, append(results_folder_name, '/present_VEL_misfit'), true, true, axes);
+    figure2alt;
+    close all
+    figure2c;
+    close all
 
-    % final_surface_tmp = final_surface;
-    % icesat_surface_tmp = icesat_surface;
-    % final_surface_tmp(isnan(icesat_surface)) = NaN;
-    % quantify_field_difference(md, final_surface, icesat_surface, append(results_folder_name, '/present_SURFACE_misfit'), true, true, axes);
+    % % Compute present day misfit
+    % quantify_field_difference(md, md.initialization.vel, md.inversion.vel_obs, append(results_folder_name, '/present_VEL_misfit'), true, true, axs);
 
-    %% Compare to budd solution
-    md_budd = loadmodel('Models/KG_budd_lia.mat');
-    % Compute present day misfit
-    quantify_field_difference(md, md.initialization.vel, md_budd.initialization.vel, append(results_folder_name, '/present_INIT_VEL_diff'), false, true, axes);
+    % % final_surface_tmp = final_surface;
+    % % icesat_surface_tmp = icesat_surface;
+    % % final_surface_tmp(isnan(icesat_surface)) = NaN;
+    % % quantify_field_difference(md, final_surface, icesat_surface, append(results_folder_name, '/present_SURFACE_misfit'), true, true, axs);
 
-    model_init_diff =  md.initialization.vel - md_budd.initialization.vel;
+    % %% Compare to budd solution
+    % md_budd = loadmodel('Models/KG_budd_lia.mat');
+    % % Compute present day misfit
+    % quantify_field_difference(md, md.initialization.vel, md_budd.initialization.vel, append(results_folder_name, '/present_INIT_VEL_diff'), false, true, axs);
+
+    % model_init_diff =  md.initialization.vel - md_budd.initialization.vel;
     
-    plotmodel(md, 'data', model_init_diff, ...
-            'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
-            'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-            'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
-            exportgraphics(gcf, append(results_folder_name, '/LIA_init_diff.png'), 'Resolution', 300)
+    % plotmodel(md, 'data', model_init_diff, ...
+    %         'caxis#all', [-2e2 2e2], 'mask#all', masked_values, ...
+    %         'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
+    %         'axis#all', axs, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+    %         exportgraphics(gcf, append(results_folder_name, '/LIA_init_diff.png'), 'Resolution', 300)
 
-    % Compute LIA comparison Budd to other solutions
-    quantify_field_difference(md, md.results.StressbalanceSolution.Vel, md_budd.results.StressbalanceSolution.Vel, append(results_folder_name, '/LIA_VEL_diff'), true, true, axes);
+    % % Compute LIA comparison Budd to other solutions
+    % quantify_field_difference(md, md.results.StressbalanceSolution.Vel, md_budd.results.StressbalanceSolution.Vel, append(results_folder_name, '/LIA_VEL_diff'), true, true, axs);
 
-    % Velocity misfit caxes
-    LIA_init_diff = md.results.StressbalanceSolution.Vel - md_budd.results.StressbalanceSolution.Vel;
+    % % Velocity misfit caxs
+    % LIA_init_diff = md.results.StressbalanceSolution.Vel - md_budd.results.StressbalanceSolution.Vel;
 
-    plotmodel(md, 'data', LIA_init_diff, ...
-            'caxis#all', [-2e2 2e2], ...
-            'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
-            'axis#all', axes, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
-            exportgraphics(gcf, append(results_folder_name, '/LIA_init_diff.png'), 'Resolution', 300)
+    % plotmodel(md, 'data', LIA_init_diff, ...
+    %         'caxis#all', [-2e2 2e2], ...
+    %         'xticklabel#all', ' ', 'yticklabel#all', ' ', ...
+    %         'axis#all', axs, 'figure', 94); colormap('turbo'); set(gcf,'Position',[100 100 1500 1500]);
+    %         exportgraphics(gcf, append(results_folder_name, '/LIA_init_diff.png'), 'Resolution', 300)
 
     %% Video
     disp('Making video...')

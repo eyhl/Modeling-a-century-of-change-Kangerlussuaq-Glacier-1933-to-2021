@@ -17,7 +17,7 @@ function [config_file_name] = create_config(id, friction_law)
     start_time = 1933.58;
     final_time = 2021;
     ice_temp_offset = 0; % C
-    lia_friction_offset = 0;
+    lia_friction_offset = 15;
     output_frequency = 4; % output frequency for transient run
     velocity_exponent = 1;
     melting_rate = 20;
@@ -51,7 +51,7 @@ function [config_file_name] = create_config(id, friction_law)
         disp('Friction law not implemented')
     end
     % Relevant data paths
-    add_damage = 1;
+    add_damage = 5;
     smb_name = "racmo";
     friction_extrapolation = "bed_correlation"; % or semi-variogram
     polynomial_order = 4;

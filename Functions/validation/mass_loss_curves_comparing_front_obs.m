@@ -5,10 +5,11 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     else
         model_struct = false;
     end
-    model_struct = true
+    model_struct = true;
     if nargin < 5
         validate = true;
     end
+    fast_flow_domain = false;
 
     plot_smb = false;
     historic = false;
@@ -91,16 +92,27 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
 
     for i=1:N
         md = md_list(i);
-    
-        %% Volume plot 1
-        if model_struct
-            vol1 = cell2mat({md.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
-            vol_times1 = cell2mat({md.results.TransientSolution(:).time});
+        
+        if fast_flow_domain
+            %% Volume plot 1
+            if model_struct
+                [mass_balance, ~] = compute_mass_balance(md);
+                vol1 = mass_balance;
+                vol_times1 = cell2mat({md.results.TransientSolution(:).time});
+            else
+                vol1 = md.mass_balance{1};
+                vol_times1 = md.time{1};
+            end
         else
-            vol1 = md.mass_balance{1};
-            vol_times1 = md.time{1};
+            %% Volume plot 1
+            if model_struct
+                vol1 = cell2mat({md.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
+                vol_times1 = cell2mat({md.results.TransientSolution(:).time});
+            else
+                vol1 = md.mass_balance{1};
+                vol_times1 = md.time{1};
+            end
         end
-
         p = plot(vol_times1, vol1 - vol1(1), 'color', CM(i,:), 'LineWidth', 2.0);
         hold on;
         % p.Color(4) = 0.70 - (i-1)*0.40;
@@ -110,7 +122,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
             j = j + 1;
             md_control = md_control_list(i);
             if model_struct
-                vol_c = cell2mat({md_control.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
+                vol_c = cell2mat({md_control.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.917;
                 vol_times_c = cell2mat({md_control.results.TransientSolution(:).time});
                 q_times = md_control.levelset.spclevelset(end, :);
 
@@ -148,7 +160,11 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
         M=1;
         for i=1:M
             % Assumes first model is the reference one
-            mb0 = cell2mat({md_list(i).results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
+            if fast_flow_domain
+                [mb0, ~] = compute_mass_balance(md);
+            else
+                mb0 = cell2mat({md_list(i).results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
+            end
             model_times = cell2mat({md_list(i).results.TransientSolution(:).time});
             model_times_prior_1972_indeces = find(model_times < 1972);
             offset_prior_1972 = mb0(model_times_prior_1972_indeces(end)) - mb0(model_times_prior_1972_indeces(1));
