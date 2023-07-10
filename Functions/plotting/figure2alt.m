@@ -137,7 +137,7 @@ exportgraphics(gcf, fullfile(results_folder_name, 'icesat_thickness_misfit_paper
 
 % Write to table
 Metric = {'thickness_mean_error'; 'thickness_median_error'; 'thickness_std_error'; 'error_in_mass'};
-Values = [thickness_mean_error; thickness_median_error; thickness_std_error, error_in_mass];
+Values = [thickness_mean_error; thickness_median_error; thickness_std_error; error_in_mass];
 
 T = table(Values, 'RowNames', Metric);
 writetable(T, fullfile(results_folder_name, 'icesat_error_metrics.dat'), 'WriteRowNames', true) 

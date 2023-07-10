@@ -18,13 +18,13 @@ function [config_file_name] = create_config(id, friction_law)
     final_time = 2021;
     ice_temp_offset = 0; % C
     lia_friction_offset = 15;
-    output_frequency = 4; % output frequency for transient run
+    output_frequency = 1; % output frequency for transient run
     velocity_exponent = 1;
     melting_rate = 20;
 
     if strcmp(friction_law, 'budd')
         % Inversion parameters
-        cf_weights = [14000,3,2.5783e-06]; % [16000, 3.0,  1.7783e-06];
+        cf_weights = [14000,3,5.783e-07]; % [16000, 3.0,  1.7783e-06];
         cs_min = 0.01;
         cs_max = 1e4;
     elseif strcmp(friction_law, 'budd_plastic')

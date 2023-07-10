@@ -1,5 +1,5 @@
 function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_list, md_control_list, md_names, folder, validate, retreat_advance) %md1, md2, md3, md_control, folder)
-    isfield(md_list(1), 'mesh')
+
     if isfield(md_list(1), 'mesh') % the alternative is structs only holding relevant data, not the full model
         model_struct = true;
     else
@@ -17,14 +17,14 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     % CM = copper(N);
     CM = turbo(N);
     % if N > 1
-    %     CM = CM(1:2:end, :);
+    %     CM = CM(end-6:end, :);
     % end
     CM(1, :) = [0, 0, 0];
 
     % dt = 1/12;
     % start_time = md_list(1).smb.mass_balance(end, 1);
     % final_time = md_list(1).smb.mass_balance(end, end);
-    % marker_control = {':', '--', '-.'};
+    line_styles = {'-', '-', '-', '-', '-', '-', '-', '-', '-'};
     % if nargin > 4
     %     present_thickness needs to be defined
     %     final_mass_loss = integrate_field_spatially(md_list(1), md_list(1).geometry.thickness - present_thickness) / (1e9) * 0.9167
@@ -38,7 +38,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     mass_balance_curve_struct.mouginot_eps = {};
     mass_balance_curve_struct.mouginot_offset = {};
     mass_balance_curve_struct.patches = {};
-    set(gcf,'Position',[100 100 1500 1500])
+    set(gcf,'Position',[100 100 1500 750])
 
     if retreat_advance
         % plot a retreat advance background
@@ -113,13 +113,14 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
                 vol_times1 = md.time{1};
             end
         end
-        p = plot(vol_times1, vol1 - vol1(1), 'color', CM(i,:), 'LineWidth', 2.0);
+        p = plot(vol_times1, vol1 - vol1(1), 'color', CM(i,:), 'LineWidth', 2.0, 'LineStyle', line_styles{i});
         hold on;
         % p.Color(4) = 0.70 - (i-1)*0.40;
         mass_balance_curve_struct.mass_balance{j} = vol1 - vol1(1);
         mass_balance_curve_struct.time{j} = vol_times1;
+        j = j + 1;
+
         if length(md_control_list) ~= 0
-            j = j + 1;
             md_control = md_control_list(i);
             if model_struct
                 vol_c = cell2mat({md_control.results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.917;
@@ -157,31 +158,45 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
 
 
     if validate
-        M=1;
-        for i=1:M
-            % Assumes first model is the reference one
-            if fast_flow_domain
-                [mb0, ~] = compute_mass_balance(md);
-            else
-                mb0 = cell2mat({md_list(i).results.TransientSolution(:).IceVolume}) ./ (1e9) .* 0.9167;
-            end
-            model_times = cell2mat({md_list(i).results.TransientSolution(:).time});
-            model_times_prior_1972_indeces = find(model_times < 1972);
-            offset_prior_1972 = mb0(model_times_prior_1972_indeces(end)) - mb0(model_times_prior_1972_indeces(1));
+        % Assumes first model is the reference one
+        md = md_list(1);
+        [mb0, ~] = compute_mass_balance(md);
+        mb0 = mb0 - mb0(1);
 
-            [cum_mb_1972_2018, cum_mb_errors] = get_mouginot2019_mb('cumulativeMassBalance');
-            mouginot_time_span = linspace(1972, 2018, length(cum_mb_1972_2018));
-            plot(mouginot_time_span, cum_mb_1972_2018 + offset_prior_1972, '-', 'color', 'red', 'LineWidth', 1.5);
-            h = errorbar(mouginot_time_span, cum_mb_1972_2018 + offset_prior_1972, cum_mb_errors, '--', 'color', 'red', 'LineWidth', 1.0);
-            mass_balance_curve_struct.mouginot_t{1} = mouginot_time_span;
-            mass_balance_curve_struct.mouginot_mb{1} = cum_mb_1972_2018;
-            mass_balance_curve_struct.mouginot_eps{1} = cum_mb_errors;
-            mass_balance_curve_struct.mouginot_offset{1} = offset_prior_1972;
-            % Set transparency level (0:1)
-            alpha = 0.65;   
-            % Set transparency (undocumented)
-            set([h.Bar, h.Line], 'ColorType', 'truecoloralpha', 'ColorData', [h.Line.ColorData(1:3); 255*alpha]);
-        end
+        model_times = cell2mat({md.results.TransientSolution(:).time});
+        [~, index_1972] = min(abs(model_times - 1972));
+
+        [cum_mb_1972_2018, cum_mb_errors] = get_mouginot2019_mb('cumulativeMassBalance');
+        s = [-1, 1];
+        [~, ind] = min([mb0(index_1972), cum_mb_1972_2018(1)]);
+
+        offset = s(ind) * dist(mb0(index_1972), cum_mb_1972_2018(1));
+        cum_mb_1972_2018 = cum_mb_1972_2018 + offset;
+        mouginot_time_span = linspace(1972, 2018, length(cum_mb_1972_2018));
+        % plot(mouginot_time_span, cum_mb_1972_2018 + offset_prior_1972, '-', 'color', 'red', 'LineWidth', 1.5);
+        % h = errorbar(mouginot_time_span, cum_mb_1972_2018, cum_mb_errors, '*', 'color', [0.25, 0.25, 0.25], 'LineWidth', 1.0);
+        % h = errorbar(mouginot_time_span, cum_mb_1972_2018, cum_mb_errors, '*', 'color', [0.25, 0.25, 0.25], 'LineWidth', 1.0);
+        s1 = shadedErrorBar(mouginot_time_span, cum_mb_1972_2018, cum_mb_errors, 'lineProps', {'.','color',[.60,0.60,0.60], 'MarkerSize', 10}, 'patchSaturation', 0.1);
+        set(s1.edge,'LineWidth',1.2,'LineStyle','--')
+        mass_balance_curve_struct.mouginot_t{1} = mouginot_time_span;
+        mass_balance_curve_struct.mouginot_mb{1} = cum_mb_1972_2018;
+        mass_balance_curve_struct.mouginot_eps{1} = cum_mb_errors;
+        mass_balance_curve_struct.mouginot_offset{1} = offset;
+        % Set transparency level (0:1)
+        alpha = 0.65;   
+        % Set transparency (undocumented)
+        % set([h.Bar, h.Line], 'ColorType', 'truecoloralpha', 'ColorData', [h.Line.ColorData(1:3); 255*alpha]);
+
+        abbas_data = readtable('/data/eigil/work/lia_kq/Data/validation/altimetry/khan2020/mass_loss_ts_KG_all.txt');
+        % offset = s * sqrt((abbas_data.Var2(3) - mb0(index_1972(1)))^2) % index 3 is 1972
+        [~, ind] = min([mb0(index_1972), abbas_data.Var2(3)]);
+        offset = s(ind) * dist(abbas_data.Var2(3), mb0(index_1972));
+
+        abbas_mb_relative = abbas_data.Var2(3:end) + offset;
+
+        h = errorbar(abbas_data.Var1(3:end), abbas_mb_relative, abbas_data.Var3(3:end), '*', 'color', [0.65, 0.45, 0.65], 'LineWidth', 1.2);
+        % shadedErrorBar(abbas_data.Var1(3:end), abbas_mb_relative, abbas_data.Var3(3:end), 'lineProps', {'.','color',[.75,0.55,0.75]}, 'patchSaturation', 0.1)
+
     end
     if plot_smb
         %% Volume plot CONTROL
@@ -199,23 +214,25 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     xlabel('Year')
     ylabel('Mass [Gt]')
     xlim([1933.0, 2021.1])
-    set(gca,'fontsize', 14)
+    set(gca,'fontsize', 18)
     Ax = gca;
     Ax.YGrid = 'on';
     Ax.XGrid = 'on';
     Ax.Layer = 'top';
-    Ax.GridLineStyle = '--';
-    Ax.GridAlpha = 0.5;
+    Ax.GridLineStyle = ':';
+    Ax.LineWidth = 0.5;
+    Ax.GridAlpha = 0.4;
 
     all_names = md_names;
     if validate
-        all_names = [all_names, "Mouginot et al. (2019)"];
+        all_names = [all_names, "Mouginot et al. (2019)", "Khan et al. (2020)"];
     end
     if retreat_advance
         all_names = ["Advancing", "Retreating", all_names];
     end
-    legend([all_names], 'Location', 'SouthWest')
-
+    leg = legend([all_names], 'Location', 'SouthWest');
+    % title(leg,'Extrapolation constant')
+    set(gcf,'PaperType','A4', 'PaperOrientation', 'landscape');
 
     folder = string(folder);
     if exist(folder, 'dir') == 7 % checks if folder is a folder, returns 7 if it is a folder
