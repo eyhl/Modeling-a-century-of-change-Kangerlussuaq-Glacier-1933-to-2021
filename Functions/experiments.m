@@ -402,25 +402,25 @@ function [] = experiments()
     % recipe(config_file_name);
 
     % ---------------------------------------------------- SMB -------------------------------------------------
-    id8 = append(friction_law, "_smb_mar");
-    disp(id8)
-    config_file_name = create_config(id8, friction_law);
-    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    config.steps = num2str([7, 8, 9, 10]);
-    config.lia_friction_offset = friction_ext_offset;
-    config.smb_name = "mar";
-    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    recipe(config_file_name);
+    % id8 = append(friction_law, "_smb_mar");
+    % disp(id8)
+    % config_file_name = create_config(id8, friction_law);
+    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    % config.steps = num2str([7, 8, 9, 10]);
+    % config.lia_friction_offset = friction_ext_offset;
+    % config.smb_name = "mar";
+    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % recipe(config_file_name);
 
-    id8 = append(friction_law, "_smb_box");
-    disp(id8)
-    config_file_name = create_config(id8, friction_law);
-    config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    config.steps = num2str([8, 9, 10]);
-    config.lia_friction_offset = friction_ext_offset;
-    config.smb_name = "box";
-    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
-    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    recipe(config_file_name);
+    % id8 = append(friction_law, "_smb_box");
+    % disp(id8)
+    % config_file_name = create_config(id8, friction_law);
+    % config = readtable(append('/data/eigil/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    % config.steps = num2str([8, 9, 10]);
+    % config.lia_friction_offset = friction_ext_offset;
+    % config.smb_name = "box";
+    % config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % recipe(config_file_name);
 end

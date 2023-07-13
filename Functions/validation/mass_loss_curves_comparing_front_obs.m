@@ -236,7 +236,8 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
 
     folder = string(folder);
     if exist(folder, 'dir') == 7 % checks if folder is a folder, returns 7 if it is a folder
-        exportgraphics(gcf, fullfile(folder, 'mass_balance_time_series.png'), 'Resolution', 300)
+        print(fullfile(folder, 'mass_balance_time_series.pdf'), '-dpdf', '-bestfit')
+        % exportgraphics(gcf, fullfile(folder, 'mass_balance_time_series.png'), 'Resolution', 300)
     end
 
 end
