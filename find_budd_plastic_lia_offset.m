@@ -21,10 +21,10 @@ sd_fast = NaN(size(offset));
 
 for i=1:length(offset)
     disp(offset(i))
-    config = readtable('/data/eigil/work/lia_kq/Configs/budd_plastic-14-Mar-2023-config', "TextType", "string");
+    config = readtable('/home/eyhli/IceModeling/work/lia_kq/Configs/budd_plastic-14-Mar-2023-config', "TextType", "string");
     config.steps = num2str([8]);
     config.lia_friction_offset = offset(i);
-    config_folder = append('/data/eigil/work/lia_kq/Configs/', 'tmp.csv');
+    config_folder = append('/home/eyhli/IceModeling/work/lia_kq/Configs/', 'tmp.csv');
     writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
     md2 = run_model('tmp');
     T = quantify_field_difference(md1, md1.results.StressbalanceSolution.Vel, md2.results.StressbalanceSolution.Vel, './tmp', true);

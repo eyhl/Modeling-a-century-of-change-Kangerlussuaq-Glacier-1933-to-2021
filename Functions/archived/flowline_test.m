@@ -6,7 +6,7 @@ function [] = flowline_test(md, pos1, pos2)
     Nf = 2;
 
     %% Load model {{{
-    projPath = '/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat';
+    projPath = '/home/eyhli/IceModeling/work/lia_kq/Models/Model_kangerlussuaq_lia_param.mat';
     saveflag = 1;
     plotflag = 1;
     folder = '/baseline/';
@@ -41,7 +41,7 @@ function [] = flowline_test(md, pos1, pos2)
     steps = 0;
     % org=organizer('repository', [projPath, 'Models', folder], 'prefix', ['Model_' glacier '_'], 'steps', steps);
     % md = loadmodel(org, stepName);
-    % md = loadmodel('/data/eigil/work/lia_kq/Models/dec8_bed_corr/Model_kangerlussuaq_transient_budd.mat');
+    % md = loadmodel('/home/eyhli/IceModeling/work/lia_kq/Models/dec8_bed_corr/Model_kangerlussuaq_transient_budd.mat');
     %}}}
     %% create flowlines {{{
     if plotflag
@@ -107,7 +107,7 @@ function [] = flowline_test(md, pos1, pos2)
     %}}}
     %% Save data{{{
     if saveflag
-        save(['/data/eigil/work/lia_kq/KG_flowlines.mat'], 'x0', 'y0', 'flowlineList');
+        save(['/home/eyhli/IceModeling/work/lia_kq/KG_flowlines.mat'], 'x0', 'y0', 'flowlineList');
     end
     %}}}
     %% plot {{{

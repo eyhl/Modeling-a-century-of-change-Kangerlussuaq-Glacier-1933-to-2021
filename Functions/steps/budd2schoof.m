@@ -1,5 +1,5 @@
 function [md] = budd2schoof(md, coeffs, cs_min, cs_max)
-    % md = loadmodel("/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat");
+    % md = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat");
     budd_init = true;
     % Budd's Friction coefficient from inversion
     try

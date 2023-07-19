@@ -1,2 +1,2 @@
 todays_date,steps,start_time,final_time,output_frequency,ice_temp_offset,lia_friction_offset,cf_weights_1,cf_weights_2,cf_weights_3,cs_min,cs_max,velocity_exponent,add_damage,melting_rate,smb_name,friction_extrapolation,friction_law,polynomial_order,glacier_name,control_run,front_observation_path
-"09-Jul-2023","10",1933.58,2021,1,0,15,14000,3,5.783e-07,0.01,10000,1,5,20,"racmo","bed_correlation","budd",4,"KG",1,"/data/eigil/work/lia_kq/Data/shape/fronts/processed/vermassen.shp"
+"09-Jul-2023","10",1933.58,2021,1,0,15,14000,3,5.783e-07,0.01,10000,1,5,20,"racmo","bed_correlation","budd",4,"KG",1,"/home/eyhli/IceModeling/work/lia_kq/Data/shape/fronts/processed/vermassen.shp"

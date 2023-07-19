@@ -10,7 +10,7 @@ addpath(genpath('Functions/SeReM/'))
 % 2a) plot and find best parameters
 % 3) Interpolate kriged smb values back onto md.smb.mass_balance(pos_smb_zero)
 % 4) it might be possible to draw various realisations
-front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
+front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
 front_area_smb = mean(md.smb.mass_balance(front_area_pos, :), 2);                                                                      
 
 x = md.mesh.x(front_area_pos);

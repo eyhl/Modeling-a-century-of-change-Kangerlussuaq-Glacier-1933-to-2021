@@ -5,7 +5,7 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max, velocity_exp
     md = sethydrostaticmask(md);
 
     % fix floating hole
-    pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/floating_hole.exp', 2));
+    pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/floating_hole.exp', 2));
     md.mask.ocean_levelset(pos) = 100;
     % md = make_floating(md);
 
@@ -28,7 +28,7 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max, velocity_exp
     pos = find(isnan(md.inversion.vel_obs) | md.inversion.vel_obs == 0);
     md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
-    pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/ignore_tip_of_domain.exp', 2));
+    pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/ignore_tip_of_domain.exp', 2));
     % md.inversion.cost_functions_coefficients(pos, 1:2) = 0;
 
     % % floating ice (done automatically in C++)
@@ -61,7 +61,7 @@ function [md] = solve_stressbalance_budd(md, coefs, cb_min, cb_max, velocity_exp
         % C_plastic = C * v_b ^(2/5)
         md.friction.coefficient = md.results.StressbalanceSolution.FrictionCoefficient .* (md.results.StressbalanceSolution.Vel./md.constants.yts).^(2./5);
         md.friction.coefficient = min(md.friction.coefficient, cb_max);
-        % pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/ignore_tip_of_domain.exp', 2));
+        % pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/ignore_tip_of_domain.exp', 2));
         % md.friction.coefficient(pos) = cb_max;
         % md.friction.coefficient = averaging(md, md.friction.coefficient, 1);
         % md.friction.coefficient = rescale(md.friction.coefficient, 0.01, 100);

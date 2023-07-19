@@ -1,6 +1,6 @@
 function interpolated_surface = interpCryoSat(md)
     %INTERPITSLIVE - Interpolate itslive data onto model grid
-        the_files = dir(fullfile('/data/eigil/work/lia_kq/Data/validation/cryosat/newest', '*.nc'));
+        the_files = dir(fullfile('/home/eyhli/IceModeling/work/lia_kq/Data/validation/cryosat/newest', '*.nc'));
         %Set years to run, start_time = first year
         years = 2010 : 2021;
     
@@ -42,5 +42,5 @@ function interpolated_surface = interpCryoSat(md)
             % F = scatteredInterpolant(x, y, vel, "natural", "none");
             % interp_vel(:, year-1984) = F(md.mesh.x, md.mesh.y);
         end
-        save('/data/eigil/work/lia_kq/Data/validation/cryosat/cryosat_onmesh.mat', 'interpolated_surface', 'times');
+        save('/home/eyhli/IceModeling/work/lia_kq/Data/validation/cryosat/cryosat_onmesh.mat', 'interpolated_surface', 'times');
     end 

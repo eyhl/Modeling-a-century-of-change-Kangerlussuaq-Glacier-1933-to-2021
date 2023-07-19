@@ -12,8 +12,8 @@ function [front_area_friction, front_area_pos] = extrapolate_friction_rf(md, cs_
     addpath(genpath('Functions/SeReM/'))
 
     %find glacier frony from earlier
-    front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
-    friction_stat_area = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_statistics.exp', 2));
+    front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
+    friction_stat_area = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/friction_statistics.exp', 2));
 
     % TODO: change to md.results.Stressbalancesolution.friction -> remove averaging 
     % front_area_friction = friction_field(front_area_pos); % budd, average in time                                                                     

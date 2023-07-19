@@ -89,7 +89,7 @@ function [] = bulk_plotting(md_struct, super_title, i, res, table, zoom, cval)
     misfit15(md15.inversion.vel_obs==0) = 0;
 
 
-    % misfit_exp = '/data/eigil/work/lia_kq/Exp/misfit_at_front.exp';
+    % misfit_exp = '/home/eyhli/IceModeling/work/lia_kq/Exp/misfit_at_front.exp';
     % misfit_at_front_pos = find(ContourToNodes(md_budd.mesh.x, md_budd.mesh.y, misfit_exp, 2));
     maf_budd = md_budd_present.results.StressbalanceSolution.J(end, 1) / md_budd_present.inversion.cost_functions_coefficients(1,1) + md_budd_present.results.StressbalanceSolution.J(end, 2) ./ (md_budd_present.inversion.cost_functions_coefficients(1,2));
     maf1 = table.Var9(1) / md1.inversion.cost_functions_coefficients(1,1) + table.Var10(1) ./ (md1.inversion.cost_functions_coefficients(1,2));

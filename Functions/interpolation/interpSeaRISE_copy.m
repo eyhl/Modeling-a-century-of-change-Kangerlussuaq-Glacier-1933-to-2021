@@ -59,7 +59,7 @@ function [dataout] = interpSeaRISE_copy(X,Y,string,path,varargin),
             end
         case {'oasis'}
             if hemisphere==1,
-                searisenc='/data/eigil/work/lia_kq/Data/SeaRISE/Greenland_5km_dev1.2.nc';
+                searisenc='/home/eyhli/IceModeling/work/lia_kq/Data/SeaRISE/Greenland_5km_dev1.2.nc';
             elseif hemisphere==-1,
                 error('Not defined for antarctica');
             end
@@ -93,7 +93,7 @@ function [dataout] = interpSeaRISE_copy(X,Y,string,path,varargin),
     
 
     % function out = interpSeaRISE_copy(mesh_x, mesh_y, part)
-% ncdata = "/data/eigil/work/lia_kq/Data/issm_data/Greenland_5km_dev1.2.nc";
+% ncdata = "/home/eyhli/IceModeling/work/lia_kq/Data/issm_data/Greenland_5km_dev1.2.nc";
 % x   = ncread(ncdata,'x1');
 % y   = ncread(ncdata,'y1');
 

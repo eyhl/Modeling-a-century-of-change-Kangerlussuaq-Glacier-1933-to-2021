@@ -5,7 +5,7 @@ function [misfit, mae_total, mae_basin] = compute_thickness_misfit(md, year_span
 
     times = [md.results.TransientSolution.time];
     time_indeces = find(times > year_span(1) & times < year_span(2));
-    basin_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/thickness_misfit_aoi.exp', 2));
+    basin_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/thickness_misfit_aoi.exp', 2));
 
     % use relevant observed data
     if year_span(2) < 2010  % bedmachine data

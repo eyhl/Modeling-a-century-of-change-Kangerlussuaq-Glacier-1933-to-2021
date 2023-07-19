@@ -1,5 +1,5 @@
 function [md, dh, misfit_thk, mean_thicknesses] = modulate_intial_thickness(md, n, spatial_smooth)
-    save_path = "/data/eigil/work/lia_kq/Results";
+    save_path = "/home/eyhli/IceModeling/work/lia_kq/Results";
     step_size = 0.8;
 
     if nargin < 3
@@ -101,7 +101,7 @@ function [md, dh, misfit_thk, mean_thicknesses] = modulate_intial_thickness(md, 
             disp('SOLVE')
             md = solve(md,'Transient','runtimename',false); %TODO: try to run this on its own, without updating thickness. Does the md.geom.thick change?
             disp('SAVE')
-            save("/data/eigil/work/lia_kq/Models/modulate_thickness.mat" , 'md', '-v7.3');
+            save("/home/eyhli/IceModeling/work/lia_kq/Models/modulate_thickness.mat" , 'md', '-v7.3');
         end
 
         if spatial_smooth
@@ -184,13 +184,13 @@ function [md, dh, misfit_thk, mean_thicknesses] = modulate_intial_thickness(md, 
     %     disp('SOLVE')
     %     md = solve(md,'Transient','runtimename',false); %TODO: try to run this on its own, without updating thickness. Does the md.geom.thick change?
     %     disp('SAVE')
-    %     save("/data/eigil/work/lia_kq/Models/modulate_thickness.mat" , 'md', '-v7.3');
+    %     save("/home/eyhli/IceModeling/work/lia_kq/Models/modulate_thickness.mat" , 'md', '-v7.3');
     %     fprintf(fid, '%d    %f  %f\n', i, rmse_thickness, mean_thicknesses(i));
     % end
     % fclose(fid);
 
     % save("Results/misfit_thickness.mat", 'misfit_thk', '-v7.3');
-    % save("/data/eigil/work/lia_kq/Results/mean_thicknesses.mat" , 'mean_thicknesses', '-v7.3');
-    % save("/data/eigil/work/lia_kq/Results/dh.mat" , 'dh', '-v7.3');
+    % save("/home/eyhli/IceModeling/work/lia_kq/Results/mean_thicknesses.mat" , 'mean_thicknesses', '-v7.3');
+    % save("/home/eyhli/IceModeling/work/lia_kq/Results/dh.mat" , 'dh', '-v7.3');
 
 end

@@ -20,11 +20,11 @@ function [transient_errors, interp_data, indeces_start] = transient_velocity_mis
     t_model = [md.results.TransientSolution.time];
     vel_model = [md.results.TransientSolution.Vel];
     elev_model = [md.results.TransientSolution.Surface];
-    measure_obs = load('/data/eigil/work/lia_kq/Data/validation/velocity/velObs_onmesh.mat');
-    fl = load('/data/eigil/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat', 'flowlineList');
+    measure_obs = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/velObs_onmesh.mat');
+    fl = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat', 'flowlineList');
     x_flowline = fl.flowlineList{1}.x;
     y_flowline = fl.flowlineList{1}.y;
-    its_live_yearly = load('/data/eigil/work/lia_kq/Data/validation/velocity/its_live_onmesh.mat');
+    its_live_yearly = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/its_live_onmesh.mat');
     indeces_start = find_closest_times(t_model, measure_obs.TStart);
     ice_levelset = [md.results.TransientSolution(:).MaskIceLevelset];
     [transient_errors, ice_masks] = get_transient_vel_errors(vel_model, measure_obs.vel_onmesh, t_model, measure_obs.TStart, measure_obs.TEnd, ice_levelset, 'closest');
@@ -248,7 +248,7 @@ function [transient_errors, interp_data, indeces_start] = transient_velocity_mis
     %     iclvl = logical(sum(ice_levelset(:, round(t_model) == years(i)) < 0, 2));
     %     plotmodel(md, 'data', transient_errors(:, i), 'axis', axes, 'mask', iclvl, 'title', num2str(years(i)), 'caxis', [-1000, 1000]); 
     %     hold on; plot(x_flowline, y_flowline, 'x-')
-    %     % exportgraphics(gcf, ['/data/eigil/work/lia_kq/vel_obs_' num2str(years(i)) '.png'])
+    %     % exportgraphics(gcf, ['/home/eyhli/IceModeling/work/lia_kq/vel_obs_' num2str(years(i)) '.png'])
     %     % pause
     % end
 %% compute transient velocity misfit movie
@@ -261,7 +261,7 @@ end
 %% ------------ PER MONTH ANALYSIS ELEVATION ------------
     % ---------- compute transient velocity misfit boxplot per month -------------
     geoid = interpBmGreenland(md.mesh.x, md.mesh.y, 'geoid');
-    cryosat_data = load("/data/eigil/work/lia_kq/Data/validation/cryosat/cryosat_onmesh.mat");
+    cryosat_data = load("/home/eyhli/IceModeling/work/lia_kq/Data/validation/cryosat/cryosat_onmesh.mat");
     elev_data = cryosat_data.interpolated_surface - geoid;
     % indeces_start = find_closest_times(t_model, elev_data.);
     % dates = datetime(datestr(decyear2date(t_model(indeces_start)))); 
@@ -351,7 +351,7 @@ end
     %%% 2) plot each flowline on regular plot, and select gradient colorbar
     x_flowline = fl.flowlineList{1}.x;
     y_flowline = fl.flowlineList{1}.y;
-    cryosat_data = load("/data/eigil/work/lia_kq/Data/validation/cryosat/cryosat_onmesh.mat");
+    cryosat_data = load("/home/eyhli/IceModeling/work/lia_kq/Data/validation/cryosat/cryosat_onmesh.mat");
     elev_data = cryosat_data.interpolated_surface - geoid;
     years = 2010:2021;
     [transient_errors, ice_masks] = get_transient_vel_errors(elev_model, elev_data, t_model, years, [], ice_levelset, 'yearly');
@@ -465,7 +465,7 @@ end
     %     iclvl = logical(sum(ice_levelset(:, round(t_model) == years(i)) < 0, 2));
     %     plotmodel(md, 'data', transient_errors(:, i), 'axis', axes, 'mask', iclvl, 'title', num2str(years(i)), 'caxis', [-1000, 1000]); 
     %     hold on; plot(x_flowline, y_flowline, 'x-')
-    %     % exportgraphics(gcf, ['/data/eigil/work/lia_kq/vel_obs_' num2str(years(i)) '.png'])
+    %     % exportgraphics(gcf, ['/home/eyhli/IceModeling/work/lia_kq/vel_obs_' num2str(years(i)) '.png'])
     %     % pause
     % end
 %% compute transient velocity misfit movie

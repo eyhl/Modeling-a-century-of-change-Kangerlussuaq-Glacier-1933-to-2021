@@ -15,8 +15,8 @@ function [md, mae_list, misfit_thk, mean_thicknesses] = sensitivity_initial_thic
     mae_list = zeros(n+1, 1);
     mean_thicknesses = zeros(n, 1);
     misfit_thk = zeros(length(md.geometry.surface), n+1);
-    front_area_small = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_small.exp', 2));
-    front_area_large = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_large.exp', 2));
+    front_area_small = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_small.exp', 2));
+    front_area_large = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_large.exp', 2));
 
     smooth = 20;
 
@@ -75,7 +75,7 @@ function [md, mae_list, misfit_thk, mean_thicknesses] = sensitivity_initial_thic
         disp('SOLVE')
         md = solve(md, 'Transient', 'runtimename',false); 
         fprintf("SAVE at iteration %d\n", i);
-        save("/data/eigil/work/lia_kq/Models/sensitivity_init_thickness.mat" , 'md', '-v7.3');
+        save("/home/eyhli/IceModeling/work/lia_kq/Models/sensitivity_init_thickness.mat" , 'md', '-v7.3');
 
         % time indeces
         times = [md.results.TransientSolution.time];
@@ -116,10 +116,10 @@ function [md, mae_list, misfit_thk, mean_thicknesses] = sensitivity_initial_thic
         % for saving the variables
         thickness = md.geometry.thickness;
         surface = md.geometry.surface;
-        save(sprintf("/data/eigil/work/lia_kq/misfit_thickness%d.mat", sensitivity_factors(i)) , 'misfit_thickness', '-v7.3');
-        save(sprintf("/data/eigil/work/lia_kq/dH%d.mat", sensitivity_factors(i)) , 'dH', '-v7.3');
-        save(sprintf("/data/eigil/work/lia_kq/md.geometry.thickness%d.mat", sensitivity_factors(i)) , 'thickness', '-v7.3');
-        save(sprintf("/data/eigil/work/lia_kq/md.geometry.surface%d.mat", sensitivity_factors(i)) , 'surface', '-v7.3');
+        save(sprintf("/home/eyhli/IceModeling/work/lia_kq/misfit_thickness%d.mat", sensitivity_factors(i)) , 'misfit_thickness', '-v7.3');
+        save(sprintf("/home/eyhli/IceModeling/work/lia_kq/dH%d.mat", sensitivity_factors(i)) , 'dH', '-v7.3');
+        save(sprintf("/home/eyhli/IceModeling/work/lia_kq/md.geometry.thickness%d.mat", sensitivity_factors(i)) , 'thickness', '-v7.3');
+        save(sprintf("/home/eyhli/IceModeling/work/lia_kq/md.geometry.surface%d.mat", sensitivity_factors(i)) , 'surface', '-v7.3');
         
     end
 

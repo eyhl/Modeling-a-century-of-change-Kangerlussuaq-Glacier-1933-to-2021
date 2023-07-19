@@ -2,10 +2,10 @@ function [interp_data] = figure2_plot(md, fig_nr)
     save_figures = false;
     axes = [416700,      498000,    -2299100,    -2203900];
 
-    % md = loadmodel("/data/eigil/work/lia_kq/Results/budd_default-22-May-2023/KG_transient.mat");
+    % md = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Results/budd_default-22-May-2023/KG_transient.mat");
     mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
-    its_live_yearly = load('/data/eigil/work/lia_kq/Data/validation/velocity/its_live_onmesh.mat');
-    fl = load('/data/eigil/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat', 'flowlineList');
+    its_live_yearly = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/its_live_onmesh.mat');
+    fl = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat', 'flowlineList');
     x_flowline = fl.flowlineList{1}.x;
     y_flowline = fl.flowlineList{1}.y;
     domain_path = 'Exp/fast_flow/valid_elements_in_fast_flow.exp';
@@ -109,7 +109,7 @@ function [interp_data] = figure2_plot(md, fig_nr)
     ice_mask2017 = ice_mask(:, floor(t_model) == 2017);                                                         
     if fig_nr == 1
         plotmodel(mdb, 'data', vel2017 - interp_vel(:, end-1), 'mask', ice_mask2017(:, end)<0, 'caxis', [-1000, 1000], 'axis', axes, 'xticklabel#all', ' ', 'yticklabel#all', ' ', 'figure', 10, 'colorbar', 'off', ...
-            'xtick', [], 'ytick', []) %  'expdisp', '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp'
+            'xtick', [], 'ytick', []) %  'expdisp', '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp'
         colormap('turbo');
         c = colorbar();
         c.Label.String = 'Velocity misfit [m/yr]';
@@ -169,7 +169,7 @@ function [interp_data] = figure2_plot(md, fig_nr)
         xlabel('Year');
         ylabel('Distance from 2007 front (km)');
     end
-    % plotmodel(mdb, 'data', md.friction.coefficient, 'mask', ice_mask2017(:, end)<0, 'caxis', [0, 100], 'axis', axes, 'figure', 11, 'expdisp', '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp')
+    % plotmodel(mdb, 'data', md.friction.coefficient, 'mask', ice_mask2017(:, end)<0, 'caxis', [0, 100], 'axis', axes, 'figure', 11, 'expdisp', '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp')
     % xlabel('X')
     % ylabel('Y')
     % set(gca,'fontsize', 14)

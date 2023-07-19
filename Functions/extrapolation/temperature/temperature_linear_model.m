@@ -5,7 +5,7 @@ function [md] = temperature_linear_model(md, validate_flag)
     end
 
     %% LOAD DATA AND CREATE RELEVANT VARIABLES
-    extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_temp.exp', 2));
+    extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_temp.exp', 2));
     temperature_field = md.miscellaneous.dummy.temperature_field;
 
     % assign temp. variables

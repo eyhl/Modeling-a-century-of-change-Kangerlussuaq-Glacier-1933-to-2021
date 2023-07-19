@@ -147,7 +147,7 @@ function [] = tmp_plotting(absolute, zoom, cval)
             misfit14(md14.inversion.vel_obs==0) = 0;
             misfit15(md15.inversion.vel_obs==0) = 0;
 
-            misfit_exp = '/data/eigil/work/lia_kq/Exp/misfit_at_front.exp';
+            misfit_exp = '/home/eyhli/IceModeling/work/lia_kq/Exp/misfit_at_front.exp';
             misfit_at_front_pos = find(ContourToNodes(md_budd.mesh.x, md_budd.mesh.y, misfit_exp, 2));
             maf_budd = mean(abs((misfit_budd(misfit_at_front_pos))));
             maf1 = mean(abs((misfit1(misfit_at_front_pos))));

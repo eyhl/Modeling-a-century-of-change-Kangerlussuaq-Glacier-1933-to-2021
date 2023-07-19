@@ -19,7 +19,7 @@ disp('   Interpolating mask');
 
 %% For dh correction of initial guess wrt present day thickness
 % dh = md.geometry.surface  - md_inv.geometry.surface;
-% pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/schoof_ignore_dh.exp', 2));
+% pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/schoof_ignore_dh.exp', 2));
 % dh(pos) = 0;
 % md.geometry.surface = md.geometry.surface - 0.75 * abs(dh);
 

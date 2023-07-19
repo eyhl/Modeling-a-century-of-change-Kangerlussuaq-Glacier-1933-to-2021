@@ -1,6 +1,6 @@
 function [vel, vel_x, vel_y] = interpPromice(mesh_x, mesh_y)
 % Get velocities (Note: You can use ncdisp('file') to see an ncdump)
-ncdata = '/data/eigil/work/lia_kq/Data/promice/IV_20180423_20180517.nc';
+ncdata = '/home/eyhli/IceModeling/work/lia_kq/Data/promice/IV_20180423_20180517.nc';
 days_per_year = 365.25;
 
 % velocities in m/day

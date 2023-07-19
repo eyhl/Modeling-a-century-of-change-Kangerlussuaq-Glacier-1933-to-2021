@@ -42,10 +42,10 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
 
     if retreat_advance
         % plot a retreat advance background
-        flowline = load("/data/eigil/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat");
+        flowline = load("/home/eyhli/IceModeling/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat");
         flowline = flowline.flowlineList{:};
         try 
-            distance_analysis = load("/data/eigil/work/lia_kq/Data/validation/flowline_positions/distance_analysis.mat", 'distance_analysis');
+            distance_analysis = load("/home/eyhli/IceModeling/work/lia_kq/Data/validation/flowline_positions/distance_analysis.mat", 'distance_analysis');
             distance_analysis = distance_analysis.distance_analysis;
             gradient_sign = distance_analysis.gradient_sign;
             gradient_interp = distance_analysis.gradient_interp;
@@ -57,7 +57,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
             distance_analysis.gradient_interp = gradient_interp;
             distance_analysis.gradient_sign = gradient_sign;
             distance_analysis.time_interp = time_interp;
-            save("/data/eigil/work/lia_kq/Data/validation/flowline_positions/distance_analysis.mat", 'distance_analysis');
+            save("/home/eyhli/IceModeling/work/lia_kq/Data/validation/flowline_positions/distance_analysis.mat", 'distance_analysis');
         end 
 
         % OBS OBS!! gradient interp is the gradient of the spatial retreat along flowline (should be in meters or kilometers)
@@ -187,7 +187,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
         % Set transparency (undocumented)
         % set([h.Bar, h.Line], 'ColorType', 'truecoloralpha', 'ColorData', [h.Line.ColorData(1:3); 255*alpha]);
 
-        abbas_data = readtable('/data/eigil/work/lia_kq/Data/validation/altimetry/khan2020/mass_loss_ts_KG_all.txt');
+        abbas_data = readtable('/home/eyhli/IceModeling/work/lia_kq/Data/validation/altimetry/khan2020/mass_loss_ts_KG_all.txt');
         % offset = s * sqrt((abbas_data.Var2(3) - mb0(index_1972(1)))^2) % index 3 is 1972
         [~, ind] = min([mb0(index_1972), abbas_data.Var2(3)]);
         offset = s(ind) * dist(abbas_data.Var2(3), mb0(index_1972));

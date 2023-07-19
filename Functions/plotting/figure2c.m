@@ -6,8 +6,8 @@ if ~exist('results_folder_name')
 end
 
 % mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
-% its_live_yearly = load('/data/eigil/work/lia_kq/Data/validation/velocity/its_live_onmesh.mat');
-fl = load('/data/eigil/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat', 'flowlineList');
+% its_live_yearly = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/its_live_onmesh.mat');
+fl = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat', 'flowlineList');
 x_flowline = fl.flowlineList{1}.x;
 y_flowline = fl.flowlineList{1}.y;
 % domain_path = 'Exp/fast_flow/valid_elements_in_fast_flow.exp';
@@ -21,7 +21,7 @@ y_flowline = fl.flowlineList{1}.y;
 % ice_mask = [md.results.TransientSolution.MaskIceLevelset];
 
 [flowline_error, coverage, times] = getFlowlineErrors(md);
-m = load('/data/eigil/work/lia_kq/Data/validation/velocity/flowline_errors.mat');
+m = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/flowline_errors.mat');
 distance = m.distance;
 
 % Define the regular time spacing

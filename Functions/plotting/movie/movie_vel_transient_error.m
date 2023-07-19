@@ -4,7 +4,7 @@ function [] = movie_vel_transient_error(md, transient_errors, t_model, ice_mask,
     set(0,'defaultfigurecolor',[1, 1, 1])
     % t_model = [md.results.TransientSolution.time];
     % vel_model = [md.results.TransientSolution.Vel];
-    % measure_obs = load('/data/eigil/work/lia_kq/Data/validation/velocity/velObs_onmesh.mat');
+    % measure_obs = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/velObs_onmesh.mat');
     % indeces_start = find_closest_times(t_model, measure_obs.TStart);
     % transient_errors = get_transient_vel_errors(vel_model, measure_obs.vel_onmesh, t_model, measure_obs.TStart, measure_obs.TEnd);
 

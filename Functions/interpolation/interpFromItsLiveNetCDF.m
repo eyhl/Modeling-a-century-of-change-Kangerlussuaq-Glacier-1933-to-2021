@@ -21,13 +21,13 @@ function dataout = interpFromItsLiveNetCDF(mesh_x,mesh_y,Tstart,Tend,varargin)
     glacier    = getfieldvalue(options,'glacier','Jakobshavn');
     
     if strcmp(glacier, 'Kangerlussuaq')
-        foldername = '/data/eigil/work/lia_kq/Data/validation/velocity/image_pairs/';
+        foldername = '/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/image_pairs/';
     else
         error(['The velocity data for ', glacier, ' is not available, please download from NSIDC first.']);
     end
     
     % get the time info from file names
-    templist = dir(fullfile('/data/eigil/work/lia_kq/Data/validation/velocity/image_pairs/', '*.nc'));
+    templist = dir(fullfile('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/image_pairs/', '*.nc'));
     Ndata = length(templist);
     dataTstart = zeros(Ndata,1);
     dataTend = zeros(Ndata,1);
@@ -91,5 +91,5 @@ function dataout = interpFromItsLiveNetCDF(mesh_x,mesh_y,Tstart,Tend,varargin)
     % print status on how many files where used in total
     fprintf('Total number of files used: %d\n', length(dataToLoad)-length(skipped))
     fprintf('Total number of files skipped: %d\n', length(skipped))
-    save('/data/eigil/work/lia_kq/Data/validation/velocity/image_pairs_onmesh_1985.mat', 'dataout');
+    save('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/image_pairs_onmesh_1985.mat', 'dataout');
 end

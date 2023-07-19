@@ -12,7 +12,7 @@ function [md] = meshing(domain, data_vx, data_vy, check_mesh)
 
     % extend refinement to 1900 front position (larger than necessary to be sure)
     h = NaN * ones(md.mesh.numberofvertices, 1);
-    indeces = ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/domain/1900_refine_area.exp', 1);
+    indeces = ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/domain/1900_refine_area.exp', 1);
     h(find(indeces)) = 350;
 
     % extend refinement to 1900 front position (larger than necessary to be sure)

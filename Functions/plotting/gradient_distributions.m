@@ -7,7 +7,7 @@ function [] = gradient_distributions(mb_struct_path)
     mb_gradient = gradient(mb, mb_time);
 
     % load retreat/advance vector
-    dist_analysis = load("/data/eigil/work/lia_kq/Data/validation/flowline_positions/distance_analysis.mat", 'distance_analysis');
+    dist_analysis = load("/home/eyhli/IceModeling/work/lia_kq/Data/validation/flowline_positions/distance_analysis.mat", 'distance_analysis');
     dist_analysis = dist_analysis.distance_analysis;                                                                              
     gradient_interp = dist_analysis.gradient_interp;                                                                              
     gradient_sign = dist_analysis.gradient_sign;

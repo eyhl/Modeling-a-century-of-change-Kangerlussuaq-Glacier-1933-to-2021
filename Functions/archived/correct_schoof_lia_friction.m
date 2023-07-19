@@ -1,5 +1,5 @@
 function [md] = correct_schoof_lia_friction(md, md_budd, coeffs, cs_min, cs_max)
-    % md = loadmodel("/data/eigil/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat");
+    % md = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Models/baseline/Model_kangerlussuaq_friction.mat");
     present_friction_C = md.friction.C;
 
     % Budd's Friction coefficient from inversion

@@ -3,9 +3,9 @@ function [md, friction_field] = extrapolate_friction(md, config)
     offset = logical(config.lia_friction_offset);
     cs_min = config.cs_min;
     cs_max = config.cs_max;
-    % extrapolation_domain = '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim.exp';
-    extrapolation_domain = '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp';
-    % extrapolation_domain = '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_large.exp';
+    % extrapolation_domain = '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim.exp';
+    extrapolation_domain = '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp';
+    % extrapolation_domain = '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_large.exp';
 
     extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, extrapolation_domain, 2));
 
@@ -24,14 +24,14 @@ function [md, friction_field] = extrapolate_friction(md, config)
         [extrapolated_friction, extrapolated_pos, ~] = friction_exponential_model(md, cs_min, config.friction_law, true, extrapolation_domain);
     elseif strcmp(config.friction_extrapolation, "pollard")
         disp("... using POLLARD inversion")
-        % md_pollard = loadmodel('/data/eigil/work/lia_kq/pollard_budd.mat');
-        % md_pollard = loadmodel('/data/eigil/work/lia_kq/steady_state_lia_budd.mat');
-        fc = loadmodel('/data/eigil/work/lia_kq/schoof_pollard_fc.mat');
+        % md_pollard = loadmodel('/home/eyhli/IceModeling/work/lia_kq/pollard_budd.mat');
+        % md_pollard = loadmodel('/home/eyhli/IceModeling/work/lia_kq/steady_state_lia_budd.mat');
+        fc = loadmodel('/home/eyhli/IceModeling/work/lia_kq/schoof_pollard_fc.mat');
         % extrapolated_friction = md_pollard.friction.C(extrapolated_pos);
         extrapolated_friction = fc(extrapolated_pos);
     elseif strcmp(config.friction_extrapolation, "from_budd")
         disp("... using POLLARD inversion")
-        md_pollard = loadmodel('/data/eigil/work/lia_kq/pollard_budd.mat');
+        md_pollard = loadmodel('/home/eyhli/IceModeling/work/lia_kq/pollard_budd.mat');
         % extrapolated_friction = md_pollard.friction.C(extrapolated_pos);
         extrapolated_friction = fc(extrapolated_pos);
     end

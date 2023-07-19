@@ -19,8 +19,8 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_m
     end
 
     %% LOAD DATA AND CREATE RELEVANT VARIABLES
-    friction_data_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_utils/friction_data.exp', 2));
-    friction_validation = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_utils/friction_validation.exp', 2));
+    friction_data_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_utils/friction_data.exp', 2));
+    friction_validation = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_utils/friction_validation.exp', 2));
     extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, extrapolation_domain, 2));
     % extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, extrapolation_domain, 2));
     % extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, extrapolation_domain, 2)); 
@@ -100,8 +100,8 @@ function [extrapolated_friction, extrapolated_pos, mae] = friction_correlation_m
         h = colorbar('Position', [0.1  0.1  0.75  0.01], 'Location', 'southoutside');
         title(h, "Friction Coefficient")
         colormap('turbo')
-        expdisp('/data/eigil/work/lia_kq/Exp/extrapolation_utils/friction_data.exp', 'linewidth', 1, 'linestyle', 'r--')
-        expdisp('/data/eigil/work/lia_kq/Exp/extrapolation_utils/friction_validation.exp', 'linewidth', 1, 'linestyle', 'r--')
+        expdisp('/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_utils/friction_data.exp', 'linewidth', 1, 'linestyle', 'r--')
+        expdisp('/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_utils/friction_validation.exp', 'linewidth', 1, 'linestyle', 'r--')
         exportgraphics(gcf, "friction_field_poly.png")
     end
 end

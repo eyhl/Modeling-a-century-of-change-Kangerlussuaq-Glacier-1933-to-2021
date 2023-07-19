@@ -15,7 +15,7 @@ function [x, y] = flowline_traceback(md, plot_flag)
     %%
     % TODO: use this to implement point corrections -> then go for several points or full grid
     % extract 
-    % load("/data/eigil/work/lia_kq/Results/flowlines/KG_flowlines.mat");
+    % load("/home/eyhli/IceModeling/work/lia_kq/Results/flowlines/KG_flowlines.mat");
 
     % get model times
     times = [md.results.TransientSolution.time];

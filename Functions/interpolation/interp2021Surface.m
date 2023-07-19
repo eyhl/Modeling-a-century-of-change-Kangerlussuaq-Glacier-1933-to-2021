@@ -3,7 +3,7 @@ function [surface_interpolated] = interp2021Surface(md, mesh)
     mesh_x = mesh(:, 1); % md.mesh.x;
     mesh_y = mesh(:, 2); % md.mesh.y;
 
-    data = load('/data/eigil/work/lia_kq/Data/validation/icesat/Elevation_KG_2021_fast_flow.txt');
+    data = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/icesat/Elevation_KG_2021_fast_flow.txt');
     x = data(:, 1);
     y = data(:, 2);
     topo = data(:, 3);

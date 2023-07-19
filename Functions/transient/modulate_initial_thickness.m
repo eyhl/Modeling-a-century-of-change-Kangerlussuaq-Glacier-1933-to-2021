@@ -1,5 +1,5 @@
 function [md, dh, misfit_thk, mean_thicknesses, step_size_history] = modulate_initial_thickness(md, step_size, n, spatial_smooth, smoothing_factor)
-    save_path = "/data/eigil/work/lia_kq/Results";
+    save_path = "/home/eyhli/IceModeling/work/lia_kq/Results";
 
     if nargin < 3
         spatial_smooth = true;
@@ -44,7 +44,7 @@ function [md, dh, misfit_thk, mean_thicknesses, step_size_history] = modulate_in
             disp('SOLVE')
             md = solve(md,'Transient','runtimename',false); 
             disp('SAVE')
-            save("/data/eigil/work/lia_kq/Models/modulate_thickness.mat" , 'md', '-v7.3');
+            save("/home/eyhli/IceModeling/work/lia_kq/Models/modulate_thickness.mat" , 'md', '-v7.3');
         end
 
         times = [md.results.TransientSolution.time];

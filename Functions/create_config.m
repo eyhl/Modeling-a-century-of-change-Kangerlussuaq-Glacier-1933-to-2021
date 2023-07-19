@@ -10,7 +10,7 @@ function [config_file_name] = create_config(id, friction_law)
     end
     % identifyer
     glacier_name = "KG";
-    front_observation_path = "/data/eigil/work/lia_kq/Data/shape/fronts/processed/vermassen.shp";
+    front_observation_path = "/home/eyhli/IceModeling/work/lia_kq/Data/shape/fronts/processed/1933.shp";
 
     % Set parameters
     steps = [1, 2, 3]; % 3=budd, 6=schoof
@@ -68,7 +68,7 @@ function [config_file_name] = create_config(id, friction_law)
 
     % save table
     config_file_name = append(id, '-config', '.csv');
-    config_folder = append('/data/eigil/work/lia_kq/Configs/', config_file_name);
+    config_folder = append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name);
 
     writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
 end

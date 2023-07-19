@@ -1,6 +1,6 @@
 function [md] = fill_in_texture(md, friction_simulation_file)
     % load Bedmachine data for bed topo estimate
-    ncdata = "/data/eigil/work/lia_kq/Data/greenland_bedmachine/bedmachine_nc/BedMachineGreenland-2021-04-20.nc";
+    ncdata = "/home/eyhli/IceModeling/work/lia_kq/Data/greenland_bedmachine/bedmachine_nc/BedMachineGreenland-2021-04-20.nc";
 
     % load extrapolate/simulated friction coefficient
     S = load(friction_simulation_file);
@@ -16,7 +16,7 @@ function [md] = fill_in_texture(md, friction_simulation_file)
     bed_normalised = factor * (1 - (bed - max(bed)) / (min(bed) - max(bed)));
 
     % find the nodes within the area where we want to extrapolate friction coefficient
-    pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
+    pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
 
     % find corner positions of
     min_x = min(md.mesh.x(pos));

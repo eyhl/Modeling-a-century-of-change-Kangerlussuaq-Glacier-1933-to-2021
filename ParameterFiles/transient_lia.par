@@ -9,7 +9,7 @@ disp('   Interpolating mask');
 % tmp_levelset = ExpToLevelSet(md.mesh.x, md.mesh.y, 'Exp/first_front/first_front.exp');
 % pos = tmp_levelset(1:end-1) > 0;  % positive distances
 % md.mask.ice_levelset(pos) = -1;
-front_1933 = load('/data/eigil/work/lia_kq/Data/shape/fronts/processed/1933.mat');
+front_1933 = load('/home/eyhli/IceModeling/work/lia_kq/Data/shape/fronts/processed/1933.mat');
 front_1933 = front_1933.front1933;
 md.mask.ice_levelset= front_1933;
 
@@ -19,12 +19,12 @@ md.geometry.surface = interpLiaSurface(md.mesh.x, md.mesh.y);
 % pos = find(md.mask.ice_levelset > 0);
 % md.geometry.surface(pos) = md.geometry.base(pos) + 10; % Minimum thickness
 
-% md_lia_steady = loadmodel('/data/eigil/work/lia_kq/Models/steady_state_lia/steady_state_lia_budd.mat');
-% md_lia_steady = loadmodel('/data/eigil/work/lia_kq/steady_state_budd_2_interpLessThan5m_26april.mat');
-% md_lia_steady = loadmodel('/data/eigil/work/lia_kq/steady_state_schoof_1_24april.mat');
-% md_lia_steady = loadmodel('/data/eigil/work/lia_kq/steady_state_schoof_2_25april.mat');
-% md_lia_steady = loadmodel('/data/eigil/work/lia_kq/burn_in.mat');
-% md_lia_steady = loadmodel('/data/eigil/work/lia_kq/ss_updated_may_6.mat');
+% md_lia_steady = loadmodel('/home/eyhli/IceModeling/work/lia_kq/Models/steady_state_lia/steady_state_lia_budd.mat');
+% md_lia_steady = loadmodel('/home/eyhli/IceModeling/work/lia_kq/steady_state_budd_2_interpLessThan5m_26april.mat');
+% md_lia_steady = loadmodel('/home/eyhli/IceModeling/work/lia_kq/steady_state_schoof_1_24april.mat');
+% md_lia_steady = loadmodel('/home/eyhli/IceModeling/work/lia_kq/steady_state_schoof_2_25april.mat');
+% md_lia_steady = loadmodel('/home/eyhli/IceModeling/work/lia_kq/burn_in.mat');
+% md_lia_steady = loadmodel('/home/eyhli/IceModeling/work/lia_kq/ss_updated_may_6.mat');
 % md.geometry.surface = md_lia_steady.geometry.surface;
 % md.geometry.surface = md_lia_steady.results.TransientSolution24(end).Surface;
 

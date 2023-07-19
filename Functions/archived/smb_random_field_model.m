@@ -9,7 +9,7 @@ function [front_area_smb, front_area_pos] = smb_random_field_model(md)
     addpath(genpath('Functions/SeReM/'))
 
     %find glacier front area from earlier. The .exp covers a larger area than needed, but non-zero pixels are not altered.
-    front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
+    front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
     front_area_smb = mean(md.smb.mass_balance(front_area_pos, :), 2);                                                                      
 
     % get corresponding coords

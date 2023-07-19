@@ -12,7 +12,7 @@ thinning = md.results.TransientSolution(end).Thickness - md.results.TransientSol
 thinning(mask) = NaN;
 
 % observations
-t = readtable('/data/eigil/work/lia_kq/Data/validation/altimetry/thinning_icesat2/Thinning_KG_2003-2021.txt');
+t = readtable('/home/eyhli/IceModeling/work/lia_kq/Data/validation/altimetry/thinning_icesat2/Thinning_KG_2003-2021.txt');
 [x, y] = ll2xy(t.Var2, t.Var1, 1);
 thin = t.Var3;
 F = scatteredInterpolant(x, y, thin, 'natural', 'nearest');

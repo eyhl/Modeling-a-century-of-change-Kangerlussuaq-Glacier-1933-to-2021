@@ -16,7 +16,7 @@ function [md] = run_model(config_name, plotting_flag)
     xl = [4.578, 5.132]*1e5;
     yl = [-2.3239, -2.2563]*1e6;
 
-    base_path = '/data/eigil/work/lia_kq/';
+    base_path = '/home/eyhli/IceModeling/work/lia_kq/';
     
     % read config file
     config = readtable(fullfile(base_path, 'Configs/', config_name), "TextType", "string");
@@ -135,7 +135,7 @@ function [md] = run_model(config_name, plotting_flag)
 
 %% 2 Parameterisation: Default setup with .par file
     if perform(org, 'param')
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'mesh.mat']);
+        md = loadmodel([append(base_path, 'Models/'), prefix, 'mesh.mat']);
 
         md = setflowequation(md,'SSA','all');
         md = setmask(md,'','');
@@ -158,7 +158,7 @@ function [md] = run_model(config_name, plotting_flag)
         % add damage for shear margin
 		if config.add_damage ~= 0 % change enhancement factor by large shear stress area
             fprintf('Add damage to shear margin, Glen enhancement = %d\n', config.add_damage);
-            md_ss = loadmodel('/data/eigil/work/lia_kq/Models/KG_budd_steady_state_50yr.mat');
+            md_ss = loadmodel(append(base_path, 'Models/KG_budd_steady_state_50yr.mat'));
 			minEffStrain = 1;
 			maxEffStrain = 3;
 			md=mechanicalproperties(md,md.inversion.vx_obs,md.inversion.vy_obs);
@@ -196,8 +196,8 @@ function [md] = run_model(config_name, plotting_flag)
 
 %% 3 Friction law setup: Budd %TODO: add friction step with friction_law condition inside instead.
     if perform(org, 'budd')
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
-        % pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/ice_at_fjord_sides.exp', 2));
+        md = loadmodel([append(base_path, 'Models/'), prefix, 'param.mat']);
+        % pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/ice_at_fjord_sides.exp', 2));
         % md.mask.ice_levelset(pos) = 1;
         md = solve_stressbalance_budd(md, budd_coeff, cs_min, cs_max, velocity_exponent);
         savemodel(org, md);
@@ -226,7 +226,7 @@ function [md] = run_model(config_name, plotting_flag)
 
 %% 4 Friction law setup: Budd Plastic %TODO: add friction step with friction_law condition inside instead.
     if perform(org, 'budd_plastic')
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
+        md = loadmodel([append(base_path, 'Models/'), prefix, 'param.mat']);
         %md.friction.coefficient = rescale(md.friction.coefficient, 0.05, 2);
         md = solve_stressbalance_budd(md, budd_plastic_coeff, cs_min, cs_max, velocity_exponent);
         savemodel(org, md);
@@ -256,7 +256,7 @@ function [md] = run_model(config_name, plotting_flag)
 %% 5 Friction law setup: Weertman
     if perform(org, 'weertman')
 
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'param.mat']);
+        md = loadmodel([append(base_path, 'Models/'), prefix, 'param.mat']);
         md = solve_stressbalance_weert(md, weertman_coeff, cs_min, cs_max);
         savemodel(org, md);
 
@@ -285,10 +285,10 @@ function [md] = run_model(config_name, plotting_flag)
 %% 6 Friction law setup: Schoof
     if perform(org, 'schoof')
         friction_law = 'schoof';
-        % md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
+        % md = loadmodel([append(base_path, 'Models/'), prefix, 'budd.mat']);
         md = loadmodel('Models/KG_schoof.mat');
-        % md = loadmodel('/data/eigil/work/lia_kq/Models/KG_schoof_may16.mat');
-        % md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'schoof0.mat']);
+        % md = loadmodel('/home/eyhli/IceModeling/work/lia_kq/Models/KG_schoof_may16.mat');
+        % md = loadmodel([append(base_path, 'Models/'), prefix, 'schoof0.mat']);
         % mds = loadmodel('Results/schoof-04-Apr-2023/KG_transient.mat');
         % md.friction.C = mds.miscellaneous.dummy.FrictionC;
 
@@ -324,9 +324,9 @@ function [md] = run_model(config_name, plotting_flag)
     if perform(org, 'lia')
         % offset = logical(lia_friction_offset);
         % if strcmp(config.friction_law, 'budd')
-        %     md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
+        %     md = loadmodel([append(base_path, 'Models/'), prefix, 'budd.mat']);
         %     M = config.polynomial_order; % polynomial order
-        %     extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
+        %     extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
 
         %     disp("Extrapolating friction coefficient...")
         %     if strcmp(config.friction_extrapolation, "bed_correlation")
@@ -342,7 +342,7 @@ function [md] = run_model(config_name, plotting_flag)
         %     elseif strcmp(config.friction_extrapolation, "pollard")
         %         disp("Extrapolating friction coefficient using POLLARD inversion")
 
-        %         md_pollard = loadmodel('/data/eigil/work/lia_kq/pollard_budd.mat');
+        %         md_pollard = loadmodel('/home/eyhli/IceModeling/work/lia_kq/pollard_budd.mat');
         %         extrapolated_friction = md_pollard.friction.coefficient(extrapolated_pos);
         %         extrapolated_friction(extrapolated_friction <= cs_min) = cs_min;
 
@@ -373,9 +373,9 @@ function [md] = run_model(config_name, plotting_flag)
 
         
         % elseif strcmp(config.friction_law, 'budd_plastic')
-        %     md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd_plastic.mat']);
+        %     md = loadmodel([append(base_path, 'Models/'), prefix, 'budd_plastic.mat']);
         %     M = config.polynomial_order; % polynomial order
-        %     extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
+        %     extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
 
         %     disp("Extrapolating friction coefficient...")
         %     if strcmp(config.friction_extrapolation, "bed_correlation")
@@ -391,7 +391,7 @@ function [md] = run_model(config_name, plotting_flag)
 
         %     elseif strcmp(config.friction_extrapolation, "from_budd")
         %         disp("Using Budd bed correlation to extrapolate")
-        %         mdb = loadmodel("/data/eigil/work/lia_kq/Results/lia_correction2-18-Mar-2023/KG_transient.mat");
+        %         mdb = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Results/lia_correction2-18-Mar-2023/KG_transient.mat");
         %         extrapolated_friction = mdb.friction.coefficient(extrapolated_pos) .* (mdb.results.StressbalanceSolution.Vel(extrapolated_pos)./md.constants.yts).^(2./5);                           
         %         extrapolated_friction = min(extrapolated_friction, cs_max);              
         %         md.friction.coefficient(extrapolated_pos) = extrapolated_friction;
@@ -422,8 +422,8 @@ function [md] = run_model(config_name, plotting_flag)
         %     friction_field = md.friction.coefficient;
 
         %     % --- Retrieve from budd solution ---
-        %     % extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
-        %     % % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
+        %     % extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
+        %     % % md = loadmodel('/home/eyhli/IceModeling/work/lia_kq/Models/kg_budd_lia.mat');
         %     % disp("Extrapolating friction coefficient...")
         %     % md_budd_lia = loadmodel('Models/KG_budd_lia.mat');
         %     % scaled_friction = md_budd_lia.friction.coefficient .* (md_budd_lia.results.StressbalanceSolution.Vel./md_budd_lia.constants.yts).^(2./5);
@@ -432,19 +432,19 @@ function [md] = run_model(config_name, plotting_flag)
         %     % md.friction.coefficient(extrapolated_pos) = scaled_friction;
         %     % friction_field = md.friction.coefficient;
         % else
-        %     md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
+        %     md = loadmodel([append(base_path, 'Models/'), prefix, 'budd.mat']);
         % end
         % disp("Parameterizing to LIA initial state")
         if strcmp(config.friction_law, 'budd')
-            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
+            md = loadmodel([append(base_path, 'Models/'), prefix, 'budd.mat']);
         elseif strcmp(config.friction_law, 'budd_plastic')
-            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd_plastic.mat']);
+            md = loadmodel([append(base_path, 'Models/'), prefix, 'budd_plastic.mat']);
         elseif strcmp(config.friction_law, 'weertman')
-            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'weertman.mat']);
+            md = loadmodel([append(base_path, 'Models/'), prefix, 'weertman.mat']);
         elseif strcmp(config.friction_law, 'schoof')
-            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'schoof.mat']);
+            md = loadmodel([append(base_path, 'Models/'), prefix, 'schoof.mat']);
         elseif strcmp(config.friction_law, 'regcoulomb')
-            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'regcoulomb.mat']);
+            md = loadmodel([append(base_path, 'Models/'), prefix, 'regcoulomb.mat']);
         else
             error("Friction law not known")
         end
@@ -456,23 +456,23 @@ function [md] = run_model(config_name, plotting_flag)
     % if perform(org, 'lia')
     %     offset = true;
     %     if strcmp(config.friction_law, 'schoof')
-    %         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'schoof.mat']);
+    %         md = loadmodel([append(base_path, 'Models/'), prefix, 'schoof.mat']);
     %         M = config.polynomial_order; % polynomial order
     %     elseif strcmp(config.friction_law, 'budd')
-    %         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd.mat']);
+    %         md = loadmodel([append(base_path, 'Models/'), prefix, 'budd.mat']);
     %         M = config.polynomial_order; % polynomial order
-    %         % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
+    %         % md = loadmodel('/home/eyhli/IceModeling/work/lia_kq/Models/kg_budd_lia.mat');
     %     elseif strcmp(config.friction_law, 'budd_plastic')
-    %         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'budd_plastic.mat']);
+    %         md = loadmodel([append(base_path, 'Models/'), prefix, 'budd_plastic.mat']);
     %         M = config.polynomial_order; % polynomial order
-    %         % md = loadmodel('/data/eigil/work/lia_kq/Models/kg_budd_lia.mat');
+    %         % md = loadmodel('/home/eyhli/IceModeling/work/lia_kq/Models/kg_budd_lia.mat');
     %     elseif strcmp(config.friction_law, 'weertman')
-    %         md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'weertman.mat']);
+    %         md = loadmodel([append(base_path, 'Models/'), prefix, 'weertman.mat']);
     %         M = config.polynomial_order; % polynomial order
     %     else
     %         warning("Friction law not implemented")
     %     end
-    %     extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
+    %     extrapolated_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_slim_extend.exp', 2));
     %     % STATISTICS FOR BUDD LIA INIT
     %     % mean(mdb.results.StressbalanceSolution.Vel) = 715.5533
     %     % std(mdb.results.StressbalanceSolution.Vel) = 1.5335e+03
@@ -502,11 +502,11 @@ function [md] = run_model(config_name, plotting_flag)
 
     %     elseif strcmp(config.friction_extrapolation, "pollard")
     %         disp("Extrapolating friction coefficient using pollard inversion")
-    %         % md_pollard = loadmodel("/data/eigil/work/lia_kq/Models/PollardInversion.mat");
-    %         % md_pollard = loadmodel("/data/eigil/work/lia_kq/pollard_budd1to5_avg2_lim966.mat");
-    %         md_pollard = loadmodel("/data/eigil/work/lia_kq/pollard_newest.mat");
+    %         % md_pollard = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Models/PollardInversion.mat");
+    %         % md_pollard = loadmodel("/home/eyhli/IceModeling/work/lia_kq/pollard_budd1to5_avg2_lim966.mat");
+    %         md_pollard = loadmodel("/home/eyhli/IceModeling/work/lia_kq/pollard_newest.mat");
     %         fp = md_pollard.friction.coefficient;
-    %         % f = load("/data/eigil/work/lia_kq/budd_fric_extrap_temp_scaled.mat");
+    %         % f = load("/home/eyhli/IceModeling/work/lia_kq/budd_fric_extrap_temp_scaled.mat");
     %         fp = f.fric;
     %         % f0 = md.friction.coefficient;
     %         % fp = rescale(fp, min(f0), max(f0));
@@ -528,7 +528,7 @@ function [md] = run_model(config_name, plotting_flag)
         %     % md.friction.coefficient(extrapolated_pos) = md.friction.coefficient(extrapolated_pos) * offset;
         %     friction_field = md.friction.coefficient;
         % else
-        %     md_ss = loadmodel('/data/eigil/work/lia_kq/Models/KG_budd_ss.mat');
+        %     md_ss = loadmodel('/home/eyhli/IceModeling/work/lia_kq/Models/KG_budd_ss.mat');
 
         %     % BUDD PLASTIC
         %     scaled_friction = md_ss.friction.coefficient .* (md_ss.results.StressbalanceSolution.Vel./md.constants.yts).^(2./5);
@@ -621,10 +621,10 @@ function [md] = run_model(config_name, plotting_flag)
 %% 8 Forcings: Interpolate SMB
     if perform(org, 'smb')
     % ------ Load smb if already processed
-    if isfile(append('/data/eigil/work/lia_kq/Models/', prefix, 'smb_', config.smb_name, '.mat'))
+    if isfile(append(append(base_path, 'Models/'), prefix, 'smb_', config.smb_name, '.mat'))
         disp("Loading SMB from previous processing...")
-        md = loadmodel(append('/data/eigil/work/lia_kq/Models/', prefix, 'lia.mat'));
-        md_smb = loadmodel(append('/data/eigil/work/lia_kq/Models/', prefix, 'smb_', config.smb_name, '.mat'));
+        md = loadmodel(append(append(base_path, 'Models/'), prefix, 'lia.mat'));
+        md_smb = loadmodel(append(append(base_path, 'Models/'), prefix, 'smb_', config.smb_name, '.mat'));
         if md.mesh.numberofelements ~= md_smb.mesh.numberofelements
             disp("Error mesh is different size in the two models")
         end
@@ -632,7 +632,7 @@ function [md] = run_model(config_name, plotting_flag)
 
     % ------ Compute smb
     else
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'lia.mat']);
+        md = loadmodel([append(base_path, 'Models/'), prefix, 'lia.mat']);
         disp("SMB processing in progress...")
         the_files = dir(fullfile(smb_file, '*.nc'));
 
@@ -669,15 +669,15 @@ function [md] = run_model(config_name, plotting_flag)
     if perform(org, 'fronts')
         if run_lia_parameterisation == 1
             disp("Using LIA initial conditoins")
-            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'smb.mat']);
+            md = loadmodel([append(base_path, 'Models/'), prefix, 'smb.mat']);
 
         else
             disp("Not using LIA initial conditions")
-            md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'friction.mat']);
+            md = loadmodel([append(base_path, 'Models/'), prefix, 'friction.mat']);
         end
         
-        if exist(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat'])
-            md_front = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat']);
+        if exist([append(base_path, 'Models/'), prefix, 'fronts.mat'])
+            md_front = loadmodel([append(base_path, 'Models/'), prefix, 'fronts.mat']);
             md = fronts_init(md, output_frequency, start_time, final_time); % initialises fronts
             md.levelset.spclevelset = md_front.levelset.spclevelset;
         else
@@ -690,7 +690,7 @@ function [md] = run_model(config_name, plotting_flag)
 
 %% 10 Transient: setup & run
     if perform(org, 'transient')
-        md = loadmodel(['/data/eigil/work/lia_kq/Models/', prefix, 'fronts.mat']);
+        md = loadmodel([append(base_path, 'Models/'), prefix, 'fronts.mat']);
 
         % meltingrate
         timestamps = [md.timestepping.start_time, md.timestepping.final_time];

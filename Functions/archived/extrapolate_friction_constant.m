@@ -8,8 +8,8 @@ function [front_area_friction, front_area_pos] = extrapolate_friction_const(md)
     rng('default')
 
     %find glacier frony from earlier
-    front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
-    friction_stat_area = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/friction_statistics.exp', 2));
+    front_area_pos = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/1900_extrapolation_area.exp', 2));
+    friction_stat_area = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/friction_statistics.exp', 2));
 
     % get corresponding coords
     x_q = md.mesh.x(front_area_pos);

@@ -1,6 +1,6 @@
 function [interp_vel, interp_vel_err, interp_ice_mask, interp_count] = interpItsLive(md)
 %INTERPITSLIVE - Interpolate itslive data onto model grid
-    the_files = dir(fullfile('/data/eigil/work/lia_kq/Data/validation/velocity/its_live/', '*.nc'));
+    the_files = dir(fullfile('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/its_live/', '*.nc'));
     %Set years to run, start_time = first year
     years = 1985 : 2018;
 
@@ -45,5 +45,5 @@ function [interp_vel, interp_vel_err, interp_ice_mask, interp_count] = interpIts
         interp_count(:, year-1984) = round(F(md.mesh.x, md.mesh.y));
 
     end
-    save('/data/eigil/work/lia_kq/Data/validation/velocity/its_live_onmesh.mat', 'interp_vel', 'interp_vel_err', 'interp_ice_mask', 'interp_count');
+    save('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/its_live_onmesh.mat', 'interp_vel', 'interp_vel_err', 'interp_ice_mask', 'interp_count');
 end 

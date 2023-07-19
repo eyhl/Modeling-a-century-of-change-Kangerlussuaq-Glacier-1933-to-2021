@@ -14,8 +14,8 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
     k_max = md.inversion.max_parameters(1,1);
 
     % area to be updated
-    % aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_large.exp', 2));
-    aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/data/eigil/work/lia_kq/pollard_update_area.exp', 2));
+    % aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_large.exp', 2));
+    aoi = find(ContourToNodes(md.mesh.x, md.mesh.y, '/home/eyhli/IceModeling/work/lia_kq/pollard_update_area.exp', 2));
     % k(aoi) = 350;
 
     % adjust
@@ -78,7 +78,7 @@ function [md, vecmaxdS, vecmindS, vecmeandS] = pollard_inversion(md)
         [~, ~, dS, ~] = flowline_traceback(md_tmp, dS, true);
         plotmodel(md, 'data', dS, 'figure', 21, 'axis#all', axs, 'title', 'dS after flowline');
         plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.C, 'figure', 22, 'axis#all', axs, ...
-                 'expdisp#2', '/data/eigil/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_large.exp');
+                 'expdisp#2', '/home/eyhli/IceModeling/work/lia_kq/Exp/extrapolation_domain/1900_extrapolation_area_large.exp');
         % plotmodel(md, 'data', md.initialization.vel, 'data', md.friction.coefficient, 'figure', 22, 'axis#all', axs);
         
         dZ			= dS/Sinv;	

@@ -1,5 +1,5 @@
 function out = interpBmGreenland(mesh_x, mesh_y, part)
-ncdata = "/data/eigil/work/lia_kq/Data/greenland_bedmachine/bedmachine_nc/BedMachineGreenland-2021-04-20.nc";
+ncdata = "/home/eyhli/IceModeling/work/lia_kq/Data/greenland_bedmachine/bedmachine_nc/BedMachineGreenland-2021-04-20.nc";
 x_bm = double(ncread(ncdata, 'x'));
 y_bm = flipud(double(ncread(ncdata, 'y')));
 

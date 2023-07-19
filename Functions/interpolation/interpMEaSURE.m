@@ -23,7 +23,7 @@ function dataout = interpMEaSURE(X,Y,Tstart,Tend,varargin)
     if strcmp(glacier, 'Jakobshavn')
         foldername = '/totten_1/ModelData/Greenland/VelMEaSUREs/Jakobshavn_2008_2021/';
     elseif strcmp(glacier, 'Kangerlussuaq')
-        foldername = '/data/eigil/work/lia_kq/Data/validation/velocity/,/';
+        foldername = '/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/,/';
     elseif strcmp(glacier, 'Store')
         foldername = '/totten_1/ModelData/Greenland/VelMEaSUREs/Store_2008_2021/';
     elseif strcmp(glacier, 'Rink')

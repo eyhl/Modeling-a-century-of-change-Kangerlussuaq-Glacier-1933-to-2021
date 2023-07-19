@@ -7,8 +7,8 @@ end
 
 mask = int8(interpBmGreenland(md.mesh.x, md.mesh.y, 'mask'));
 bed_rock_mask = mask == 1;
-its_live_yearly = load('/data/eigil/work/lia_kq/Data/validation/velocity/its_live_onmesh.mat');
-fl = load('/data/eigil/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat', 'flowlineList');
+its_live_yearly = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/velocity/its_live_onmesh.mat');
+fl = load('/home/eyhli/IceModeling/work/lia_kq/Data/validation/flowline_positions/central_flowline.mat', 'flowlineList');
 x_flowline = fl.flowlineList{1}.x;
 y_flowline = fl.flowlineList{1}.y;
 domain_path = 'Exp/fast_flow/valid_elements_in_fast_flow.exp';

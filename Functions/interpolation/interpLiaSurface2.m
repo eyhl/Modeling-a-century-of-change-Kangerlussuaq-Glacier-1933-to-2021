@@ -22,7 +22,7 @@ function [surface_interpolated] = interpLiaSurface2(mesh_x, mesh_y)
     %% Missing values
     % there is missing surface elevation data on the edges of the domain (set to 0) so we want to interpolate those
     % we want to avoid touching the front area so I have made an exp for that:
-    not_front_area = ~ContourToNodes(mesh_x, mesh_y, '/data/eigil/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_large.exp', 2);
+    not_front_area = ~ContourToNodes(mesh_x, mesh_y, '/home/eyhli/IceModeling/work/lia_kq/Exp/fast_flow/dont_update_init_H_here_large.exp', 2);
 
     % % Find low surface elevation everywhere but the front area, 10 meters is a buffer.
     known_surface = surface_interpolated > 10;
@@ -41,7 +41,7 @@ function [surface_interpolated] = interpLiaSurface2(mesh_x, mesh_y)
     % between front position and surface != 0 where the surface is 0. The most safe thing would be
     % to define this area in a general manner, but as there is no 0's left, except at the front, so
     % we will be able to make a boolean mask.
-    ice_levelset =  ContourToNodes(mesh_x, mesh_y, '/data/eigil/work/lia_kq/Exp/first_front/first_front.exp', 2);
+    ice_levelset =  ContourToNodes(mesh_x, mesh_y, '/home/eyhli/IceModeling/work/lia_kq/Exp/first_front/first_front.exp', 2);
     cond1 = surface_interpolated > missing_value_at_front;
     cond2 = surface_interpolated <= missing_value_at_front & ice_levelset;
     pos1 = find(cond1);
@@ -56,7 +56,7 @@ function [surface_interpolated] = interpLiaSurface2(mesh_x, mesh_y)
         xl = [4.778, 5.132]*1e5;
         yl = [-2.3039, -2.2763]*1e6;
 
-        md = loadmodel('/data/eigil/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
+        md = loadmodel('/home/eyhli/IceModeling/work/lia_kq/Models/Model_kangerlussuaq_budd.mat');
         
         figure(2);
         scatter(x, y, 50, topo, 'filled'); 
