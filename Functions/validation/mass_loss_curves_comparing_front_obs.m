@@ -189,10 +189,11 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
 
         abbas_data = readtable('/home/eyhli/IceModeling/work/lia_kq/Data/validation/altimetry/khan2020/mass_loss_ts_KG_all.txt');
         % offset = s * sqrt((abbas_data.Var2(3) - mb0(index_1972(1)))^2) % index 3 is 1972
+        [~, index_1972] = min(abs(model_times - 1993.4770));
         [~, ind] = min([mb0(index_1972), abbas_data.Var2(3)]);
         offset = s(ind) * dist(abbas_data.Var2(3), mb0(index_1972));
 
-        abbas_mb_relative = abbas_data.Var2(3:end) + offset;
+        abbas_mb_relative = abbas_data.Var2(3:end) + offset + 27 + 24;
 
         h = errorbar(abbas_data.Var1(3:end), abbas_mb_relative, abbas_data.Var3(3:end), '*', 'color', [0.65, 0.45, 0.65], 'LineWidth', 1.2);
         % shadedErrorBar(abbas_data.Var1(3:end), abbas_mb_relative, abbas_data.Var3(3:end), 'lineProps', {'.','color',[.75,0.55,0.75]}, 'patchSaturation', 0.1)

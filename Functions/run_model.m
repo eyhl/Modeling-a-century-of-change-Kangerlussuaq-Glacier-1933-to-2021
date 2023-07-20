@@ -449,7 +449,13 @@ function [md] = run_model(config_name, plotting_flag)
             error("Friction law not known")
         end
 
+        % ensure cluster is correct
+        md.cluster = cluster;
+
+        % extrapolate friction field
         [md, friction_field] = extrapolate_friction(md, config);
+
+        % parameterize to LIA
         md = parameterize(md, 'ParameterFiles/transient_lia.par');
     
     % %% 8 Parameterize LIA, extrapolate friction coefficient to LIA front

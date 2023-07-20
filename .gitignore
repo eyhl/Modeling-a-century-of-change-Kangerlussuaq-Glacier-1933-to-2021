@@ -153,12 +153,12 @@ GrIS_VelMosaicGeus/
 GRID_REG_COULOMB/
 
 # issm run specific
-.bin
-.errlog
-.outlog
-.queue
-.tar.gz
-.toolkits
+*.bin
+*.errlog
+*.outlog
+*.queue
+*.tar.gz
+*.toolkits
 
 
 
@@ -169,3 +169,4 @@ inversion_present_day.errlog
 inversion_present_day.outlog
 inversion_present_day.queue
 *.mat
+*.png

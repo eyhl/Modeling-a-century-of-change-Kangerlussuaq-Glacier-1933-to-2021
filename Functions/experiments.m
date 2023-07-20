@@ -3,7 +3,7 @@ function [] = experiments()
     friction_law = "budd";
     friction_ext_offset = 15;
     glen_factor = 5;
-    % copyfile('/home/eyhli/IceModeling/work/lia_kq/Models/glen_factor/KG_budd_gf_5.mat', '/home/eyhli/IceModeling/work/lia_kq/Models/KG_budd.mat');
+    copyfile('/home/eyhli/IceModeling/work/lia_kq/Models/glen_factor/KG_budd_gf_5.mat', '/home/eyhli/IceModeling/work/lia_kq/Models/KG_budd.mat');
     % copyfile('/home/eyhli/IceModeling/work/lia_kq/Results/budd_default-20-Jun-2023/KG_transient.mat', '/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts.mat');
 
 % % ---------------------------------------------------- DEFAULT -------------------------------------------------
@@ -200,7 +200,7 @@ function [] = experiments()
     % recipe(config_file_name);
 
 % %% ---------------------------------------------------- FIXED FRONT -------------------------------------------------
-    copyfile('/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts.mat', '/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts_all.mat');
+    % copyfile('/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts.mat', '/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts_all.mat');
 
     % id1 = append(friction_law, "_fix1933");
     % disp(id1)
@@ -277,24 +277,24 @@ function [] = experiments()
     % recipe(config_file_name);
 
 
-    id3 = append(friction_law, "_fix1933_1966_2021");
-    disp(id3)
-    config_file_name = create_config(id3, friction_law);
-    config = readtable(append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    config.steps = num2str([9, 10]);
-    config.lia_friction_offset = friction_ext_offset; %% CHANGE???
-    config_folder = append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name);
-    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % edit front observations, if KG_fronts.mat exist run_model will load front from that.
-    md_front = loadmodel(['/home/eyhli/IceModeling/work/lia_kq/Models/', prefix, 'fronts_all.mat']);
-    select_years = [1, 2, length(md_front.levelset.spclevelset(end, :))]; % select 1933, 1981, 2021
-    disp(md_front.levelset.spclevelset(end, select_years))
-    md_lia.levelset.spclevelset =  md_front.levelset.spclevelset(:, select_years);  % first and last element
-    save('Models/KG_fronts.mat', 'md_lia', '-v7.3');
-    recipe(config_file_name);
+    % id3 = append(friction_law, "_fix1933_1966_2021");
+    % disp(id3)
+    % config_file_name = create_config(id3, friction_law);
+    % config = readtable(append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    % config.steps = num2str([9, 10]);
+    % config.lia_friction_offset = friction_ext_offset; %% CHANGE???
+    % config_folder = append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name);
+    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % % edit front observations, if KG_fronts.mat exist run_model will load front from that.
+    % md_front = loadmodel(['/home/eyhli/IceModeling/work/lia_kq/Models/', prefix, 'fronts_all.mat']);
+    % select_years = [1, 2, length(md_front.levelset.spclevelset(end, :))]; % select 1933, 1981, 2021
+    % disp(md_front.levelset.spclevelset(end, select_years))
+    % md_lia.levelset.spclevelset =  md_front.levelset.spclevelset(:, select_years);  % first and last element
+    % save('Models/KG_fronts.mat', 'md_lia', '-v7.3');
+    % recipe(config_file_name);
 
 
-    copyfile('/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts_all.mat', '/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts.mat');
+    % copyfile('/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts_all.mat', '/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts.mat');
 
 
     % % ---------------------------------------------------- FRICTION EXTRAPOLATION METHOD -------------------------------------------------
@@ -357,16 +357,16 @@ function [] = experiments()
     % % edit front observations, if KG_fronts.mat exist run_model will load front from that.
     % recipe(config_file_name);   
 
-    % id5 = append(friction_law, "_fc_extrap_tf16");
-    % disp(id5)
-    % config_file_name = create_config(id5, friction_law);
-    % config = readtable(append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    % config.steps = num2str([7, 8, 9, 10]);
-    % config.lia_friction_offset = 16;
-    % config_folder = append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name);
-    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % % edit front observations, if KG_fronts.mat exist run_model will load front from that.
-    % recipe(config_file_name);  
+    id5 = append(friction_law, "_fc_extrap_tf16");
+    disp(id5)
+    config_file_name = create_config(id5, friction_law);
+    config = readtable(append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    config.steps = num2str([7, 8, 9, 10]);
+    config.lia_friction_offset = 16;
+    config_folder = append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name);
+    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    % edit front observations, if KG_fronts.mat exist run_model will load front from that.
+    recipe(config_file_name);  
 
     % id6 = append(friction_law, "_fc_extrap_tf17");
     % disp(id6)
