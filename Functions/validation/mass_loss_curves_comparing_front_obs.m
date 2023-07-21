@@ -176,7 +176,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
         % plot(mouginot_time_span, cum_mb_1972_2018 + offset_prior_1972, '-', 'color', 'red', 'LineWidth', 1.5);
         % h = errorbar(mouginot_time_span, cum_mb_1972_2018, cum_mb_errors, '*', 'color', [0.25, 0.25, 0.25], 'LineWidth', 1.0);
         % h = errorbar(mouginot_time_span, cum_mb_1972_2018, cum_mb_errors, '*', 'color', [0.25, 0.25, 0.25], 'LineWidth', 1.0);
-        s1 = shadedErrorBar(mouginot_time_span, cum_mb_1972_2018, cum_mb_errors, 'lineProps', {'.','color',[.60,0.60,0.60], 'MarkerSize', 10}, 'patchSaturation', 0.1);
+        s1 = shadedErrorBar(mouginot_time_span, cum_mb_1972_2018, cum_mb_errors, 'lineProps', {'.','color',[.60,0.60,0.60], 'MarkerSize', 20}, 'patchSaturation', 0.1);
         set(s1.edge,'LineWidth',1.2,'LineStyle','--')
         mass_balance_curve_struct.mouginot_t{1} = mouginot_time_span;
         mass_balance_curve_struct.mouginot_mb{1} = cum_mb_1972_2018;
@@ -215,6 +215,7 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     xlabel('Year')
     ylabel('Mass [Gt]')
     xlim([1933.0, 2021.1])
+    ylim([-400, 100])
     set(gca,'fontsize', 18)
     Ax = gca;
     Ax.YGrid = 'on';

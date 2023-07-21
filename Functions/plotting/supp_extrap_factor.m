@@ -1,12 +1,4 @@
-% md = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Results/budd_fc_extrap_deg4-09-Jul-2023/KG_transient.mat");
-
-% md_mar = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Results/budd_smb_mar-09-Jul-2023/KG_transient.mat");
-% md_box = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Results/budd_smb_box-09-Jul-2023/KG_transient.mat");
-
-% md1900 = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Results/budd_fix1933-09-Jul-2023/KG_transient.mat");
-% md1900_2021 = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Results/budd_fix1933_2021-09-Jul-2023/KG_transient.mat");
-% md1900_1981_2021 = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Results/budd_fix1933_1981_2021-09-Jul-2023/KG_transient.mat");
-% md1933_1966_1981_1999_2021 = loadmodel("/home/eyhli/IceModeling/work/lia_kq/Results/budd_fix1933_1966_1981_1999_2021-09-Jul-2023/KG_transient.mat");
+md = loadmodel("Results/budd_fc_extrap_deg4-09-Jul-2023/KG_transient.mat");
 
 % md13 = loadmodel("Results/budd_fc_extrap_tf13-09-Jul-2023/KG_transient.mat");
 % md14 = loadmodel("Results/budd_fc_extrap_tf14-09-Jul-2023/KG_transient.mat");
@@ -14,14 +6,22 @@
 % md17 = loadmodel("Results/budd_fc_extrap_tf17-09-Jul-2023/KG_transient.mat");
 % md18 = loadmodel("Results/budd_fc_extrap_tf18-09-Jul-2023/KG_transient.mat");
 
-% [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs([mdb, mds], [], ["Schoof friction law", "Budd friction law"], false, true, false); %md1, md2, md3, md_control, folder)
-[mass_balance_curve_struct2] = mass_loss_curves_comparing_front_obs([md13, md14, md, md17, md18], ...
+% mdgf1 = loadmodel("Results/budd_gf_1-20-Jun-2023/KG_transient.mat");
+% mdgf2 = loadmodel("Results/budd_gf_2-20-Jun-2023/KG_transient.mat");
+% mdgf3 = loadmodel("Results/budd_gf_3-20-Jun-2023/KG_transient.mat");
+% mdgf4 = loadmodel("Results/budd_gf_4-20-Jun-2023/KG_transient.mat");
+% mdgf5 = loadmodel("Results/budd_gf_5-20-Jun-2023/KG_transient.mat");
+mdgf6 = loadmodel("Results/budd_gf_6-20-Jun-2023/KG_transient.mat");
+
+figure(777)
+[mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs([mdgf1, mdgf2, mdgf3, mdgf4, mdgf5, mdgf6], ...
                                                                     [], ...
-                                                                    ["13", "14", "15", "17", "18"], ...
-                                                                    false, false, false); %md1, md2, md3, md_control, folder)
-% [mass_balance_curve_struct1] = mass_loss_curves_comparing_front_obs([md, md1900, md1900_2021], ...
-%                                                                     [], ...
-%                                                                     ["Reference: RACMO", "Control: 1933", "Front observations: 1933, 2021"], ...
-%                                                                     false, true, false); %md1, md2, md3, md_control, folder)
-% xlabel([])
-% xticklabels([])
+                                                                    ["Glen factor = 1", "Glen factor = 2", "Glen factor = 3", "Glen factor = 4", "Glen factor = 5 (ref)",  "Glen factor = 6"], ...
+                                                                    false, false, false);
+
+figure(778)
+[mass_balance_curve_struct2] = mass_loss_curves_comparing_front_obs([md13, md14, md, md16, md17, md18], ...
+                                                                    [], ...
+                                                                    ["Extrapolation constant = 13", "Extrapolation constant = 14", "Extrapolation constant = 15 (ref)", "Extrapolation constant = 16", "Extrapolation constant = 17", "Extrapolation constant = 18"], ...
+                                                                    false, false, false); 
+
