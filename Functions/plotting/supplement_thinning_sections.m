@@ -71,11 +71,11 @@ subplot(5,2,1);
 hax2 = findobj(gcf,'type','axes');
 p0 = imagesc(xgridA, ygridA, sat_imA);
 hold on;
-p1 = pcolor(XA, YA, secA);                  
+p1 = pcolor(XA, YA, secA/18);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',1)
 colormap(redblue);
-caxis([-300 300]);
+caxis([-15 15]);
 c = colorbar();
 %c.Label.String = 'Thinning 2003-2021 [m]';
 c.Label.Position = [3.4, 0];
@@ -109,11 +109,11 @@ hax2 = findobj(gcf,'type','axes');
 p0 = imagesc(xgridA, ygridA, sat_imA);
 
 hold on;
-p1 = pcolor(XA, YA, secB);                  
+p1 = pcolor(XA, YA, secB/18);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',1)
 colormap(redblue);
-caxis([-200 200]);;
+caxis([-10 10]);;
 c = colorbar();
 %c.Label.String = 'Thinning 2003-2021 [m]';
 c.Label.Position = [3.4, 0];
@@ -149,11 +149,11 @@ hax2 = findobj(gcf,'type','axes');
 p0 = imagesc(xgrid, ygrid, sat_im);
 
 hold on;
-p1 = pcolor(X, Y, secC);                  
+p1 = pcolor(X, Y, secC/18);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',1)
 colormap(redblue);
-caxis([-75 75]);;
+caxis([-5 5]);;
 c = colorbar();
 %c.Label.String = 'Thinning 2003-2021 [m]';
 c.Label.Position = [3.4, 0];
@@ -190,11 +190,11 @@ hax2 = findobj(gcf,'type','axes');
 p0 = imagesc(xgrid, ygrid, sat_im);
 
 hold on;
-p1 = pcolor(X, Y, secD);                  
+p1 = pcolor(X, Y, secD/18);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',1)
 colormap(redblue);
-caxis([-25 25]);;
+caxis([-1 1]);
 c = colorbar();
 %c.Label.String = 'Thinning 2003-2021 [m]';
 c.Label.Position = [3.4, 0];
@@ -212,11 +212,11 @@ hax2 = findobj(gcf,'type','axes');
 p0 = imagesc(xgrid, ygrid, sat_im);
 
 hold on;
-p1 = pcolor(X, Y, secE);                  
+p1 = pcolor(X, Y, secE/18);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',1)
 colormap(redblue);
-caxis([-25, 25]);
+caxis([-1, 1]);
 c = colorbar();
 %c.Label.String = 'Thinning 2003-2021 [m]';
 c.Label.Position = [3.4, 0];
@@ -271,17 +271,16 @@ thinningE(surf<2500) = NaN;
 
 
 
-%% ----------- THINNING -------------
 subplot(5,2,2);
 hax2 = findobj(gcf,'type','axes');
 p0 = imagesc(xgridA, ygridA, sat_imA);
 
 hold on;
-p1 = pcolor(XA, YA, secA);                  
+p1 = pcolor(XA, YA, secA/18);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',1)
 colormap(redblue);
-caxis([-85 85]);
+caxis([-5 5]);
 c = colorbar();
 %c.Label.String = 'Thinning 2003-2021 [m]';
 c.Label.Position = [3.4, 0];
@@ -300,12 +299,16 @@ hax2 = findobj(gcf,'type','axes');
 p0 = imagesc(xgridA, ygridA, sat_imA);
 
 hold on;
-p1 = pcolor(XA, YA, secB);                  
+p1 = pcolor(XA, YA, secB/18);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',1)
 colormap(redblue);
-caxis([-100 100]);
-c = colorbar();
+caxis([-5 5]);
+cbh = colorbar ; %Create Colorbar
+% cbh.Ticks = [-75, -50, -25, 0, 25, 50, 75]; %Create 8 ticks from zero to 1
+% cbh.TickLabels = num2cell([-75, -50, -25, 0, 25, 50, 75]); 
+% caxis([-75 75]);
+% c = colorbar();
 %c.Label.String = 'Thinning 2003-2021 [m]';
 c.Label.Position = [3.4, 0];
 c.Label.FontSize = 12;
@@ -323,11 +326,11 @@ hax2 = findobj(gcf,'type','axes');
 p0 = imagesc(xgrid, ygrid, sat_im);
 
 hold on;
-p1 = pcolor(X, Y, secC);                  
+p1 = pcolor(X, Y, secC/18);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',1)
 colormap(redblue);
-caxis([-75 75]);
+caxis([-2 2]);
 c = colorbar();
 %c.Label.String = 'Thinning 2003-2021 [m]';
 c.Label.Position = [3.4, 0];
@@ -345,11 +348,11 @@ hax2 = findobj(gcf,'type','axes');
 p0 = imagesc(xgrid, ygrid, sat_im);
 
 hold on;
-p1 = pcolor(X, Y, secD);                  
+p1 = pcolor(X, Y, secD/18);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',1)
 colormap(redblue);
-caxis([-25 25]);
+caxis([-1 1]);
 c = colorbar();
 %c.Label.String = 'Thinning 2003-2021 [m]';
 c.Label.Position = [3.4, 0];
@@ -367,11 +370,11 @@ hax2 = findobj(gcf,'type','axes');
 p0 = imagesc(xgrid, ygrid, sat_im);
 
 hold on;
-p1 = pcolor(X, Y, secE);                  
+p1 = pcolor(X, Y, secE/18);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',1)
 colormap(redblue);
-caxis([-25 25]);
+caxis([-1 1]);
 c = colorbar();
 %c.Label.String = 'Thinning 2003-2021 [m]';
 c.Label.Position = [3.4, 0];

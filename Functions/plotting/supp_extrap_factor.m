@@ -1,8 +1,8 @@
-md = loadmodel("Results/budd_fc_extrap_deg4-09-Jul-2023/KG_transient.mat");
+% md = loadmodel("Results/budd_default-21-Jul-2023/KG_transient.mat");
 
 % md13 = loadmodel("Results/budd_fc_extrap_tf13-09-Jul-2023/KG_transient.mat");
 % md14 = loadmodel("Results/budd_fc_extrap_tf14-09-Jul-2023/KG_transient.mat");
-% md16 = loadmodel("Results/budd_fc_extrap_tf16-09-Jul-2023/KG_transient.mat");
+md16 = loadmodel("Results/budd_fc_extrap_tf16-21-Jul-2023/KG_transient.mat");
 % md17 = loadmodel("Results/budd_fc_extrap_tf17-09-Jul-2023/KG_transient.mat");
 % md18 = loadmodel("Results/budd_fc_extrap_tf18-09-Jul-2023/KG_transient.mat");
 
@@ -11,7 +11,7 @@ md = loadmodel("Results/budd_fc_extrap_deg4-09-Jul-2023/KG_transient.mat");
 % mdgf3 = loadmodel("Results/budd_gf_3-20-Jun-2023/KG_transient.mat");
 % mdgf4 = loadmodel("Results/budd_gf_4-20-Jun-2023/KG_transient.mat");
 % mdgf5 = loadmodel("Results/budd_gf_5-20-Jun-2023/KG_transient.mat");
-mdgf6 = loadmodel("Results/budd_gf_6-20-Jun-2023/KG_transient.mat");
+% mdgf6 = loadmodel("Results/budd_gf_6-20-Jun-2023/KG_transient.mat");
 
 figure(777)
 [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs([mdgf1, mdgf2, mdgf3, mdgf4, mdgf5, mdgf6], ...

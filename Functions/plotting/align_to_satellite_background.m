@@ -1,6 +1,9 @@
-function [field, sat_im, X, Y, xgrid, ygrid] = align_to_satellite_background(md, field, shape, gridsize)
+function [field, sat_im, X, Y, xgrid, ygrid] = align_to_satellite_background(md, field, shape, gridsize, raster)
+    if nargin < 5
+        raster = 'Data/validation/optical/greenland_large.tiff';
+    end
     % [a, r] = readgeoraster('Data/validation/optical/greenland_mosaic_2019_KG.tiff');
-    [a, r] = readgeoraster('Data/validation/optical/greenland_large.tiff');
+    [a, r] = readgeoraster(raster);
     % [a, r] = readgeoraster('Data/validation/optical/tile_4_2_mosaic_15m_band8_v01.1.tif');
 
     xgrid = linspace(r.XWorldLimits(1), r.XWorldLimits(2), size(a, 2));

@@ -27,6 +27,7 @@ distance = m.distance;
 % Define the regular time spacing
 dt = abs(min(diff(times)));
 regularYears = (min(times):dt:max(times)); % Adjust the range and step size as needed
+wholeYears = min(floor(times)):1:max(ceil(times));
 
 % Create a matrix filled with NaNs
 interpMatrix = NaN(size(flowline_error, 1), numel(regularYears));
@@ -40,21 +41,30 @@ for i = 1:numel(times)
     % Repeat the above lines for other data vectors (data2, data3)
 end
 
+year_index = zeros(length(wholeYears), 1);
+for year=1:length(wholeYears)
+    [~, year_index(year)] = min(abs(regularYears - wholeYears(year)));
+end
 
 
 %% ----------- THICKNESS ERROR -------------
 f1 = figure(326);
 hax3 = axes(f1);
 
+xl = [1  size(interpMatrix, 2)];
+yl = [1  size(interpMatrix, 1)];
+% patch([xl fliplr(xl)], [yl(1) yl(1) yl(2) yl(2)], [0.9 0.9 0.9])
+% hold on 
 s = pcolor(interpMatrix);
 set(s, 'EdgeColor', 'none');
 % set(s, 'EdgeColor', 'black', 'LineStyle', '-', 'LineWidth', 0.01);
 % s.LineWidth = 0.01;
 
+
 set(gca,'layer','top')
 
 % title('Flowline misfit 2007-2021')
-colormap('turbo');
+colormap(redgrayblue);
 c = colorbar();
 c.Label.String = 'Velocity misfit (m/yr)';
 
@@ -68,13 +78,17 @@ end
 
 
 % xticklabels(arrayfun(@{x} sprintf('%s', x), all_tick_labels, 'UniformOutput', false));
-% xticklabels(arrayfun(@(x) sprintf('%.1f', x), regularYears(1:49:end), 'UniformOutput', false));
-% xticklabels(num2str(regularYears(1:30:end)));
+% xticklabels(arrayfun(@(x) sprintf('%.1f', x), regularYears(1:149:end), 'UniformOutput', false));
+indeces = 1:length(regularYears);
+xticks(indeces(year_index));
+xticklabels(round(regularYears(year_index)));
+% xticklabels(num2str(regularYears(1:300:end)'));
 yticks(1:10:length(x_flowline));
 yticklabels(round(distance(1:10:end), 1));
 xlabel('Year');
 ylabel('Distance from 1933 front (km)');
 ylim([100, 180])
+xlim([1, length(regularYears)])
 
 % c.Label.Position = [3.4, 0];
 c.Label.FontSize = 12;
@@ -82,6 +96,9 @@ c.FontSize = 12;
 % set(gca, 'YDir','normal')
 % xlim([axs(1) axs(2)]);
 % ylim([axs(3) axs(4)]);
+grid('on')
+set(gca,'GridLineStyle','--')
+
 ax = gca;
 ax.FontSize = 12; 
 set(gcf,'Position',[100 100 1250 450]); 

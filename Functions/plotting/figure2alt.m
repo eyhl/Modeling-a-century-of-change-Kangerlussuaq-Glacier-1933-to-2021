@@ -25,8 +25,10 @@ else
 end
 
 shape = shaperead('Exp/domain/plotting_present_domain.shp');
-[a, r] = readgeoraster('Data/validation/optical/greenland_mosaic_2019_KG.tiff');
-gridsize = 200;
+% [a, r] = readgeoraster('Data/validation/optical/greenland_mosaic_2019_KG.tiff');
+raster = 'Data/validation/optical/greenland_mosaic_2019_KG.tiff';
+
+gridsize = 50;
 
 %% ----------- VEL ERROR -------------
 f2 = figure(992);
@@ -45,8 +47,7 @@ field(ice_mask > 0 | bed_rock_mask, :) = NaN;
 [~, vel_mean_error, ~] = integrateOverDomain(md, field, ice_mask>0 | bed_rock_mask); % avg misfit per area [m]
 vel_std_error = std(field(:), 'omitnan');
 vel_median_error = median(field(:), 'omitnan');
-
-[field, sat_im, X, Y, xgrid, ygrid] = align_to_satellite_background(md, field, shape, gridsize);
+[field, sat_im, X, Y, xgrid, ygrid] = align_to_satellite_background(md, field, shape, gridsize, raster);
 
 p0 = imagesc(xgrid, ygrid, sat_im);
 
@@ -54,7 +55,7 @@ hold on;
 p1 = pcolor(X, Y, field);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',0.8)
-colormap('turbo');
+colormap(redgrayblue);
 caxis([-1500 1500]);
 c = colorbar();
 c.Label.String = 'Surface velocity error [m/yr]';
@@ -76,6 +77,7 @@ obj = scalebar(hax2); %default, recommanded
 % ---Command support---
 obj.Position = [430000, -2297000];              %X-Length, 15.
 obj.XLen = 5000;              %X-Length, 15.
+obj.YLen = 10000;              %X-Length, 15.
 obj.XUnit = 'km';            %X-Unit, 'm'.
 obj.YUnit = 'km';            %X-Unit, 'm'.
 % obj.Position = [55, -0.6];  %move the whole SCALE position.
@@ -111,7 +113,7 @@ thickness_median_error = median(field(:), 'omitnan');
 error_in_mass = vol  ./ (1e9) .* 0.9167; % Gt
 full_field = field;
 
-[field, sat_im, X, Y, xgrid, ygrid] = align_to_satellite_background(md, field, shape, gridsize);
+[field, sat_im, X, Y, xgrid, ygrid] = align_to_satellite_background(md, field, shape, gridsize, raster);
 
 p0 = imagesc(xgrid, ygrid, sat_im);
 
@@ -119,7 +121,7 @@ hold on;
 p1 = pcolor(X, Y, field);                  
 set(p1, 'EdgeColor', 'none'); 
 set(p1,'facealpha',0.8)
-colormap('turbo');
+colormap(redgrayblue);
 caxis([-150 150]);
 c = colorbar();
 c.Label.String = 'Ice thickness error [m]';

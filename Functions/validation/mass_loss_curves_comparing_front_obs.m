@@ -1,4 +1,4 @@
-function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_list, md_control_list, md_names, folder, validate, retreat_advance) %md1, md2, md3, md_control, folder)
+function [mass_balance_curve_struct, CM, all_names] = mass_loss_curves_comparing_front_obs(md_list, md_control_list, md_names, folder, validate, retreat_advance, yaxis_lim) %md1, md2, md3, md_control, folder)
 
     if isfield(md_list(1), 'mesh') % the alternative is structs only holding relevant data, not the full model
         model_struct = true;
@@ -6,6 +6,12 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
         model_struct = false;
     end
     model_struct = true;
+    if nargin < 7
+        yaxis_lim = [-400, 10];
+    end
+    if nargin < 6
+        retreat_advance = false;
+    end
     if nargin < 5
         validate = true;
     end
@@ -215,8 +221,8 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     xlabel('Year')
     ylabel('Mass [Gt]')
     xlim([1933.0, 2021.1])
-    ylim([-400, 100])
-    set(gca,'fontsize', 18)
+    ylim([yaxis_lim(1), yaxis_lim(2)])
+    set(gca,'fontsize', 12)
     Ax = gca;
     Ax.YGrid = 'on';
     Ax.XGrid = 'on';
@@ -232,9 +238,8 @@ function [mass_balance_curve_struct] = mass_loss_curves_comparing_front_obs(md_l
     if retreat_advance
         all_names = ["Advancing", "Retreating", all_names];
     end
-    leg = legend([all_names], 'Location', 'SouthWest');
+    leg = legend([all_names], 'Location', 'SouthWest', 'FontSize', 12);
     % title(leg,'Extrapolation constant')
-    set(gcf,'PaperType','A4', 'PaperOrientation', 'landscape');
 
     folder = string(folder);
     if exist(folder, 'dir') == 7 % checks if folder is a folder, returns 7 if it is a folder

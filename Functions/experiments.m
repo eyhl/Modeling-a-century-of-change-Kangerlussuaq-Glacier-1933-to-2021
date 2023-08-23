@@ -4,19 +4,19 @@ function [] = experiments()
     friction_ext_offset = 15;
     glen_factor = 5;
     copyfile('/home/eyhli/IceModeling/work/lia_kq/Models/glen_factor/KG_budd_gf_5.mat', '/home/eyhli/IceModeling/work/lia_kq/Models/KG_budd.mat');
-    % copyfile('/home/eyhli/IceModeling/work/lia_kq/Results/budd_default-20-Jun-2023/KG_transient.mat', '/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts.mat');
+    copyfile('/home/eyhli/IceModeling/work/lia_kq/Results/budd_default-20-Jun-2023/KG_transient.mat', '/home/eyhli/IceModeling/work/lia_kq/Models/KG_fronts.mat');
 
 % % ---------------------------------------------------- DEFAULT -------------------------------------------------
     % Budd w.o. initial friction tuning, large extr domain, 0 melting still:
-    % id00 = "budd_default";
-    % disp(id00)
-    % config_file_name = create_config(id00, friction_law);
-    % config = readtable(append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name), "TextType", "string");
-    % config.steps = num2str([7, 8, 9, 10]);
-    % config.lia_friction_offset = friction_ext_offset; %% CHANGE???
-    % config_folder = append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name);
-    % writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
-    % recipe(config_file_name);   
+    id00 = "budd_default";
+    disp(id00)
+    config_file_name = create_config(id00, friction_law);
+    config = readtable(append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name), "TextType", "string");
+    config.steps = num2str([7, 8, 9, 10]);
+    config.lia_friction_offset = friction_ext_offset; %% CHANGE???
+    config_folder = append('/home/eyhli/IceModeling/work/lia_kq/Configs/', config_file_name);
+    writetable(config, config_folder, 'Delimiter', ',', 'QuoteStrings', true);
+    recipe(config_file_name);   
 
     % id01 = "schoof_default";
     % disp(id01)
